@@ -5,6 +5,7 @@ using UnityEngine.UI;
 namespace SoftMask {
     [ExecuteInEditMode]
     [AddComponentMenu("")]
+    [RequireComponent(typeof(Graphic))]
     public class SoftMaskable : UIBehaviour, IMaterialModifier {
         SoftMask _mask;
         Graphic _graphic;
@@ -24,6 +25,10 @@ namespace SoftMask {
                 WarnMaskingWillNotWork(baseMaterial);
             }
             return baseMaterial;
+        }
+
+        public void Invalidate() {
+            graphic.SetMaterialDirty();
         }
 
         protected override void Awake() {
@@ -73,6 +78,7 @@ namespace SoftMask {
         void WarnMaskingWillNotWork(Material material) {
             if (!_warned) {
                 Debug.LogWarningFormat(
+                    gameObject,
                     "Soft Mask will not work on {0} because material {1} doesn't support masking. " +
                     "Add masking support to your material or set Graphic's material to None to use " +
                     "a default one.",

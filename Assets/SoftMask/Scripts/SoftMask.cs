@@ -11,11 +11,17 @@ namespace SoftMask {
     public class SoftMask : UIBehaviour {
         readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
         [SerializeField] Shader _defaultMaskShader;
-
-        public Shader defaultMaskShader { get; set; }
+        Shader _defaultMaskShader_actual;
 
         protected virtual void Update() {
             SpawnMaskablesInChildren();
+            if (_defaultMaskShader_actual != _defaultMaskShader) {
+                if (!_defaultMaskShader)
+                    Debug.LogWarningFormat(this, "Mask may be not work because it's defaultMaskShader is set to null");
+                DestroyAllOverrides();
+                InvalidateChildren();
+                _defaultMaskShader_actual = _defaultMaskShader;
+            }
         }
 
         protected override void OnDestroy() {
@@ -27,6 +33,14 @@ namespace SoftMask {
             foreach (var g in transform.GetComponentsInChildren<Graphic>())
                 if (!g.GetComponent<SoftMaskable>())
                     g.gameObject.AddComponent<SoftMaskable>();
+        }
+
+        void InvalidateChildren() {
+            foreach (var g in transform.GetComponentsInChildren<Graphic>()) {
+                var maskable = g.GetComponent<SoftMaskable>();
+                if (maskable)
+                    maskable.Invalidate();
+            }
         }
 
         // May return null.
@@ -61,10 +75,8 @@ namespace SoftMask {
         }
 
         Material Replace(Material original) {
-            if (original == null)
-                return new Material(_defaultMaskShader);
-            else if (original == Canvas.GetDefaultCanvasMaterial())
-                return new Material(_defaultMaskShader);
+            if (original == null || original == Canvas.GetDefaultCanvasMaterial())
+                return _defaultMaskShader ? new Material(_defaultMaskShader) : null;
             else if (original == Canvas.GetDefaultCanvasTextMaterial())
                 throw new NotSupportedException();
             else if (original.HasProperty("_SoftMask"))
