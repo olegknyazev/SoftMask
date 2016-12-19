@@ -1,0 +1,11 @@
+syntax: glob
+.vs/
+*.sln
+*.csproj
+*.user
+*~
+
+syntax: regexp
+^Library/
+^Temp/
+^Build/
