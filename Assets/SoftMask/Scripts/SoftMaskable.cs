@@ -33,10 +33,15 @@ namespace SoftMask {
 
         protected override void Awake() {
             base.Awake();
-            hideFlags = HideFlags.HideAndDontSave;
+            hideFlags = HideFlags.HideInInspector;
             mask = FindMask();
         }
-        
+
+        protected override void Start() {
+            base.Start();
+            Invalidate();
+        }
+
         protected override void OnDestroy() {
             base.OnDestroy();
             mask = null;
