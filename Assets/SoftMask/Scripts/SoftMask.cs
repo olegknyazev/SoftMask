@@ -28,6 +28,7 @@ namespace SoftMask {
         Vector4 _maskRectUV;
         Vector4 _maskBorderUV;
 
+        Graphic _graphic;
         Image _image;
 
         protected virtual void Update() {
@@ -69,6 +70,16 @@ namespace SoftMask {
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
 
         Image image { get { return _image ?? (_image = GetComponent<Image>()); } }
+
+        Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
+
+        float graphicToCanvas {
+            get {
+                var canvasPPU = graphic ? graphic.canvas.referencePixelsPerUnit : 100;
+                var maskPPU = (_mask ? _mask.pixelsPerUnit : 100);
+                return canvasPPU / maskPPU;
+            }
+        }
 
         void SpawnMaskablesInChildren() {
             foreach (var g in transform.GetComponentsInChildren<Graphic>())
@@ -148,13 +159,17 @@ namespace SoftMask {
         void CalculateMask() {
             if (!_mask)
                 return;
-            var ts = _mask.rect.size;
-            var mb = _mask.border;
+            var textureRect = ToVector(_mask.textureRect);
+            var textureSize = _mask.rect.size;
             _maskRect = CanvasSpaceRect(rectTransform, Vector4.zero);
-            _maskBorder = CanvasSpaceRect(rectTransform, mb);
-            _maskRectUV = new Vector4(0, 0, 1, 1);
-            _maskBorderUV = new Vector4(mb.x / ts.x, mb.y / ts.y, 1 - mb.z / ts.x, 1 - mb.w / ts.y);
+            _maskBorder = CanvasSpaceRect(rectTransform, _mask.border * graphicToCanvas);
+            _maskRectUV = Div(textureRect, textureSize);
+            _maskBorderUV = Div(Inset(ToVector(_mask.rect), _mask.border), textureSize);
         }
+
+        static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
+        static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
+        static Vector4 Inset(Vector4 v, Vector4 b) { return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w); }
 
         static Vector3[] _corners = new Vector3[4];
 
