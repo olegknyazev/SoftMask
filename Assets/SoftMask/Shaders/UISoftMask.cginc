@@ -29,7 +29,12 @@
                     _SoftMask_UVRect.y, _SoftMask_UVBorderRect.y, _SoftMask_UVBorderRect.w, _SoftMask_UVRect.w));
     }
 
+    // Samples mask texture at given world position. It may be useful for debugging.
+    float4 SoftMask_GetMaskTexture(float2 worldPosition) {
+        return tex2D(_SoftMask, SoftMask_GetMaskUV(worldPosition));
+    }
+
     float SoftMask_GetMask(float2 worldPosition) {
-        return tex2D(_SoftMask, SoftMask_GetMaskUV(worldPosition)).a;
+        return SoftMask_GetMaskTexture(worldPosition).a;
     }
 #endif
