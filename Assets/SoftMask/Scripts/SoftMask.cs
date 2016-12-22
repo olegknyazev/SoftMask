@@ -14,12 +14,9 @@ namespace SoftMask {
         
         [SerializeField] public Shader defaultMaskShader = null;
         [SerializeField] MaskSource _maskSource;
+        [SerializeField] Sprite _maskSprite;
         
         IImpl _activeImpl;
-        SpriteImpl _spriteImpl;
-        RectTransform _rectTransform;
-        Graphic _graphic;
-        Canvas _canvas;
 
         Shader _appliedDefaultMaskShader;
         Vector3 _appliedPosition;
@@ -28,7 +25,7 @@ namespace SoftMask {
         IImpl _appliedImpl;
         bool _rectTransformDimensionsChanged;
 
-        public enum MaskSource { Graphic }
+        public enum MaskSource { Graphic, Sprite }
 
         public MaskSource maskSource {
             get { return _maskSource; }
@@ -38,6 +35,16 @@ namespace SoftMask {
                     ActualizeImpl();
                 }
             } 
+        }
+
+        public Sprite maskSprite {
+            get { return _maskSprite; }
+            set {
+                if (_maskSprite != value) {
+                    _maskSprite = value;
+                    ActualizeImpl();
+                }
+            }
         }
 
         public bool isReady { get { return _activeImpl != null; } }
@@ -55,6 +62,7 @@ namespace SoftMask {
                     || _appliedRotation != transform.rotation
                     || _appliedScale != transform.lossyScale
                     || _appliedImpl != _activeImpl
+                    || _activeImpl.MaterialPropertiesChanged()
                     || _rectTransformDimensionsChanged) {
                 ApplyMaterialProperties();
                 _appliedPosition = transform.position;
@@ -80,21 +88,32 @@ namespace SoftMask {
             _rectTransformDimensionsChanged = true;
         }
 
+        protected override void OnValidate() {
+            base.OnValidate();
+            ActualizeImpl();
+        }
+        
+        RectTransform _rectTransform;
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
-        Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
-        Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
-        SpriteImpl spriteImpl { get { return _spriteImpl ?? (_spriteImpl = new SpriteImpl(this)); } }
 
+        Graphic _graphic;
+        Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
+
+        Canvas _canvas;
+        Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
+
+        SpriteImpl _spriteImpl;
+        SpriteImpl spriteImpl { get { return _spriteImpl ?? (_spriteImpl = new SpriteImpl(this)); } }
+        
         void ActualizeImpl() {
             _activeImpl = null;
             switch (_maskSource) {
-                case MaskSource.Graphic: {
-                        var graphic = GetComponent<Graphic>();
-                        if (graphic is Image) {
-                            spriteImpl.explicitSprite = null;
-                            _activeImpl = spriteImpl;
-                        }
-                    }
+                case MaskSource.Graphic:
+                    if (graphic is Image)
+                        _activeImpl = spriteImpl.UsingOwnerSprite();
+                    break;
+                case MaskSource.Sprite:
+                    _activeImpl = spriteImpl.UsingExplicitSprite(_maskSprite);
                     break;
             }
         }
@@ -214,7 +233,8 @@ namespace SoftMask {
 
         [Serializable]
         public class SpriteImpl : IImpl {
-            public Sprite explicitSprite;
+            Sprite _explicitSprite;
+            bool _useExplicitSprite;
 
             SoftMask _owner;
             Sprite _appliedSprite;
@@ -226,6 +246,18 @@ namespace SoftMask {
 
             public SpriteImpl(SoftMask owner) {
                 _owner = owner;
+            }
+
+            public SpriteImpl UsingExplicitSprite(Sprite sprite) {
+                _useExplicitSprite = true;
+                _explicitSprite = sprite;
+                return this;
+            }
+
+            public SpriteImpl UsingOwnerSprite() {
+                _useExplicitSprite = false;
+                _explicitSprite = null;
+                return this;
             }
 
             public bool MaterialPropertiesChanged() {
@@ -247,7 +279,7 @@ namespace SoftMask {
                 _appliedSprite = sprite;
             }
             
-            Sprite sprite { get { return !ReferenceEquals(explicitSprite, null) ? explicitSprite : OwnerSprite(); } }
+            Sprite sprite { get { return _useExplicitSprite ? _explicitSprite : OwnerSprite(); } }
 
             Sprite OwnerSprite() {
                 var image = _owner.graphic as Image;
