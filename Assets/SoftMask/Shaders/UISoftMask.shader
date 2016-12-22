@@ -61,6 +61,7 @@
             #include "UISoftMask.cginc"
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
+            #pragma multi_compile __ SOFTMASK_USE_BORDER
 
             struct appdata_t
             {

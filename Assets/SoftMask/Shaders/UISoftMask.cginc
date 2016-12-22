@@ -1,12 +1,10 @@
 ﻿#ifndef SOFTMASK_INCLUDED
 #define SOFTMASK_INCLUDED
 
-#pragma multi_compile __ SOFTMASK_USE_BORDER
-
     sampler2D _SoftMask;
     float4 _SoftMask_Rect;
     float4 _SoftMask_UVRect;
-#if SOFTMASK_USE_BORDER
+#ifdef SOFTMASK_USE_BORDER
     float4 _SoftMask_BorderRect;
     float4 _SoftMask_UVBorderRect;
 #endif
@@ -15,7 +13,7 @@
         return (x - x1) / (x2 - x1) * (u2 - u1) + u1;
     }
 
-#if SOFTMASK_USE_BORDER
+#ifdef SOFTMASK_USE_BORDER
     float __SoftMask_InsetWithBorder(float x, float x1, float x2, float x3, float x4, float u1, float u2, float u3, float u4) {
         if (x < x2)
             return __SoftMask_Inset(x, x1, x2, u1, u2);

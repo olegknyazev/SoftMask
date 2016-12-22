@@ -12,27 +12,40 @@ namespace SoftMask {
     public class SoftMask : UIBehaviour {
         readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
         
-        [SerializeField] public Shader defaultMaskShader = null;
+        [SerializeField] Shader _defaultMaskShader = null;
         [SerializeField] MaskSource _maskSource;
         [SerializeField] Sprite _maskSprite;
-        
-        IImpl _activeImpl;
+        [SerializeField] BorderMode _maskBorderMode;
 
-        Shader _appliedDefaultMaskShader;
+        MaskParameters _maskParameters;
+
         Vector3 _appliedPosition;
         Quaternion _appliedRotation;
         Vector3 _appliedScale;
-        IImpl _appliedImpl;
-        bool _rectTransformDimensionsChanged;
+        bool _dirty;
 
         public enum MaskSource { Graphic, Sprite }
+        public enum BorderMode { Simple, Sliced, Tiled }
+
+        public Shader defaultMaskShader {
+            get { return _defaultMaskShader; }
+            set {
+                if (_defaultMaskShader != value) {
+                    _defaultMaskShader = value;
+                    if (!_defaultMaskShader)
+                        Debug.LogWarningFormat(this, "Mask may be not work because it's defaultMaskShader is set to null");
+                    DestroyAllOverrides();
+                    InvalidateChildren();
+                }
+            }
+        }
 
         public MaskSource maskSource {
             get { return _maskSource; }
             set {
                 if (_maskSource != value) {
                     _maskSource = value;
-                    ActualizeImpl();
+                    _dirty = true;
                 }
             } 
         }
@@ -42,55 +55,64 @@ namespace SoftMask {
             set {
                 if (_maskSprite != value) {
                     _maskSprite = value;
-                    ActualizeImpl();
+                    _dirty = true;
                 }
             }
         }
 
-        public bool isReady { get { return _activeImpl != null; } }
-
-        protected virtual void Update() {
+        protected virtual void LateUpdate() {
             SpawnMaskablesInChildren();
-            if (_appliedDefaultMaskShader != defaultMaskShader) {
-                if (!defaultMaskShader)
-                    Debug.LogWarningFormat(this, "Mask may be not work because it's defaultMaskShader is set to null");
-                DestroyAllOverrides();
-                InvalidateChildren();
-                _appliedDefaultMaskShader = defaultMaskShader;
+
+            if (!_graphic) {
+                _graphic = GetComponent<Graphic>();
+                if (_graphic) {
+                    _graphic.RegisterDirtyVerticesCallback(OnGraphicDirty);
+                    _graphic.RegisterDirtyMaterialCallback(OnGraphicDirty);
+                }
             }
+
             if (_appliedPosition != transform.position
                     || _appliedRotation != transform.rotation
                     || _appliedScale != transform.lossyScale
-                    || _appliedImpl != _activeImpl
-                    || _activeImpl.MaterialPropertiesChanged()
-                    || _rectTransformDimensionsChanged) {
-                ApplyMaterialProperties();
+                    || _dirty) {
+                CalculateMaskParameters();
+                ApplyToAllReplacements();
                 _appliedPosition = transform.position;
                 _appliedRotation = transform.rotation;
                 _appliedScale = transform.lossyScale;
-                _appliedImpl = _activeImpl;
-                _rectTransformDimensionsChanged = false;
+                _dirty = false;
             }
         }
 
         protected override void OnEnable() {
             base.OnEnable();
-            ActualizeImpl();
+            _dirty = true;
         }
 
         protected override void OnDisable() {
             base.OnDisable();
-            DestroyAllOverrides();
+            if (_graphic) {
+                _graphic.UnregisterDirtyVerticesCallback(OnGraphicDirty);
+                _graphic.UnregisterDirtyMaterialCallback(OnGraphicDirty);
+                _graphic = null;
+            }
+            DestroyAllOverrides(); 
+        }
+        
+        void OnGraphicDirty() {
+            print("OnGraphicDirty");
+            if (isBasedOnGraphic)
+                _dirty = true;
         }
 
         protected override void OnRectTransformDimensionsChange() {
             base.OnRectTransformDimensionsChange();
-            _rectTransformDimensionsChanged = true;
+            _dirty = true;
         }
 
         protected override void OnValidate() {
             base.OnValidate();
-            ActualizeImpl();
+            _dirty = true;
         }
         
         RectTransform _rectTransform;
@@ -101,23 +123,9 @@ namespace SoftMask {
 
         Canvas _canvas;
         Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
-
-        SpriteImpl _spriteImpl;
-        SpriteImpl spriteImpl { get { return _spriteImpl ?? (_spriteImpl = new SpriteImpl(this)); } }
         
-        void ActualizeImpl() {
-            _activeImpl = null;
-            switch (_maskSource) {
-                case MaskSource.Graphic:
-                    if (graphic is Image)
-                        _activeImpl = spriteImpl.UsingOwnerSprite();
-                    break;
-                case MaskSource.Sprite:
-                    _activeImpl = spriteImpl.UsingExplicitSprite(_maskSprite);
-                    break;
-            }
-        }
-
+        bool isBasedOnGraphic { get { return _maskSource == MaskSource.Graphic; } }
+        
         void SpawnMaskablesInChildren() {
             foreach (var g in transform.GetComponentsInChildren<Graphic>())
                 if (g.gameObject != gameObject)
@@ -142,7 +150,7 @@ namespace SoftMask {
             var replacement = Replace(original);
             if (replacement) {
                 replacement.hideFlags = HideFlags.HideAndDontSave;
-                ApplyMaterialProperties(replacement);
+                _maskParameters.Apply(replacement);
             }   
             _overrides.Add(new MaterialOverride(original, replacement));
             return replacement;
@@ -167,7 +175,7 @@ namespace SoftMask {
 
         Material Replace(Material original) {
             if (original == null || original == Canvas.GetDefaultCanvasMaterial())
-                return defaultMaskShader ? new Material(defaultMaskShader) : null;
+                return _defaultMaskShader ? new Material(_defaultMaskShader) : null;
             else if (original == Canvas.GetDefaultCanvasTextMaterial())
                 throw new NotSupportedException();
             else if (original.HasProperty("_SoftMask"))
@@ -176,17 +184,65 @@ namespace SoftMask {
                 return null;
         }
 
-        void ApplyMaterialProperties() {
-            for (int i = 0; i < _overrides.Count; ++i) {
-                var mat = _overrides[i].replacement;
-                if (mat)
-                    ApplyMaterialProperties(mat);
+        void CalculateMaskParameters() {
+            switch (_maskSource) {
+                case MaskSource.Graphic:
+                    if (graphic is Image)
+                        CalculateImageBased((Image)graphic);
+                    else
+                        CalculateEmpty();
+                    break;
+                case MaskSource.Sprite:
+                    CalculateSpriteBased(_maskSprite, _maskBorderMode);
+                    break;
+                default:
+                    CalculateEmpty();
+                    break;
             }
         }
 
-        void ApplyMaterialProperties(Material mat) {
-            if (_activeImpl != null)
-                _activeImpl.ApplyMaterialProperties(mat);
+        BorderMode ToBorderMode(Image.Type imageType) {
+            switch (imageType) {
+                case Image.Type.Simple: return BorderMode.Simple;
+                case Image.Type.Sliced: return BorderMode.Sliced;
+                case Image.Type.Tiled: return BorderMode.Tiled;
+                default:
+                    Debug.LogWarningFormat("FUCK THE HELL!!!"); // TODO
+                    return BorderMode.Simple;
+            }
+        }
+
+        void CalculateImageBased(Image image) {
+            CalculateSpriteBased(image.sprite, ToBorderMode(image.type));
+        }
+        
+        void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
+            var textureRect = ToVector(sprite.textureRect);
+            var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
+            _maskParameters.maskRect = CanvasSpaceRect(Vector4.zero);
+            _maskParameters.maskBorder = CanvasSpaceRect(sprite.border * GraphicToCanvas(sprite));
+            _maskParameters.maskRectUV = Div(textureRect, textureSize);
+            _maskParameters.maskBorderUV = Div(Inset(ToVector(sprite.rect), sprite.border), textureSize);
+            _maskParameters.texture = sprite.texture;
+            _maskParameters.textureMode = spriteMode;
+        }
+
+        void CalculateEmpty() {
+            _maskParameters.texture = null;
+        }
+
+        float GraphicToCanvas(Sprite sprite) {
+            var canvasPPU = canvas ? canvas.referencePixelsPerUnit : 100;
+            var maskPPU = sprite ? sprite.pixelsPerUnit : 100;
+            return canvasPPU / maskPPU;
+        }
+
+        void ApplyToAllReplacements() {
+            for (int i = 0; i < _overrides.Count; ++i) {
+                var mat = _overrides[i].replacement;
+                if (mat)
+                    _maskParameters.Apply(mat);
+            }
         }
 
         static Vector3[] _corners = new Vector3[4];
@@ -225,97 +281,30 @@ namespace SoftMask {
                 return --_useCount == 0;
             }
         }
+        
+        struct MaskParameters {
+            public Vector4 maskRect;
+            public Vector4 maskBorder;
+            public Vector4 maskRectUV;
+            public Vector4 maskBorderUV;
+            public Texture texture;
+            public BorderMode textureMode;
 
-        public interface IImpl {
-            bool MaterialPropertiesChanged();
-            void ApplyMaterialProperties(Material mat);
-        }
-
-        [Serializable]
-        public class SpriteImpl : IImpl {
-            Sprite _explicitSprite;
-            bool _useExplicitSprite;
-
-            SoftMask _owner;
-            Sprite _appliedSprite;
-
-            Vector4 _maskRect;
-            Vector4 _maskBorder;
-            Vector4 _maskRectUV;
-            Vector4 _maskBorderUV;
-
-            public SpriteImpl(SoftMask owner) {
-                _owner = owner;
-            }
-
-            public SpriteImpl UsingExplicitSprite(Sprite sprite) {
-                _useExplicitSprite = true;
-                _explicitSprite = sprite;
-                return this;
-            }
-
-            public SpriteImpl UsingOwnerSprite() {
-                _useExplicitSprite = false;
-                _explicitSprite = null;
-                return this;
-            }
-
-            public bool MaterialPropertiesChanged() {
-                return _appliedSprite != sprite;
-            }
-
-            public void ApplyMaterialProperties(Material mat) {
-                if (sprite) {
-                    CalculateMaskRect();
-                    mat.SetTexture("_SoftMask", sprite.texture);
-                    mat.SetVector("_SoftMask_Rect", _maskRect);
-                    mat.SetVector("_SoftMask_UVRect", _maskRectUV);
-                    if (useBorder) {
+            public void Apply(Material mat) {
+                if (texture) {
+                    mat.SetTexture("_SoftMask", texture);
+                    mat.SetVector("_SoftMask_Rect", maskRect);
+                    mat.SetVector("_SoftMask_UVRect", maskRectUV);
+                    if (textureMode == BorderMode.Sliced) {
                         mat.EnableKeyword("SOFTMASK_USE_BORDER");
-                        mat.SetVector("_SoftMask_BorderRect", _maskBorder);
-                        mat.SetVector("_SoftMask_UVBorderRect", _maskBorderUV);
+                        mat.SetVector("_SoftMask_BorderRect", maskBorder);
+                        mat.SetVector("_SoftMask_UVBorderRect", maskBorderUV);
                     } else {
                         mat.DisableKeyword("SOFTMASK_USE_BORDER");
                     }
                 } else {
                     mat.SetTexture("_SoftMask", null);
                 }
-                
-                _appliedSprite = sprite;
-            }
-            
-            Sprite sprite { get { return _useExplicitSprite ? _explicitSprite : OwnerSprite(); } }
-            bool useBorder { get { return _useExplicitSprite ? _explicitSprite.border != Vector4.zero : OwnerUseBorder(); } }
-
-            Sprite OwnerSprite() {
-                var image = _owner.graphic as Image;
-                if (image)
-                    return image.overrideSprite ? image.overrideSprite : image.sprite;
-                return null;
-            }
-
-            bool OwnerUseBorder() {
-                var image = _owner.graphic as Image;
-                if (image)
-                    return (image.type == Image.Type.Tiled || image.type == Image.Type.Sliced) && image.hasBorder;
-                return false;
-            }
-
-            float graphicToCanvas {
-                get {
-                    var canvasPPU = _owner.canvas ? _owner.canvas.referencePixelsPerUnit : 100;
-                    var maskPPU = sprite ? sprite.pixelsPerUnit : 100;
-                    return canvasPPU / maskPPU;
-                }
-            }
-
-            void CalculateMaskRect() {
-                var textureRect = ToVector(sprite.textureRect);
-                var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
-                _maskRect = _owner.CanvasSpaceRect(Vector4.zero);
-                _maskBorder = _owner.CanvasSpaceRect(sprite.border * graphicToCanvas);
-                _maskRectUV = Div(textureRect, textureSize);
-                _maskBorderUV = Div(Inset(ToVector(sprite.rect), sprite.border), textureSize);
             }
         }
     }
