@@ -11,48 +11,61 @@ namespace SoftMask {
     [RequireComponent(typeof(RectTransform))]
     public class SoftMask : UIBehaviour {
         readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
-
-        [SerializeField] Shader _defaultMaskShader = null;
-        Shader _defaultMaskShader_actual;
-
+        
+        [SerializeField] public Shader defaultMaskShader = null;
+        [SerializeField] MaskSource _maskSource;
+        
+        IImpl _activeImpl;
+        SpriteImpl _spriteImpl;
         RectTransform _rectTransform;
-        Sprite _mask = null;
-        Sprite _mask_actual;
-        Vector3 _position_actual;
-        Quaternion _rotation_actual;
-        Vector3 _scale_actual;
+        Graphic _graphic;
+        Canvas _canvas;
+
+        Shader _appliedDefaultMaskShader;
+        Vector3 _appliedPosition;
+        Quaternion _appliedRotation;
+        Vector3 _appliedScale;
+        IImpl _appliedImpl;
         bool _rectTransformDimensionsChanged;
 
-        Vector4 _maskRect;
-        Vector4 _maskBorder;
-        Vector4 _maskRectUV;
-        Vector4 _maskBorderUV;
+        public enum MaskSource { Graphic }
 
-        Graphic _graphic;
-        Image _image;
+        public MaskSource maskSource {
+            get { return _maskSource; }
+            set {
+                if (_maskSource != value) {
+                    _maskSource = value;
+                    ActualizeImpl();
+                }
+            }
+        }
+
+        public bool isReady { get { return _activeImpl != null; } }
+
+        protected override void Start() {
+            base.Start();
+            ActualizeImpl();
+        }
 
         protected virtual void Update() {
             SpawnMaskablesInChildren();
-            if (_defaultMaskShader_actual != _defaultMaskShader) {
-                if (!_defaultMaskShader)
+            if (_appliedDefaultMaskShader != defaultMaskShader) {
+                if (!defaultMaskShader)
                     Debug.LogWarningFormat(this, "Mask may be not work because it's defaultMaskShader is set to null");
                 DestroyAllOverrides();
                 InvalidateChildren();
-                _defaultMaskShader_actual = _defaultMaskShader;
+                _appliedDefaultMaskShader = defaultMaskShader;
             }
-            if (image)
-                _mask = image.overrideSprite ? image.overrideSprite : image.sprite;
-            if (_mask_actual != _mask
-                    || _position_actual != transform.position
-                    || _rotation_actual != transform.rotation
-                    || _scale_actual != transform.lossyScale
+            if (_appliedPosition != transform.position
+                    || _appliedRotation != transform.rotation
+                    || _appliedScale != transform.lossyScale
+                    || _appliedImpl != _activeImpl
                     || _rectTransformDimensionsChanged) {
-                CalculateMask();
                 ApplyMaterialProperties();
-                _mask_actual = _mask;
-                _position_actual = transform.position;
-                _rotation_actual = transform.rotation;
-                _scale_actual = transform.lossyScale;
+                _appliedPosition = transform.position;
+                _appliedRotation = transform.rotation;
+                _appliedScale = transform.lossyScale;
+                _appliedImpl = _activeImpl;
                 _rectTransformDimensionsChanged = false;
             }
         }
@@ -68,16 +81,21 @@ namespace SoftMask {
         }
 
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
-
-        Image image { get { return _image ?? (_image = GetComponent<Image>()); } }
-
         Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
+        Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
+        SpriteImpl spriteImpl { get { return _spriteImpl ?? (_spriteImpl = new SpriteImpl(this)); } }
 
-        float graphicToCanvas {
-            get {
-                var canvasPPU = graphic ? graphic.canvas.referencePixelsPerUnit : 100;
-                var maskPPU = (_mask ? _mask.pixelsPerUnit : 100);
-                return canvasPPU / maskPPU;
+        void ActualizeImpl() {
+            _activeImpl = null;
+            switch (_maskSource) {
+                case MaskSource.Graphic: {
+                        var graphic = GetComponent<Graphic>();
+                        if (graphic is Image) {
+                            spriteImpl.explicitSprite = null;
+                            _activeImpl = spriteImpl;
+                        }
+                    }
+                    break;
             }
         }
 
@@ -130,7 +148,7 @@ namespace SoftMask {
 
         Material Replace(Material original) {
             if (original == null || original == Canvas.GetDefaultCanvasMaterial())
-                return _defaultMaskShader ? new Material(_defaultMaskShader) : null;
+                return defaultMaskShader ? new Material(defaultMaskShader) : null;
             else if (original == Canvas.GetDefaultCanvasTextMaterial())
                 throw new NotSupportedException();
             else if (original.HasProperty("_SoftMask"))
@@ -148,37 +166,23 @@ namespace SoftMask {
         }
 
         void ApplyMaterialProperties(Material mat) {
-            if (_mask)
-                mat.SetTexture("_SoftMask", _mask.texture);
-            mat.SetVector("_SoftMask_Rect", _maskRect);
-            mat.SetVector("_SoftMask_BorderRect", _maskBorder);
-            mat.SetVector("_SoftMask_UVRect", _maskRectUV);
-            mat.SetVector("_SoftMask_UVBorderRect", _maskBorderUV);
+            if (_activeImpl != null)
+                _activeImpl.ApplyMaterialProperties(mat);
         }
-
-        void CalculateMask() {
-            if (!_mask)
-                return;
-            var textureRect = ToVector(_mask.textureRect);
-            var textureSize = _mask.rect.size;
-            _maskRect = CanvasSpaceRect(rectTransform, Vector4.zero);
-            _maskBorder = CanvasSpaceRect(rectTransform, _mask.border * graphicToCanvas);
-            _maskRectUV = Div(textureRect, textureSize);
-            _maskBorderUV = Div(Inset(ToVector(_mask.rect), _mask.border), textureSize);
-        }
-
-        static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
-        static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
-        static Vector4 Inset(Vector4 v, Vector4 b) { return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w); }
 
         static Vector3[] _corners = new Vector3[4];
 
+        Vector4 CanvasSpaceRect(Vector4 border) { return CanvasSpaceRect(rectTransform, border); }
         Vector4 CanvasSpaceRect(RectTransform transform, Vector4 border) {
             transform.GetLocalCorners(_corners);
             _corners[0] = GetComponentInParent<Canvas>().transform.InverseTransformPoint(transform.TransformPoint(_corners[0] + new Vector3(border.x, border.y)));
             _corners[2] = GetComponentInParent<Canvas>().transform.InverseTransformPoint(transform.TransformPoint(_corners[2] - new Vector3(border.z, border.w)));
             return new Vector4(_corners[0].x, _corners[0].y, _corners[2].x, _corners[2].y);
         }
+
+        static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
+        static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
+        static Vector4 Inset(Vector4 v, Vector4 b) { return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w); }
 
         class MaterialOverride {
             int _useCount;
@@ -200,6 +204,73 @@ namespace SoftMask {
             public bool Release() {
                 Assert.IsTrue(_useCount > 0);
                 return --_useCount == 0;
+            }
+        }
+
+        public interface IImpl {
+            bool MaterialPropertiesChanged();
+            void ApplyMaterialProperties(Material mat);
+        }
+
+        [Serializable]
+        public class SpriteImpl : IImpl {
+            public Sprite explicitSprite;
+
+            SoftMask _owner;
+            Sprite _appliedSprite;
+
+            Vector4 _maskRect;
+            Vector4 _maskBorder;
+            Vector4 _maskRectUV;
+            Vector4 _maskBorderUV;
+
+            public SpriteImpl(SoftMask owner) {
+                _owner = owner;
+            }
+
+            public bool MaterialPropertiesChanged() {
+                return _appliedSprite != sprite;
+            }
+
+            public void ApplyMaterialProperties(Material mat) {
+                if (sprite) {
+                    CalculateMaskRect();
+                    mat.SetTexture("_SoftMask", sprite.texture);
+                    mat.SetVector("_SoftMask_Rect", _maskRect);
+                    mat.SetVector("_SoftMask_BorderRect", _maskBorder);
+                    mat.SetVector("_SoftMask_UVRect", _maskRectUV);
+                    mat.SetVector("_SoftMask_UVBorderRect", _maskBorderUV);
+                } else {
+                    mat.SetTexture("_SoftMask", null);
+                }
+                
+                _appliedSprite = sprite;
+            }
+            
+            Sprite sprite { get { return !ReferenceEquals(explicitSprite, null) ? explicitSprite : OwnerSprite(); } }
+
+            Sprite OwnerSprite() {
+                var image = _owner.graphic as Image;
+                if (image)
+                    return image.overrideSprite ? image.overrideSprite : image.sprite;
+                return null;
+            }
+
+            float graphicToCanvas {
+                get {
+                    var canvasPPU = _owner.canvas ? _owner.canvas.referencePixelsPerUnit : 100;
+                    var maskPPU = sprite ? sprite.pixelsPerUnit : 100;
+                    return canvasPPU / maskPPU;
+                }
+            }
+
+            void CalculateMaskRect() {
+                var textureRect = ToVector(sprite.textureRect);
+                var textureSize = sprite.rect.size;
+                _maskRect = _owner.CanvasSpaceRect(Vector4.zero);
+                _maskBorder = _owner.CanvasSpaceRect(sprite.border * graphicToCanvas);
+                _maskRectUV = Div(textureRect, textureSize);
+                _maskBorderUV = Div(Inset(ToVector(sprite.rect), sprite.border), textureSize);
             }
         }
     }
