@@ -269,9 +269,14 @@ namespace SoftMask {
                     CalculateMaskRect();
                     mat.SetTexture("_SoftMask", sprite.texture);
                     mat.SetVector("_SoftMask_Rect", _maskRect);
-                    mat.SetVector("_SoftMask_BorderRect", _maskBorder);
                     mat.SetVector("_SoftMask_UVRect", _maskRectUV);
-                    mat.SetVector("_SoftMask_UVBorderRect", _maskBorderUV);
+                    if (useBorder) {
+                        mat.EnableKeyword("SOFTMASK_USE_BORDER");
+                        mat.SetVector("_SoftMask_BorderRect", _maskBorder);
+                        mat.SetVector("_SoftMask_UVBorderRect", _maskBorderUV);
+                    } else {
+                        mat.DisableKeyword("SOFTMASK_USE_BORDER");
+                    }
                 } else {
                     mat.SetTexture("_SoftMask", null);
                 }
@@ -280,12 +285,20 @@ namespace SoftMask {
             }
             
             Sprite sprite { get { return _useExplicitSprite ? _explicitSprite : OwnerSprite(); } }
+            bool useBorder { get { return _useExplicitSprite ? _explicitSprite.border != Vector4.zero : OwnerUseBorder(); } }
 
             Sprite OwnerSprite() {
                 var image = _owner.graphic as Image;
                 if (image)
                     return image.overrideSprite ? image.overrideSprite : image.sprite;
                 return null;
+            }
+
+            bool OwnerUseBorder() {
+                var image = _owner.graphic as Image;
+                if (image)
+                    return (image.type == Image.Type.Tiled || image.type == Image.Type.Sliced) && image.hasBorder;
+                return false;
             }
 
             float graphicToCanvas {
@@ -298,7 +311,7 @@ namespace SoftMask {
 
             void CalculateMaskRect() {
                 var textureRect = ToVector(sprite.textureRect);
-                var textureSize = sprite.rect.size;
+                var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
                 _maskRect = _owner.CanvasSpaceRect(Vector4.zero);
                 _maskBorder = _owner.CanvasSpaceRect(sprite.border * graphicToCanvas);
                 _maskRectUV = Div(textureRect, textureSize);
