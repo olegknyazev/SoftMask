@@ -14,7 +14,7 @@ namespace SoftMask {
 
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (_mask) {
-                // We should find replacemnt first and only then Release a previous one.
+                // We should find replacement first and only then Release a previous one.
                 // It allows to not delete the old material if it may be reused.
                 var replacement = _mask.GetReplacement(baseMaterial);
                 material = replacement;
@@ -26,24 +26,20 @@ namespace SoftMask {
             }
             return baseMaterial;
         }
-
+        
         public void Invalidate() {
             graphic.SetMaterialDirty();
         }
 
-        protected override void Awake() {
-            base.Awake();
+        protected override void OnEnable() {
+            base.OnEnable();
             hideFlags = HideFlags.HideInInspector;
             mask = FindMask();
-        }
-
-        protected override void Start() {
-            base.Start();
             Invalidate();
         }
 
-        protected override void OnDestroy() {
-            base.OnDestroy();
+        protected override void OnDisable() {
+            base.OnDisable();
             mask = null;
         }
 

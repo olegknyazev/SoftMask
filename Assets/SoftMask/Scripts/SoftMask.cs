@@ -37,15 +37,10 @@ namespace SoftMask {
                     _maskSource = value;
                     ActualizeImpl();
                 }
-            }
+            } 
         }
 
         public bool isReady { get { return _activeImpl != null; } }
-
-        protected override void Start() {
-            base.Start();
-            ActualizeImpl();
-        }
 
         protected virtual void Update() {
             SpawnMaskablesInChildren();
@@ -70,8 +65,13 @@ namespace SoftMask {
             }
         }
 
-        protected override void OnDestroy() {
-            base.OnDestroy();
+        protected override void OnEnable() {
+            base.OnEnable();
+            ActualizeImpl();
+        }
+
+        protected override void OnDisable() {
+            base.OnDisable();
             DestroyAllOverrides();
         }
 
@@ -115,7 +115,7 @@ namespace SoftMask {
 
         // May return null.
         public Material GetReplacement(Material original) {
-            for (int i = 0; i < _overrides.Count; ++i) {
+            for (int i = 0; i < _overrides.Count; ++i) {  
                 var entry = _overrides[i];
                 if (entry.original == original)
                     return entry.Get();
