@@ -60,6 +60,10 @@ namespace SoftMask {
             }
         }
 
+        public bool maskingEnabled {
+            get { return isActiveAndEnabled; }
+        }
+
         protected virtual void LateUpdate() {
             SpawnMaskablesInChildren();
 
@@ -86,6 +90,9 @@ namespace SoftMask {
 
         protected override void OnEnable() {
             base.OnEnable();
+            // TODO it's a bit shitty: firstly we update all materials' parameters to the current state,
+            // and later, in LateUpdate(), to the actual state:
+            InvalidateChildren(); 
             _dirty = true;
         }
 
@@ -96,11 +103,11 @@ namespace SoftMask {
                 _graphic.UnregisterDirtyMaterialCallback(OnGraphicDirty);
                 _graphic = null;
             }
-            DestroyAllOverrides(); 
+            DestroyAllOverrides();
+            InvalidateChildren();
         }
         
         void OnGraphicDirty() {
-            print("OnGraphicDirty");
             if (isBasedOnGraphic)
                 _dirty = true;
         }
@@ -142,9 +149,11 @@ namespace SoftMask {
 
         // May return null.
         public Material GetReplacement(Material original) {
+            if (!maskingEnabled)
+                return original;
             for (int i = 0; i < _overrides.Count; ++i) {  
                 var entry = _overrides[i];
-                if (entry.original == original)
+                if (ReferenceEquals(entry.original, original))
                     return entry.Get();
             }
             var replacement = Replace(original);
@@ -162,6 +171,7 @@ namespace SoftMask {
                 if (entry.replacement == replacement)
                     if (entry.Release()) {
                         DestroyImmediate(replacement);
+                        _overrides.RemoveAt(i);
                         return;
                     }   
             }
@@ -174,9 +184,11 @@ namespace SoftMask {
         }
 
         Material Replace(Material original) {
-            if (original == null || original == Canvas.GetDefaultCanvasMaterial())
-                return _defaultMaskShader ? new Material(_defaultMaskShader) : null;
-            else if (original == Canvas.GetDefaultCanvasTextMaterial())
+            if (original == null || original.shader == Canvas.GetDefaultCanvasMaterial().shader) {
+                var replacement = _defaultMaskShader ? new Material(_defaultMaskShader) : null;
+                replacement.CopyPropertiesFromMaterial(original);
+                return replacement;
+            } else if (original.shader == Canvas.GetDefaultCanvasTextMaterial().shader)
                 throw new NotSupportedException();
             else if (original.HasProperty("_SoftMask"))
                 return new Material(original);
