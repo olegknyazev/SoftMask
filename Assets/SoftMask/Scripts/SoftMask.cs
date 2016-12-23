@@ -18,10 +18,6 @@ namespace SoftMask {
         [SerializeField] BorderMode _maskBorderMode;
 
         MaskParameters _maskParameters;
-
-        Vector3 _appliedPosition;
-        Quaternion _appliedRotation;
-        Vector3 _appliedScale;
         bool _dirty;
 
         public enum MaskSource { Graphic, Sprite }
@@ -75,15 +71,10 @@ namespace SoftMask {
                 }
             }
 
-            if (_appliedPosition != transform.position
-                    || _appliedRotation != transform.rotation
-                    || _appliedScale != transform.lossyScale
-                    || _dirty) {
+            if (transform.hasChanged || _dirty) {
                 CalculateMaskParameters();
                 ApplyToAllReplacements();
-                _appliedPosition = transform.position;
-                _appliedRotation = transform.rotation;
-                _appliedScale = transform.lossyScale;
+                transform.hasChanged = false;
                 _dirty = false;
             }
         }
