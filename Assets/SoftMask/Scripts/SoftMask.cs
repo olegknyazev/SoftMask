@@ -13,9 +13,9 @@ namespace SoftMask {
         readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
         
         [SerializeField] Shader _defaultMaskShader = null;
-        [SerializeField] MaskSource _maskSource;
-        [SerializeField] Sprite _maskSprite;
-        [SerializeField] BorderMode _maskBorderMode;
+        [SerializeField] MaskSource _maskSource = MaskSource.Graphic;
+        [SerializeField] Sprite _maskSprite = null;
+        [SerializeField] BorderMode _maskBorderMode = BorderMode.Simple;
 
         MaskParameters _maskParameters;
         bool _dirty;
@@ -60,6 +60,36 @@ namespace SoftMask {
             get { return isActiveAndEnabled; }
         }
 
+        // May return null.
+        public Material GetReplacement(Material original) {
+            if (!maskingEnabled)
+                return original;
+            for (int i = 0; i < _overrides.Count; ++i) {
+                var entry = _overrides[i];
+                if (ReferenceEquals(entry.original, original))
+                    return entry.Get();
+            }
+            var replacement = Replace(original);
+            if (replacement) {
+                replacement.hideFlags = HideFlags.HideAndDontSave;
+                _maskParameters.Apply(replacement);
+            }
+            _overrides.Add(new MaterialOverride(original, replacement));
+            return replacement;
+        }
+
+        public void ReleaseReplacement(Material replacement) {
+            for (int i = 0; i < _overrides.Count; ++i) {
+                var entry = _overrides[i];
+                if (entry.replacement == replacement)
+                    if (entry.Release()) {
+                        DestroyImmediate(replacement);
+                        _overrides.RemoveAt(i);
+                        return;
+                    }
+            }
+        }
+
         protected virtual void LateUpdate() {
             SpawnMaskablesInChildren();
 
@@ -98,11 +128,6 @@ namespace SoftMask {
             InvalidateChildren();
         }
         
-        void OnGraphicDirty() {
-            if (isBasedOnGraphic)
-                _dirty = true;
-        }
-
         protected override void OnRectTransformDimensionsChange() {
             base.OnRectTransformDimensionsChange();
             _dirty = true;
@@ -123,7 +148,12 @@ namespace SoftMask {
         Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
         
         bool isBasedOnGraphic { get { return _maskSource == MaskSource.Graphic; } }
-        
+
+        void OnGraphicDirty() {
+            if (isBasedOnGraphic)
+                _dirty = true;
+        }
+
         void SpawnMaskablesInChildren() {
             foreach (var g in transform.GetComponentsInChildren<Graphic>())
                 if (g.gameObject != gameObject)
@@ -137,37 +167,7 @@ namespace SoftMask {
                     maskable.Invalidate();
             }
         }
-
-        // May return null.
-        public Material GetReplacement(Material original) {
-            if (!maskingEnabled)
-                return original;
-            for (int i = 0; i < _overrides.Count; ++i) {  
-                var entry = _overrides[i];
-                if (ReferenceEquals(entry.original, original))
-                    return entry.Get();
-            }
-            var replacement = Replace(original);
-            if (replacement) {
-                replacement.hideFlags = HideFlags.HideAndDontSave;
-                _maskParameters.Apply(replacement);
-            }   
-            _overrides.Add(new MaterialOverride(original, replacement));
-            return replacement;
-        }
-
-        public void ReleaseReplacement(Material replacement) {
-            for (int i = 0; i < _overrides.Count; ++i) {
-                var entry = _overrides[i];
-                if (entry.replacement == replacement)
-                    if (entry.Release()) {
-                        DestroyImmediate(replacement);
-                        _overrides.RemoveAt(i);
-                        return;
-                    }   
-            }
-        }
-
+        
         void DestroyAllOverrides() {
             for (int i = 0; i < _overrides.Count; ++i)
                 DestroyImmediate(_overrides[i].replacement);
