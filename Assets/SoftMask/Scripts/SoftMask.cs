@@ -235,7 +235,9 @@ namespace SoftMask {
                 case Image.Type.Sliced: return BorderMode.Sliced;
                 case Image.Type.Tiled: return BorderMode.Tiled;
                 default:
-                    Debug.LogWarningFormat("FUCK THE HELL!!!"); // TODO
+                    Debug.LogWarningFormat(
+                        "Image.Type {0} isn't supported by SoftMask. Image.Type.Simple will be used.",
+                        imageType);
                     return BorderMode.Simple;
             }
         }
