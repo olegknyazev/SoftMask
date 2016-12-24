@@ -9,22 +9,22 @@ namespace SoftMask {
     public class SoftMaskable : UIBehaviour, IMaterialModifier {
         SoftMask _mask;
         Graphic _graphic;
+        Material _replacement;
         bool _warned;
-        Material _material;
 
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (_mask && _mask.isActiveAndEnabled) {
-                // We should find replacement first and only then Release a previous one.
-                // It allows to not delete the old material if it may be reused.
-                var replacement = _mask.GetReplacement(baseMaterial);
-                material = replacement;
-                if (material) {
+                // We should find new replacement first and only then Release() the previous 
+                // one. It allows us to not delete the old material if it may be reused.
+                var newMat = _mask.GetReplacement(baseMaterial);
+                replacement = newMat;
+                if (replacement) {
                     _warned = false;
-                    return material;
+                    return replacement;
                 }
                 WarnMaskingWillNotWork(baseMaterial);
             } else {
-                material = null;
+                replacement = null;
             }   
             return baseMaterial;
         }
@@ -60,13 +60,13 @@ namespace SoftMask {
 
         Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
 
-        Material material {
-            get { return _material; }
+        Material replacement {
+            get { return _replacement; }
             set {
-                if (_material != value) {
-                    if (_material && _mask)
-                        _mask.ReleaseReplacement(_material);
-                    _material = value;
+                if (_replacement != value) {
+                    if (_replacement && _mask)
+                        _mask.ReleaseReplacement(_replacement);
+                    _replacement = value;
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace SoftMask {
             set {
                 if (_mask != value) {
                     if (_mask)
-                        material = null;
+                        replacement = null;
                     _mask = value;
                     Invalidate();
                 }
