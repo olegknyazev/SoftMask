@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using SoftMask.Extensions;
 
 namespace SoftMask {
     [ExecuteInEditMode]
@@ -201,13 +201,12 @@ namespace SoftMask {
         }
 
         Material Replace(Material original) {
-            if (original == null || original.shader == Canvas.GetDefaultCanvasMaterial().shader) {
+            if (original == null || original.HasDefaultUIShader()) {
                 var replacement = _defaultMaskShader ? new Material(_defaultMaskShader) : null;
-                replacement.CopyPropertiesFromMaterial(original);
+                if (replacement && original)
+                    replacement.CopyPropertiesFromMaterial(original);
                 return replacement;
-            } else if (original.shader == Canvas.GetDefaultCanvasTextMaterial().shader)
-                throw new NotSupportedException();
-            else if (original.HasProperty("_SoftMask"))
+            } else if (original.SupportsSoftMask())
                 return new Material(original);
             else
                 return null;
