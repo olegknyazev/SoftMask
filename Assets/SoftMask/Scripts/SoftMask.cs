@@ -62,8 +62,7 @@ namespace SoftMask {
 
         // May return null.
         public Material GetReplacement(Material original) {
-            if (!maskingEnabled)
-                return original;
+            Assert.IsTrue(isActiveAndEnabled);
             for (int i = 0; i < _overrides.Count; ++i) {
                 var entry = _overrides[i];
                 if (ReferenceEquals(entry.original, original))
@@ -92,7 +91,6 @@ namespace SoftMask {
 
         protected virtual void LateUpdate() {
             SpawnMaskablesInChildren();
-
             if (!_graphic) {
                 _graphic = GetComponent<Graphic>();
                 if (_graphic) {
@@ -101,20 +99,14 @@ namespace SoftMask {
                 }
             }
 
-            if (transform.hasChanged || _dirty) {
-                CalculateMaskParameters();
-                ApplyToAllReplacements();
-                transform.hasChanged = false;
-                _dirty = false;
-            }
+            if (transform.hasChanged || _dirty)
+                UpdateMask();
         }
 
         protected override void OnEnable() {
             base.OnEnable();
-            // TODO it's a bit shitty: firstly we update all materials' parameters to the current state,
-            // and later, in LateUpdate(), to the actual state:
-            InvalidateChildren(); 
-            _dirty = true;
+            UpdateMask();
+            InvalidateChildren();
         }
 
         protected override void OnDisable() {
@@ -124,12 +116,22 @@ namespace SoftMask {
                 _graphic.UnregisterDirtyMaterialCallback(OnGraphicDirty);
                 _graphic = null;
             }
-            DestroyAllOverrides();
             InvalidateChildren();
+            DestroyAllOverrides();
         }
-        
+
+        protected override void OnDestroy() {
+            base.OnDestroy();
+            DestroyMaskablesInChildren();
+        }
+
         protected override void OnRectTransformDimensionsChange() {
             base.OnRectTransformDimensionsChange();
+            _dirty = true;
+        }
+
+        protected override void OnDidApplyAnimationProperties() {
+            base.OnDidApplyAnimationProperties();
             _dirty = true;
         }
 
@@ -154,11 +156,23 @@ namespace SoftMask {
                 _dirty = true;
         }
 
+        void UpdateMask() {
+            CalculateMaskParameters();
+            ApplyToAllReplacements();
+            transform.hasChanged = false;
+            _dirty = false;
+        }
+
         void SpawnMaskablesInChildren() {
             foreach (var g in transform.GetComponentsInChildren<Graphic>())
                 if (g.gameObject != gameObject)
                     if (!g.GetComponent<SoftMaskable>())
                         g.gameObject.AddComponent<SoftMaskable>();
+        }
+
+        void DestroyMaskablesInChildren() {
+            foreach (var m in transform.GetComponentsInChildren<SoftMaskable>())
+                DestroyImmediate(m);
         }
 
         void InvalidateChildren() {

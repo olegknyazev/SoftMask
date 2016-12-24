@@ -13,7 +13,7 @@ namespace SoftMask {
         Material _material;
 
         public Material GetModifiedMaterial(Material baseMaterial) {
-            if (_mask) {
+            if (_mask && _mask.isActiveAndEnabled) {
                 // We should find replacement first and only then Release a previous one.
                 // It allows to not delete the old material if it may be reused.
                 var replacement = _mask.GetReplacement(baseMaterial);
@@ -21,9 +21,11 @@ namespace SoftMask {
                 if (material) {
                     _warned = false;
                     return material;
-                }   
+                }
                 WarnMaskingWillNotWork(baseMaterial);
-            }
+            } else {
+                material = null;
+            }   
             return baseMaterial;
         }
         
@@ -31,11 +33,19 @@ namespace SoftMask {
             graphic.SetMaterialDirty();
         }
 
+        protected override void Awake() {
+            base.Awake();
+            hideFlags = HideFlags.HideInInspector;
+        }
+
+        protected virtual void Update() {
+            if (!mask)
+                DestroyImmediate(this);
+        }
+
         protected override void OnEnable() {
             base.OnEnable();
-            hideFlags = HideFlags.HideInInspector;
-            mask = FindMask();
-            Invalidate();
+            FindMask();
         }
 
         protected override void OnDisable() {
@@ -45,9 +55,7 @@ namespace SoftMask {
 
         protected override void OnTransformParentChanged() {
             base.OnTransformParentChanged();
-            mask = FindMask();
-            if (!mask)
-                DestroyImmediate(this);
+            FindMask();
         }
 
         Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
@@ -70,11 +78,15 @@ namespace SoftMask {
                     if (_mask)
                         material = null;
                     _mask = value;
+                    Invalidate();
                 }
             }
         }
 
-        SoftMask FindMask() { return GetComponentInParent<SoftMask>(); }
+        void FindMask() {
+            mask = GetComponentInParent<SoftMask>();
+            
+        }
 
         void WarnMaskingWillNotWork(Material material) {
             if (!_warned) {
