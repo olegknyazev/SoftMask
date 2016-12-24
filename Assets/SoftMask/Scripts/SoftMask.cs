@@ -10,6 +10,18 @@ namespace SoftMask {
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
     public class SoftMask : UIBehaviour {
+        //
+        // How it works:
+        //
+        // Soft Mask works by using special Shader when rendering child elements. That Shader
+        // samples Mask texture and multiplies the resulted color accordingly. To override
+        // Shader in child elements, SoftMask spawns invisible SoftMaskable components on them,
+        // on the fly. SoftMaskable is kept on the children elements while there is a SoftMask
+        // parent. When the parent is gone, SoftMaskable components are destroyed. When a child
+        // element is moved to another place in the hierarchy where is no SoftMask parent 
+        // present, it's SoftMaskable destroys itself.
+        //
+
         readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
         
         [SerializeField] Shader _defaultMaskShader = null;
