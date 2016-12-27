@@ -249,9 +249,11 @@ namespace SoftMask {
         }
         
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
+            var textureRectInFullRect = Div(NestedRectBorder(sprite.rect, sprite.textureRect), sprite.rect.size);
             var textureRect = ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
-            _maskParameters.maskRect = LocalSpaceRect(Vector4.zero);
+            var fullMaskRect = LocalSpaceRect(Vector4.zero);
+            _maskParameters.maskRect = Inset(fullMaskRect, Mul(textureRectInFullRect, Size(fullMaskRect)));
             _maskParameters.maskBorder = LocalSpaceRect(sprite.border * GraphicToCanvas(sprite));
             _maskParameters.maskRectUV = Div(textureRect, textureSize);
             _maskParameters.maskBorderUV = Inset(_maskParameters.maskRectUV, Div(sprite.border, textureSize));
@@ -304,8 +306,14 @@ namespace SoftMask {
 
         static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
         static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
+        static Vector4 Mul(Vector4 v, Vector2 s) { return new Vector4(v.x * s.x, v.y * s.y, v.z * s.x, v.w * s.y); }
         static Vector4 Inset(Vector4 v, Vector4 b) { return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w); }
+        static Vector2 Size(Vector4 r) { return new Vector2(r.z - r.x, r.w - r.y); }
 
+        static Vector4 NestedRectBorder(Rect outer, Rect inner) {
+            return new Vector4(inner.xMin - outer.xMin, inner.yMin - outer.yMin, outer.xMax - inner.xMax, outer.yMax - inner.yMax);
+        }
+        
         class MaterialOverride {
             int _useCount;
 
