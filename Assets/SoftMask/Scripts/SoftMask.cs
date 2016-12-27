@@ -243,7 +243,10 @@ namespace SoftMask {
         }
 
         void CalculateImageBased(Image image) {
-            CalculateSpriteBased(image.sprite, ToBorderMode(image.type));
+            if (image.sprite)
+                CalculateSpriteBased(image.sprite, ToBorderMode(image.type));
+            else
+                CalculateSolidFill();
         }
         
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
@@ -253,9 +256,19 @@ namespace SoftMask {
             _maskParameters.maskBorder = LocalSpaceRect(sprite.border * GraphicToCanvas(sprite));
             _maskParameters.maskRectUV = Div(textureRect, textureSize);
             _maskParameters.maskBorderUV = Div(Inset(ToVector(sprite.rect), sprite.border), textureSize);
-            _maskParameters.worldToMask = transform.worldToLocalMatrix * canvas.transform.localToWorldMatrix;
+            _maskParameters.worldToMask = WorldToMask();
             _maskParameters.texture = sprite.texture;
             _maskParameters.textureMode = spriteMode;
+        }
+
+        static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
+
+        void CalculateSolidFill() {
+            _maskParameters.maskRect = LocalSpaceRect(Vector4.zero);
+            _maskParameters.maskRectUV = DefaultRectUV;
+            _maskParameters.worldToMask = WorldToMask();
+            _maskParameters.texture = null;
+            _maskParameters.textureMode = BorderMode.Simple;
         }
 
         void CalculateEmpty() {
@@ -268,6 +281,10 @@ namespace SoftMask {
             return canvasPPU / maskPPU;
         }
 
+        Matrix4x4 WorldToMask() {
+            return transform.worldToLocalMatrix * canvas.transform.localToWorldMatrix;
+        }
+
         void ApplyToAllReplacements() {
             for (int i = 0; i < _overrides.Count; ++i) {
                 var mat = _overrides[i].replacement;
@@ -276,7 +293,7 @@ namespace SoftMask {
             }
         }
 
-        static Vector3[] _corners = new Vector3[4];
+        static readonly Vector3[] _corners = new Vector3[4];
 
         Vector4 LocalSpaceRect(Vector4 border) { return LocalSpaceRect(rectTransform, border); }
         Vector4 LocalSpaceRect(RectTransform transform, Vector4 border) {
@@ -323,21 +340,17 @@ namespace SoftMask {
             public BorderMode textureMode;
 
             public void Apply(Material mat) {
-                if (texture) {
-                    mat.SetTexture("_SoftMask", texture);
-                    mat.SetVector("_SoftMask_Rect", maskRect);
-                    mat.SetVector("_SoftMask_UVRect", maskRectUV);
-                    if (textureMode == BorderMode.Sliced) {
-                        mat.EnableKeyword("SOFTMASK_USE_BORDER");
-                        mat.SetVector("_SoftMask_BorderRect", maskBorder);
-                        mat.SetVector("_SoftMask_UVBorderRect", maskBorderUV);
-                    } else {
-                        mat.DisableKeyword("SOFTMASK_USE_BORDER");
-                    }
-                    mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
+                mat.SetTexture("_SoftMask", texture);
+                mat.SetVector("_SoftMask_Rect", maskRect);
+                mat.SetVector("_SoftMask_UVRect", maskRectUV);
+                if (textureMode == BorderMode.Sliced) {
+                    mat.EnableKeyword("SOFTMASK_USE_BORDER");
+                    mat.SetVector("_SoftMask_BorderRect", maskBorder);
+                    mat.SetVector("_SoftMask_UVBorderRect", maskBorderUV);
                 } else {
-                    mat.SetTexture("_SoftMask", null);
+                    mat.DisableKeyword("SOFTMASK_USE_BORDER");
                 }
+                mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
             }
         }
     }

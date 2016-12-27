@@ -1,6 +1,8 @@
 ﻿#ifndef SOFTMASK_INCLUDED
 #define SOFTMASK_INCLUDED
 
+#include "UnityUI.cginc"
+
     sampler2D _SoftMask;
     float4 _SoftMask_Rect;
     float4 _SoftMask_UVRect;
@@ -24,33 +26,34 @@
             return __SoftMask_Inset(x, x3, x4, u3, u4);
     }
 
-    float2 SoftMask_GetMaskUV(float2 worldPosition) {
+    float2 SoftMask_GetMaskUV(float2 maskPosition) {
         return
             float2(
                 __SoftMask_InsetWithBorder(
-                    worldPosition.x,
+                    maskPosition.x,
                     _SoftMask_Rect.x, _SoftMask_BorderRect.x, _SoftMask_BorderRect.z, _SoftMask_Rect.z,
                     _SoftMask_UVRect.x, _SoftMask_UVBorderRect.x, _SoftMask_UVBorderRect.z, _SoftMask_UVRect.z),
                 __SoftMask_InsetWithBorder(
-                    worldPosition.y,
+                    maskPosition.y,
                     _SoftMask_Rect.y, _SoftMask_BorderRect.y, _SoftMask_BorderRect.w, _SoftMask_Rect.w,
                     _SoftMask_UVRect.y, _SoftMask_UVBorderRect.y, _SoftMask_UVBorderRect.w, _SoftMask_UVRect.w));
     }
 #else
-    float2 SoftMask_GetMaskUV(float2 worldPosition) {
+    float2 SoftMask_GetMaskUV(float2 maskPosition) {
         return 
             float2(
-                __SoftMask_Inset(worldPosition.x, _SoftMask_Rect.x, _SoftMask_Rect.z, _SoftMask_UVRect.x, _SoftMask_UVRect.z),
-                __SoftMask_Inset(worldPosition.y, _SoftMask_Rect.y, _SoftMask_Rect.w, _SoftMask_UVRect.y, _SoftMask_UVRect.w));
+                __SoftMask_Inset(maskPosition.x, _SoftMask_Rect.x, _SoftMask_Rect.z, _SoftMask_UVRect.x, _SoftMask_UVRect.z),
+                __SoftMask_Inset(maskPosition.y, _SoftMask_Rect.y, _SoftMask_Rect.w, _SoftMask_UVRect.y, _SoftMask_UVRect.w));
     }
 #endif
 
     // Samples mask texture at given world position. It may be useful for debugging.
-    float4 SoftMask_GetMaskTexture(float2 worldPosition) {
-        return tex2D(_SoftMask, SoftMask_GetMaskUV(worldPosition));
+    float4 SoftMask_GetMaskTexture(float2 maskPosition) {
+        return tex2D(_SoftMask, SoftMask_GetMaskUV(maskPosition));
     }
 
-    float SoftMask_GetMask(float2 worldPosition) {
-        return SoftMask_GetMaskTexture(worldPosition).a;
+    float SoftMask_GetMask(float2 maskPosition) {
+        float2 uv = SoftMask_GetMaskUV(maskPosition);
+        return tex2D(_SoftMask, uv).a * UnityGet2DClipping(uv, float4(0, 0, 1, 1));
     }
 #endif
