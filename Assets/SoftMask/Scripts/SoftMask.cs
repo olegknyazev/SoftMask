@@ -249,14 +249,14 @@ namespace SoftMask {
         }
         
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
-            var textureRectInFullRect = Div(NestedRectBorder(sprite.rect, sprite.textureRect), sprite.rect.size);
+            var textureRectInFullRect = Div(BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
             var textureRect = ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
-            var fullMaskRect = LocalSpaceRect(Vector4.zero);
-            _maskParameters.maskRect = Inset(fullMaskRect, Mul(textureRectInFullRect, Size(fullMaskRect)));
-            _maskParameters.maskBorder = LocalSpaceRect(sprite.border * GraphicToCanvas(sprite));
+            var fullMaskRect = LocalRect(Vector4.zero);
+            _maskParameters.maskRect = ApplyBorder(fullMaskRect, Mul(textureRectInFullRect, Size(fullMaskRect)));
+            _maskParameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
             _maskParameters.maskRectUV = Div(textureRect, textureSize);
-            _maskParameters.maskBorderUV = Inset(_maskParameters.maskRectUV, Div(sprite.border, textureSize));
+            _maskParameters.maskBorderUV = ApplyBorder(_maskParameters.maskRectUV, Div(sprite.border, textureSize));
             _maskParameters.worldToMask = WorldToMask();
             _maskParameters.texture = sprite.texture;
             _maskParameters.textureMode = spriteMode;
@@ -265,7 +265,7 @@ namespace SoftMask {
         static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
 
         void CalculateSolidFill() {
-            _maskParameters.maskRect = LocalSpaceRect(Vector4.zero);
+            _maskParameters.maskRect = LocalRect(Vector4.zero);
             _maskParameters.maskRectUV = DefaultRectUV;
             _maskParameters.worldToMask = WorldToMask();
             _maskParameters.texture = null;
@@ -294,26 +294,23 @@ namespace SoftMask {
             }
         }
 
-        static readonly Vector3[] _corners = new Vector3[4];
-
-        Vector4 LocalSpaceRect(Vector4 border) { return LocalSpaceRect(rectTransform, border); }
-        Vector4 LocalSpaceRect(RectTransform transform, Vector4 border) {
-            transform.GetLocalCorners(_corners);
-            _corners[0] += new Vector3(border.x, border.y);
-            _corners[2] -= new Vector3(border.z, border.w);
-            return new Vector4(_corners[0].x, _corners[0].y, _corners[2].x, _corners[2].y);
+        Vector4 LocalRect(Vector4 border) {
+            return ApplyBorder(ToVector(rectTransform.rect), border);
         }
 
         static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
         static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
         static Vector4 Mul(Vector4 v, Vector2 s) { return new Vector4(v.x * s.x, v.y * s.y, v.z * s.x, v.w * s.y); }
-        static Vector4 Inset(Vector4 v, Vector4 b) { return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w); }
         static Vector2 Size(Vector4 r) { return new Vector2(r.z - r.x, r.w - r.y); }
 
-        static Vector4 NestedRectBorder(Rect outer, Rect inner) {
+        static Vector4 BorderOf(Rect outer, Rect inner) {
             return new Vector4(inner.xMin - outer.xMin, inner.yMin - outer.yMin, outer.xMax - inner.xMax, outer.yMax - inner.yMax);
         }
-        
+
+        static Vector4 ApplyBorder(Vector4 v, Vector4 b) {
+            return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w);
+        }
+
         class MaterialOverride {
             int _useCount;
 
