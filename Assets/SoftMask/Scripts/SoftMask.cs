@@ -260,6 +260,11 @@ namespace SoftMask {
             _maskParameters.worldToMask = WorldToMask();
             _maskParameters.texture = sprite.texture;
             _maskParameters.textureMode = spriteMode;
+            var textureCenter = ApplyBorder(ToVector(sprite.textureRect), sprite.border);
+            var xx = Size(textureCenter);
+            var rs = Size(_maskParameters.maskBorder);
+            var yy = new Vector2(rs.x / xx.x * GraphicToCanvas(sprite), rs.y / xx.y * GraphicToCanvas(sprite));
+            _maskParameters.tileRepeat = yy;
         }
 
         static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
@@ -339,6 +344,7 @@ namespace SoftMask {
             public Vector4 maskBorder;
             public Vector4 maskRectUV;
             public Vector4 maskBorderUV;
+            public Vector2 tileRepeat;
             public Matrix4x4 worldToMask;
             public Texture texture;
             public BorderMode textureMode;
@@ -347,12 +353,13 @@ namespace SoftMask {
                 mat.SetTexture("_SoftMask", texture);
                 mat.SetVector("_SoftMask_Rect", maskRect);
                 mat.SetVector("_SoftMask_UVRect", maskRectUV);
-                if (textureMode == BorderMode.Sliced) {
-                    mat.EnableKeyword("SOFTMASK_USE_BORDER");
+                mat.EnableKeyword("SOFTMASK_SLICED", textureMode == BorderMode.Sliced);
+                mat.EnableKeyword("SOFTMASK_TILED", textureMode == BorderMode.Tiled);
+                if (textureMode != BorderMode.Simple) {
                     mat.SetVector("_SoftMask_BorderRect", maskBorder);
                     mat.SetVector("_SoftMask_UVBorderRect", maskBorderUV);
-                } else {
-                    mat.DisableKeyword("SOFTMASK_USE_BORDER");
+                    if (textureMode == BorderMode.Tiled)
+                        mat.SetVector("_SoftMask_TileRepeat", tileRepeat);
                 }
                 mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
             }
