@@ -17,55 +17,49 @@
 #endif
 #ifdef SOFTMASK_TILED
     float2 _SoftMask_TileRepeat;
-#   define __SOFTMASK_REPEAT_PARAM , float repeat
-#   define __SOFTMASK_REPEAT_ARG , repeat
-#   define __SOFTMASK_REPEAT_NULL , 1
-#   define __SOFTMASK_REPEAT_APPLY(x) frac((x) * repeat)
-#   define __SOFTMASK_REPEAT_SEED(field) , _SoftMask_TileRepeat.field
-#else
-#   define __SOFTMASK_REPEAT_PARAM 
-#   define __SOFTMASK_REPEAT_ARG 
-#   define __SOFTMASK_REPEAT_NULL 
-#   define __SOFTMASK_REPEAT_APPLY(x) (x) 
-#   define __SOFTMASK_REPEAT_SEED(field)
 #endif
 
-    inline float __SoftMask_Inset(float x, float x1, float x2, float u1, float u2 __SOFTMASK_REPEAT_PARAM) {
-        return __SOFTMASK_REPEAT_APPLY((x - x1) / (x2 - x1)) * (u2 - u1) + u1;
+    inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2, float2 repeat) {
+        return frac((a - a1) / (a2 - a1) * repeat) * (u2 - u1) + u1;
     }
 
-#ifdef __SOFTMASK_USE_BORDER
-    inline float __SoftMask_InsetWithBorder(float x, float x1, float x2, float x3, float x4, float u1, float u2, float u3, float u4 __SOFTMASK_REPEAT_PARAM) {
-        if (x < x2)
-            return __SoftMask_Inset(x, x1, x2, u1, u2 __SOFTMASK_REPEAT_NULL);
-        else if (x < x3)
-            return __SoftMask_Inset(x, x2, x3, u2, u3 __SOFTMASK_REPEAT_ARG);
-        else
-            return __SoftMask_Inset(x, x3, x4, u3, u4 __SOFTMASK_REPEAT_NULL);
+    inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2) {
+        return (a - a1) / (a2 - a1) * (u2 - u1) + u1;
     }
-#endif
 
 #if defined(SOFTMASK_SLICED) || defined(SOFTMASK_TILED)
+#   if SOFTMASK_TILED
+#       define __SOFTMASK_REPEAT , _SoftMask_TileRepeat
+#   else
+#       define __SOFTMASK_REPEAT
+#   endif
+    inline float2 __SoftMask_XY2UV(
+            float2 a, 
+            float2 a1, float2 a2, float2 a3, float2 a4, 
+            float2 u1, float2 u2, float2 u3, float2 u4) {
+        float2 s1 = step(a2, a);
+        float2 s2 = step(a3, a);
+        float2 s1i = 1 - s1;
+        float2 s2i = 1 - s2;
+        return __SoftMask_Inset(a, a1, a2, u1, u2)                   * s1i * s2i
+             + __SoftMask_Inset(a, a2, a3, u2, u3 __SOFTMASK_REPEAT) * s1  * s2i
+             + __SoftMask_Inset(a, a3, a4, u3, u4)                   * s1  * s2;
+    }
+
     float2 SoftMask_GetMaskUV(float2 maskPosition) {
         return
-            float2(
-                __SoftMask_InsetWithBorder(
-                    maskPosition.x,
-                    _SoftMask_Rect.x, _SoftMask_BorderRect.x, _SoftMask_BorderRect.z, _SoftMask_Rect.z,
-                    _SoftMask_UVRect.x, _SoftMask_UVBorderRect.x, _SoftMask_UVBorderRect.z, _SoftMask_UVRect.z
-                    __SOFTMASK_REPEAT_SEED(x)),
-                __SoftMask_InsetWithBorder(
-                    maskPosition.y,
-                    _SoftMask_Rect.y, _SoftMask_BorderRect.y, _SoftMask_BorderRect.w, _SoftMask_Rect.w,
-                    _SoftMask_UVRect.y, _SoftMask_UVBorderRect.y, _SoftMask_UVBorderRect.w, _SoftMask_UVRect.w
-                    __SOFTMASK_REPEAT_SEED(y)));
+            __SoftMask_XY2UV(
+                maskPosition,
+                _SoftMask_Rect.xy, _SoftMask_BorderRect.xy, _SoftMask_BorderRect.zw, _SoftMask_Rect.zw,
+                _SoftMask_UVRect.xy, _SoftMask_UVBorderRect.xy, _SoftMask_UVBorderRect.zw, _SoftMask_UVRect.zw);
     }
+#   undef REPEAT
 #else
     float2 SoftMask_GetMaskUV(float2 maskPosition) {
         return 
-            float2(
-                __SoftMask_Inset(maskPosition.x, _SoftMask_Rect.x, _SoftMask_Rect.z, _SoftMask_UVRect.x, _SoftMask_UVRect.z),
-                __SoftMask_Inset(maskPosition.y, _SoftMask_Rect.y, _SoftMask_Rect.w, _SoftMask_UVRect.y, _SoftMask_UVRect.w));
+            __SoftMask_Inset(
+                maskPosition, 
+                _SoftMask_Rect.xy, _SoftMask_Rect.zw, _SoftMask_UVRect.xy, _SoftMask_UVRect.zw);
     }
 #endif
 
