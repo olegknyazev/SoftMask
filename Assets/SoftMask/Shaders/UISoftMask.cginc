@@ -8,6 +8,7 @@
     float4 _SoftMask_BorderRect;
     float4 _SoftMask_UVBorderRect;
 #endif
+    float4x4 _SoftMask_WorldToMask;
 
     float __SoftMask_Inset(float x, float x1, float x2, float u1, float u2) {
         return (x - x1) / (x2 - x1) * (u2 - u1) + u1;

@@ -76,6 +76,7 @@
                 fixed4 color : COLOR;
                 half2 texcoord : TEXCOORD0;
                 float4 worldPosition : TEXCOORD1;
+                float4 maskPosition : TEXCOORD2;
             };
 
             fixed4 _Color;
@@ -86,7 +87,8 @@
             {
                 v2f OUT;
                 OUT.worldPosition = IN.vertex;
-                OUT.vertex = mul(UNITY_MATRIX_MVP, OUT.worldPosition);
+                OUT.maskPosition = mul(_SoftMask_WorldToMask, IN.vertex);
+                OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
 
                 OUT.texcoord = IN.texcoord;
 
@@ -104,7 +106,7 @@
             {
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 
-                color.a *= SoftMask_GetMask(IN.worldPosition.xy);
+                color.a *= SoftMask_GetMask(IN.maskPosition.xy);
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 
             #ifdef UNITY_UI_ALPHACLIP

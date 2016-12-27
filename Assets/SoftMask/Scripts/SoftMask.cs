@@ -249,10 +249,11 @@ namespace SoftMask {
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
             var textureRect = ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
-            _maskParameters.maskRect = CanvasSpaceRect(Vector4.zero);
-            _maskParameters.maskBorder = CanvasSpaceRect(sprite.border * GraphicToCanvas(sprite));
+            _maskParameters.maskRect = LocalSpaceRect(Vector4.zero);
+            _maskParameters.maskBorder = LocalSpaceRect(sprite.border * GraphicToCanvas(sprite));
             _maskParameters.maskRectUV = Div(textureRect, textureSize);
             _maskParameters.maskBorderUV = Div(Inset(ToVector(sprite.rect), sprite.border), textureSize);
+            _maskParameters.worldToMask = transform.worldToLocalMatrix * canvas.transform.localToWorldMatrix;
             _maskParameters.texture = sprite.texture;
             _maskParameters.textureMode = spriteMode;
         }
@@ -277,11 +278,11 @@ namespace SoftMask {
 
         static Vector3[] _corners = new Vector3[4];
 
-        Vector4 CanvasSpaceRect(Vector4 border) { return CanvasSpaceRect(rectTransform, border); }
-        Vector4 CanvasSpaceRect(RectTransform transform, Vector4 border) {
+        Vector4 LocalSpaceRect(Vector4 border) { return LocalSpaceRect(rectTransform, border); }
+        Vector4 LocalSpaceRect(RectTransform transform, Vector4 border) {
             transform.GetLocalCorners(_corners);
-            _corners[0] = GetComponentInParent<Canvas>().transform.InverseTransformPoint(transform.TransformPoint(_corners[0] + new Vector3(border.x, border.y)));
-            _corners[2] = GetComponentInParent<Canvas>().transform.InverseTransformPoint(transform.TransformPoint(_corners[2] - new Vector3(border.z, border.w)));
+            _corners[0] += new Vector3(border.x, border.y);
+            _corners[2] -= new Vector3(border.z, border.w);
             return new Vector4(_corners[0].x, _corners[0].y, _corners[2].x, _corners[2].y);
         }
 
@@ -317,6 +318,7 @@ namespace SoftMask {
             public Vector4 maskBorder;
             public Vector4 maskRectUV;
             public Vector4 maskBorderUV;
+            public Matrix4x4 worldToMask;
             public Texture texture;
             public BorderMode textureMode;
 
@@ -332,6 +334,7 @@ namespace SoftMask {
                     } else {
                         mat.DisableKeyword("SOFTMASK_USE_BORDER");
                     }
+                    mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
                 } else {
                     mat.SetTexture("_SoftMask", null);
                 }
