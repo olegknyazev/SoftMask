@@ -254,7 +254,7 @@ namespace SoftMask {
             _maskParameters.maskRect = LocalSpaceRect(Vector4.zero);
             _maskParameters.maskBorder = LocalSpaceRect(sprite.border * GraphicToCanvas(sprite));
             _maskParameters.maskRectUV = Div(textureRect, textureSize);
-            _maskParameters.maskBorderUV = Div(Inset(ToVector(sprite.rect), sprite.border), textureSize);
+            _maskParameters.maskBorderUV = Inset(_maskParameters.maskRectUV, Div(sprite.border, textureSize));
             _maskParameters.worldToMask = WorldToMask();
             _maskParameters.texture = sprite.texture;
             _maskParameters.textureMode = spriteMode;
