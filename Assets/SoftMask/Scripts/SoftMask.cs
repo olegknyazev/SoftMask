@@ -156,7 +156,6 @@ namespace SoftMask {
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
 
         Graphic _graphic;
-        Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
 
         Canvas _canvas;
         Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
@@ -215,8 +214,8 @@ namespace SoftMask {
         void CalculateMaskParameters() {
             switch (_maskSource) {
                 case MaskSource.Graphic:
-                    if (graphic is Image)
-                        CalculateImageBased((Image)graphic);
+                    if (_graphic is Image)
+                        CalculateImageBased((Image)_graphic);
                     else
                         CalculateEmpty();
                     break;
