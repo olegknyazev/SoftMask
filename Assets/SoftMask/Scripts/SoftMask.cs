@@ -87,20 +87,14 @@ namespace SoftMask {
 
         protected virtual void LateUpdate() {
             SpawnMaskablesInChildren();
-            if (!_graphic) {
-                _graphic = GetComponent<Graphic>();
-                if (_graphic) {
-                    _graphic.RegisterDirtyVerticesCallback(OnGraphicDirty);
-                    _graphic.RegisterDirtyMaterialCallback(OnGraphicDirty);
-                }
-            }
-
+            FindGraphic();
             if (transform.hasChanged || _dirty)
                 UpdateMask();
         }
 
         protected override void OnEnable() {
             base.OnEnable();
+            FindGraphic();
             UpdateMask();
             InvalidateChildren();
         }
@@ -149,6 +143,16 @@ namespace SoftMask {
         void OnGraphicDirty() {
             if (isBasedOnGraphic)
                 _dirty = true;
+        }
+
+        void FindGraphic() {
+            if (!_graphic) {
+                _graphic = GetComponent<Graphic>();
+                if (_graphic) {
+                    _graphic.RegisterDirtyVerticesCallback(OnGraphicDirty);
+                    _graphic.RegisterDirtyMaterialCallback(OnGraphicDirty);
+                }
+            }
         }
 
         void UpdateMask() {
