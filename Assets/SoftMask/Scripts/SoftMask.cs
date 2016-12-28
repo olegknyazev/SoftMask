@@ -260,11 +260,8 @@ namespace SoftMask {
             _maskParameters.worldToMask = WorldToMask();
             _maskParameters.texture = sprite.texture;
             _maskParameters.textureMode = spriteMode;
-            var textureCenter = ApplyBorder(ToVector(sprite.textureRect), sprite.border);
-            var xx = Size(textureCenter);
-            var rs = Size(_maskParameters.maskBorder);
-            var yy = new Vector2(rs.x / xx.x * GraphicToCanvas(sprite), rs.y / xx.y * GraphicToCanvas(sprite));
-            _maskParameters.tileRepeat = yy;
+            if (spriteMode == BorderMode.Tiled)
+                _maskParameters.tileRepeat = MaskRepeat(sprite, _maskParameters.maskBorder);
         }
 
         static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
@@ -303,8 +300,14 @@ namespace SoftMask {
             return ApplyBorder(ToVector(rectTransform.rect), border);
         }
 
+        Vector2 MaskRepeat(Sprite sprite, Vector4 centralPart) {
+            var textureCenter = ApplyBorder(ToVector(sprite.textureRect), sprite.border);
+            return Div(Size(centralPart) * GraphicToCanvas(sprite), Size(textureCenter));
+        }
+
         static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
         static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
+        static Vector2 Div(Vector2 v, Vector2 s) { return new Vector2(v.x / s.x, v.y / s.y); }
         static Vector4 Mul(Vector4 v, Vector2 s) { return new Vector4(v.x * s.x, v.y * s.y, v.z * s.x, v.w * s.y); }
         static Vector2 Size(Vector4 r) { return new Vector2(r.z - r.x, r.w - r.y); }
 
@@ -353,6 +356,7 @@ namespace SoftMask {
                 mat.SetTexture("_SoftMask", texture);
                 mat.SetVector("_SoftMask_Rect", maskRect);
                 mat.SetVector("_SoftMask_UVRect", maskRectUV);
+                mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
                 mat.EnableKeyword("SOFTMASK_SLICED", textureMode == BorderMode.Sliced);
                 mat.EnableKeyword("SOFTMASK_TILED", textureMode == BorderMode.Tiled);
                 if (textureMode != BorderMode.Simple) {
@@ -361,7 +365,6 @@ namespace SoftMask {
                     if (textureMode == BorderMode.Tiled)
                         mat.SetVector("_SoftMask_TileRepeat", tileRepeat);
                 }
-                mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
             }
         }
     }
