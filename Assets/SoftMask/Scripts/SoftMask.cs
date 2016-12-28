@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,9 +20,9 @@ namespace SoftMask {
         // element is moved to another place in the hierarchy where is no SoftMask parent 
         // present, it's SoftMaskable destroys itself.
         //
-
-        readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
         
+        MaterialReplacements _materials;
+
         [SerializeField] Shader _defaultMaskShader = null;
         [SerializeField] MaskSource _maskSource = MaskSource.Graphic;
         [SerializeField] Sprite _maskSprite = null;
@@ -42,7 +41,7 @@ namespace SoftMask {
                     _defaultMaskShader = value;
                     if (!_defaultMaskShader)
                         Debug.LogWarningFormat(this, "Mask may be not work because it's defaultMaskShader is set to null");
-                    DestroyAllOverrides();
+                    DestroyMaterials();
                     InvalidateChildren();
                 }
             }
@@ -75,30 +74,16 @@ namespace SoftMask {
         // May return null.
         public Material GetReplacement(Material original) {
             Assert.IsTrue(isActiveAndEnabled);
-            for (int i = 0; i < _overrides.Count; ++i) {
-                var entry = _overrides[i];
-                if (ReferenceEquals(entry.original, original))
-                    return entry.Get();
-            }
-            var replacement = Replace(original);
-            if (replacement) {
-                replacement.hideFlags = HideFlags.HideAndDontSave;
-                _maskParameters.Apply(replacement);
-            }
-            _overrides.Add(new MaterialOverride(original, replacement));
-            return replacement;
+            return _materials.Get(original);
         }
 
         public void ReleaseReplacement(Material replacement) {
-            for (int i = 0; i < _overrides.Count; ++i) {
-                var entry = _overrides[i];
-                if (entry.replacement == replacement)
-                    if (entry.Release()) {
-                        DestroyImmediate(replacement);
-                        _overrides.RemoveAt(i);
-                        return;
-                    }
-            }
+            _materials.Release(replacement);
+        }
+
+        protected override void Awake() {
+            base.Awake();
+            _materials = new MaterialReplacements(Replace, m => _maskParameters.Apply(m));
         }
 
         protected virtual void LateUpdate() {
@@ -129,7 +114,7 @@ namespace SoftMask {
                 _graphic = null;
             }
             InvalidateChildren();
-            DestroyAllOverrides();
+            DestroyMaterials();
         }
 
         protected override void OnDestroy() {
@@ -169,7 +154,7 @@ namespace SoftMask {
 
         void UpdateMask() {
             CalculateMaskParameters();
-            ApplyToAllReplacements();
+            _materials.ApplyAll();
             transform.hasChanged = false;
             _dirty = false;
         }
@@ -187,16 +172,13 @@ namespace SoftMask {
         }
 
         void InvalidateChildren() {
-            foreach (var maskable in transform.GetComponentsInChildren<SoftMaskable>()) {
+            foreach (var maskable in transform.GetComponentsInChildren<SoftMaskable>())
                 if (maskable)
                     maskable.Invalidate();
-            }
         }
         
-        void DestroyAllOverrides() {
-            for (int i = 0; i < _overrides.Count; ++i)
-                DestroyImmediate(_overrides[i].replacement);
-            _overrides.Clear();
+        void DestroyMaterials() {
+            _materials.DestroyAllAndClear();
         }
 
         Material Replace(Material original) {
@@ -288,14 +270,6 @@ namespace SoftMask {
             return transform.worldToLocalMatrix * canvas.transform.localToWorldMatrix;
         }
 
-        void ApplyToAllReplacements() {
-            for (int i = 0; i < _overrides.Count; ++i) {
-                var mat = _overrides[i].replacement;
-                if (mat)
-                    _maskParameters.Apply(mat);
-            }
-        }
-
         Vector4 LocalRect(Vector4 border) {
             return ApplyBorder(ToVector(rectTransform.rect), border);
         }
@@ -319,29 +293,6 @@ namespace SoftMask {
             return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w);
         }
 
-        class MaterialOverride {
-            int _useCount;
-
-            public MaterialOverride(Material original, Material replacement) {
-                this.original = original;
-                this.replacement = replacement;
-                _useCount = 1;
-            }
-
-            public Material original { get; private set; }
-            public Material replacement { get; private set; }
-
-            public Material Get() {
-                ++_useCount;
-                return replacement;
-            }
-
-            public bool Release() {
-                Assert.IsTrue(_useCount > 0);
-                return --_useCount == 0;
-            }
-        }
-        
         struct MaskParameters {
             public Vector4 maskRect;
             public Vector4 maskBorder;
