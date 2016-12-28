@@ -31,7 +31,11 @@ namespace SoftMask {
         MaskParameters _maskParameters;
         bool _dirty;
 
-        public enum MaskSource { Graphic, Sprite }
+        public SoftMask() {
+            _materials = new MaterialReplacements(Replace, m => _maskParameters.Apply(m));
+        }
+
+        public enum MaskSource { Graphic, Sprite, Texture }
         public enum BorderMode { Simple, Sliced, Tiled }
 
         public Shader defaultMaskShader {
@@ -79,11 +83,6 @@ namespace SoftMask {
 
         public void ReleaseReplacement(Material replacement) {
             _materials.Release(replacement);
-        }
-
-        protected override void Awake() {
-            base.Awake();
-            _materials = new MaterialReplacements(Replace, m => _maskParameters.Apply(m));
         }
 
         protected virtual void LateUpdate() {
