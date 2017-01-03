@@ -18,8 +18,12 @@ namespace SoftMask {
         public Material Get(Material original) {
             for (int i = 0; i < _overrides.Count; ++i) {
                 var entry = _overrides[i];
-                if (ReferenceEquals(entry.original, original))
-                    return entry.Get();
+                if (ReferenceEquals(entry.original, original)) {
+                    var existing = entry.Get();
+                    existing.CopyPropertiesFromMaterial(original);
+                    _applyParameters(existing);
+                    return existing;
+                }   
             }
             var replacement = _replace(original);
             if (replacement) {
