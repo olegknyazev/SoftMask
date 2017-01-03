@@ -11,6 +11,7 @@
     float4 _SoftMask_Rect;
     float4 _SoftMask_UVRect;
     float4x4 _SoftMask_WorldToMask;
+    float4 _SoftMask_ChannelWeights;
 #ifdef __SOFTMASK_USE_BORDER
     float4 _SoftMask_BorderRect;
     float4 _SoftMask_UVBorderRect;
@@ -70,6 +71,7 @@
 
     float SoftMask_GetMask(float2 maskPosition) {
         float2 uv = SoftMask_GetMaskUV(maskPosition);
-        return tex2D(_SoftMask, uv).a * UnityGet2DClipping(maskPosition, _SoftMask_Rect);
+        float4 mask = tex2D(_SoftMask, uv) * _SoftMask_ChannelWeights;
+        return (mask.r + mask.g + mask.b + mask.a) * UnityGet2DClipping(maskPosition, _SoftMask_Rect);
     }
 #endif

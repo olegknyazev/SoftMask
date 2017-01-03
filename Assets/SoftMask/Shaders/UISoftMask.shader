@@ -8,9 +8,11 @@
         // Soft Mask support
         _SoftMask("Mask", 2D) = "white" {}
         _SoftMask_Rect("Mask Rect", Vector) = (0,0,0,0)
-        _SoftMask_BorderRect("Mask Border", Vector) = (0,0,0,0)
         _SoftMask_UVRect("Mask UV Rect", Vector) = (0,0,1,1)
+        _SoftMask_BorderRect("Mask Border", Vector) = (0,0,0,0)
         _SoftMask_UVBorderRect("Mask UV Border", Vector) = (0,0,1,1)
+        _SoftMask_ChannelWeights("Mask Channel Weights", Vector) = (0,0,0,1)
+        _SoftMask_TileRepeat("Mask Tile Repeat", Vector) = (1,1,0,0)
 
         _StencilComp("Stencil Comparison", Float) = 8
         _Stencil("Stencil ID", Float) = 0

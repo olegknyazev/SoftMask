@@ -6,6 +6,14 @@ using UnityEngine.UI;
 using SoftMask.Extensions;
 
 namespace SoftMask {
+    public static class MaskChannel {
+        public static Color alpha   = new Color(0, 0, 0, 1);
+        public static Color red     = new Color(1, 0, 0, 0);
+        public static Color green   = new Color(0, 1, 0, 0);
+        public static Color blue    = new Color(0, 0, 1, 0);
+        public static Color gray    = new Color(1, 1, 1, 0) / 3.0f;
+    }
+
     [ExecuteInEditMode]
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
@@ -27,6 +35,7 @@ namespace SoftMask {
         [SerializeField] Sprite _maskSprite = null;
         [SerializeField] BorderMode _maskBorderMode = BorderMode.Simple;
         [SerializeField] Texture2D _maskTexture = null;
+        [SerializeField] Color _maskChannelWeights = MaskChannel.alpha;
 
         MaterialReplacements _materials;
         MaskParameters _maskParameters;
@@ -36,8 +45,8 @@ namespace SoftMask {
             _materials = new MaterialReplacements(Replace, m => _maskParameters.Apply(m));
         }
 
-        public enum MaskSource { Graphic, Sprite, Texture }
-        public enum BorderMode { Simple, Sliced, Tiled }
+        [Serializable] public enum MaskSource { Graphic, Sprite, Texture }
+        [Serializable] public enum BorderMode { Simple, Sliced, Tiled }
 
         public Shader defaultMaskShader {
             get { return _defaultMaskShader; }
@@ -77,6 +86,16 @@ namespace SoftMask {
             set {
                 if (_maskTexture != value) {
                     _maskTexture = value;
+                    _dirty = true;
+                }
+            }
+        }
+
+        public Color maskChannelWeights {
+            get { return _maskChannelWeights; }
+            set {
+                if (_maskChannelWeights != value) {
+                    _maskChannelWeights = value;
                     _dirty = true;
                 }
             }
@@ -255,6 +274,7 @@ namespace SoftMask {
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
+            CalculateCommonParameters();
             var textureRectInFullRect = Div(BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
             var textureRect = ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
@@ -263,7 +283,6 @@ namespace SoftMask {
             _maskParameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
             _maskParameters.maskRectUV = Div(textureRect, textureSize);
             _maskParameters.maskBorderUV = ApplyBorder(_maskParameters.maskRectUV, Div(sprite.border, textureSize));
-            _maskParameters.worldToMask = WorldToMask();
             _maskParameters.texture = sprite.texture;
             _maskParameters.textureMode = spriteMode;
             if (spriteMode == BorderMode.Tiled)
@@ -273,15 +292,20 @@ namespace SoftMask {
         static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
 
         void CalculateTextureBased(Texture2D texture) {
+            CalculateCommonParameters();
             _maskParameters.maskRect = LocalRect(Vector4.zero);
             _maskParameters.maskRectUV = DefaultRectUV;
-            _maskParameters.worldToMask = WorldToMask();
             _maskParameters.texture = texture;
             _maskParameters.textureMode = BorderMode.Simple;
         }
 
         void CalculateSolidFill() {
             CalculateTextureBased(null);
+        }
+
+        void CalculateCommonParameters() {
+            _maskParameters.worldToMask = WorldToMask();
+            _maskParameters.maskChannelWeights = _maskChannelWeights;
         }
 
         float GraphicToCanvas(Sprite sprite) {
@@ -323,6 +347,7 @@ namespace SoftMask {
             public Vector4 maskRectUV;
             public Vector4 maskBorderUV;
             public Vector2 tileRepeat;
+            public Color maskChannelWeights;
             public Matrix4x4 worldToMask;
             public Texture texture;
             public BorderMode textureMode;
@@ -333,6 +358,7 @@ namespace SoftMask {
                 mat.SetTexture("_SoftMask", activeTexture);
                 mat.SetVector("_SoftMask_Rect", maskRect);
                 mat.SetVector("_SoftMask_UVRect", maskRectUV);
+                mat.SetColor("_SoftMask_ChannelWeights", maskChannelWeights);
                 mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
                 mat.EnableKeyword("SOFTMASK_SLICED", textureMode == BorderMode.Sliced);
                 mat.EnableKeyword("SOFTMASK_TILED", textureMode == BorderMode.Tiled);
