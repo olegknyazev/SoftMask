@@ -215,7 +215,7 @@ namespace SoftMask {
                     else if (_graphic is RawImage)
                         CalculateRawImageBased((RawImage)_graphic);
                     else
-                        CalculateEmpty();
+                        CalculateSolidFill();
                     break;
                 case MaskSource.Sprite:
                     CalculateSpriteBased(_maskSprite, _maskBorderMode);
@@ -225,7 +225,7 @@ namespace SoftMask {
                     break;
                 default:
                     Debug.LogWarningFormat("Unknown MaskSource: {0}", _maskSource);
-                    CalculateEmpty();
+                    CalculateSolidFill();
                     break;
             }
         }
@@ -250,8 +250,8 @@ namespace SoftMask {
                 CalculateSolidFill();
         }
 
-        void CalculateRawImageBased(RawImage _graphic) {
-            throw new NotImplementedException();
+        void CalculateRawImageBased(RawImage image) {
+            CalculateTextureBased(image.texture as Texture2D);
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
@@ -270,6 +270,8 @@ namespace SoftMask {
                 _maskParameters.tileRepeat = MaskRepeat(sprite, _maskParameters.maskBorder);
         }
 
+        static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
+
         void CalculateTextureBased(Texture2D texture) {
             _maskParameters.maskRect = LocalRect(Vector4.zero);
             _maskParameters.maskRectUV = DefaultRectUV;
@@ -278,18 +280,8 @@ namespace SoftMask {
             _maskParameters.textureMode = BorderMode.Simple;
         }
 
-        static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
-
         void CalculateSolidFill() {
-            _maskParameters.maskRect = LocalRect(Vector4.zero);
-            _maskParameters.maskRectUV = DefaultRectUV;
-            _maskParameters.worldToMask = WorldToMask();
-            _maskParameters.texture = null;
-            _maskParameters.textureMode = BorderMode.Simple;
-        }
-
-        void CalculateEmpty() {
-            _maskParameters.texture = null;
+            CalculateTextureBased(null);
         }
 
         float GraphicToCanvas(Sprite sprite) {
