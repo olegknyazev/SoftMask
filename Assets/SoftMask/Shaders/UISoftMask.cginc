@@ -3,6 +3,16 @@
 
 #include "UnityUI.cginc"
 
+// Use it in structure that is passed from vertex to fragment shader.
+//   idx    Number of interpolator to use. Specify first free TEXCOORD index.
+#define SOFT_MASK_COORDS(idx) float4 maskPosition : TEXCOORD ## idx;
+
+// Use it in vertex shader to calculate mask-related data.
+//   pos    Source vertex position that was passed to vertex shader
+//   out_   Instance of an output structure that will be passed to fragment shader.
+//          It should be of type to which SOFT_MASK_COORDS() was added. 
+#define SOFT_MASK_CALCULATE_COORDS(out_, pos) (out_).maskPosition = mul(_SoftMask_WorldToMask, pos);
+
 #if defined(SOFTMASK_SLICED) || defined(SOFTMASK_TILED)
 #   define __SOFTMASK_USE_BORDER
 #endif
