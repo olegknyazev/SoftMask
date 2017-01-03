@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -20,14 +21,14 @@ namespace SoftMask {
         // element is moved to another place in the hierarchy where is no SoftMask parent 
         // present, it's SoftMaskable destroys itself.
         //
-        
-        MaterialReplacements _materials;
 
         [SerializeField] Shader _defaultMaskShader = null;
         [SerializeField] MaskSource _maskSource = MaskSource.Graphic;
         [SerializeField] Sprite _maskSprite = null;
         [SerializeField] BorderMode _maskBorderMode = BorderMode.Simple;
+        [SerializeField] Texture2D _maskTexture = null;
 
+        MaterialReplacements _materials;
         MaskParameters _maskParameters;
         bool _dirty;
 
@@ -66,6 +67,16 @@ namespace SoftMask {
             set {
                 if (_maskSprite != value) {
                     _maskSprite = value;
+                    _dirty = true;
+                }
+            }
+        }
+
+        public Texture2D maskTexture {
+            get { return _maskTexture; }
+            set {
+                if (_maskTexture != value) {
+                    _maskTexture = value;
                     _dirty = true;
                 }
             }
@@ -139,7 +150,7 @@ namespace SoftMask {
         Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
         
         bool isBasedOnGraphic { get { return _maskSource == MaskSource.Graphic; } }
-
+        
         void OnGraphicDirty() {
             if (isBasedOnGraphic)
                 _dirty = true;
@@ -201,13 +212,19 @@ namespace SoftMask {
                 case MaskSource.Graphic:
                     if (_graphic is Image)
                         CalculateImageBased((Image)_graphic);
+                    else if (_graphic is RawImage)
+                        CalculateRawImageBased((RawImage)_graphic);
                     else
                         CalculateEmpty();
                     break;
                 case MaskSource.Sprite:
                     CalculateSpriteBased(_maskSprite, _maskBorderMode);
                     break;
+                case MaskSource.Texture:
+                    CalculateTextureBased(_maskTexture);
+                    break;
                 default:
+                    Debug.LogWarningFormat("Unknown MaskSource: {0}", _maskSource);
                     CalculateEmpty();
                     break;
             }
@@ -232,7 +249,11 @@ namespace SoftMask {
             else
                 CalculateSolidFill();
         }
-        
+
+        void CalculateRawImageBased(RawImage _graphic) {
+            throw new NotImplementedException();
+        }
+
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
             var textureRectInFullRect = Div(BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
             var textureRect = ToVector(sprite.textureRect);
@@ -247,6 +268,14 @@ namespace SoftMask {
             _maskParameters.textureMode = spriteMode;
             if (spriteMode == BorderMode.Tiled)
                 _maskParameters.tileRepeat = MaskRepeat(sprite, _maskParameters.maskBorder);
+        }
+
+        void CalculateTextureBased(Texture2D texture) {
+            _maskParameters.maskRect = LocalRect(Vector4.zero);
+            _maskParameters.maskRectUV = DefaultRectUV;
+            _maskParameters.worldToMask = WorldToMask();
+            _maskParameters.texture = texture;
+            _maskParameters.textureMode = BorderMode.Simple;
         }
 
         static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
@@ -306,8 +335,10 @@ namespace SoftMask {
             public Texture texture;
             public BorderMode textureMode;
 
+            public Texture activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
+
             public void Apply(Material mat) {
-                mat.SetTexture("_SoftMask", texture);
+                mat.SetTexture("_SoftMask", activeTexture);
                 mat.SetVector("_SoftMask_Rect", maskRect);
                 mat.SetVector("_SoftMask_UVRect", maskRectUV);
                 mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
