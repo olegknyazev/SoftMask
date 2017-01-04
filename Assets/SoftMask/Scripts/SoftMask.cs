@@ -35,6 +35,7 @@ namespace SoftMask {
         [SerializeField] Sprite _sprite = null;
         [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
         [SerializeField] Texture2D _texture = null;
+        [SerializeField] Rect _textureRect = DefaultRectUV;
         [SerializeField] Color _channelWeights = MaskChannel.alpha;
 
         MaterialReplacements _materials;
@@ -86,6 +87,16 @@ namespace SoftMask {
             set {
                 if (_texture != value) {
                     _texture = value;
+                    _dirty = true;
+                }
+            }
+        }
+
+        public Rect textureUVRect {
+            get { return _textureRect; }
+            set {
+                if (_textureRect != value) {
+                    _textureRect = value;
                     _dirty = true;
                 }
             }
@@ -160,7 +171,7 @@ namespace SoftMask {
             _dirty = true;
         }
 
-        static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
+        static readonly Rect DefaultRectUV = new Rect(0, 0, 1, 1);
 
         RectTransform _rectTransform;
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
@@ -242,7 +253,7 @@ namespace SoftMask {
                     CalculateSpriteBased(_sprite, _spriteBorderMode);
                     break;
                 case MaskSource.Texture:
-                    CalculateTextureBased(_texture);
+                    CalculateTextureBased(_texture, _textureRect);
                     break;
                 default:
                     Debug.LogWarningFormat("Unknown MaskSource: {0}", _source);
@@ -271,7 +282,7 @@ namespace SoftMask {
 
         void CalculateRawImageBased(RawImage image) {
             Assert.IsNotNull(image);
-            CalculateTextureBased(image.texture as Texture2D);
+            CalculateTextureBased(image.texture as Texture2D, image.uvRect);
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
@@ -294,16 +305,16 @@ namespace SoftMask {
                 _parameters.tileRepeat = MaskRepeat(sprite, _parameters.maskBorder);
         }
 
-        void CalculateTextureBased(Texture2D texture) {
+        void CalculateTextureBased(Texture2D texture, Rect uvRect) {
             FillCommonParameters();
             _parameters.maskRect = LocalRect(Vector4.zero);
-            _parameters.maskRectUV = DefaultRectUV;
+            _parameters.maskRectUV = ToVector(uvRect);
             _parameters.texture = texture;
             _parameters.textureMode = BorderMode.Simple;
         }
 
         void CalculateSolidFill() {
-            CalculateTextureBased(null);
+            CalculateTextureBased(null, DefaultRectUV);
         }
 
         void FillCommonParameters() {

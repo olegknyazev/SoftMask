@@ -11,6 +11,7 @@ namespace SoftMask.Editor {
         SerializedProperty _sprite;
         SerializedProperty _spriteBorderMode;
         SerializedProperty _texture;
+        SerializedProperty _textureRect;
         SerializedProperty _channelWeights;
 
         bool _customWeightsExpanded;
@@ -29,11 +30,13 @@ namespace SoftMask.Editor {
             _sprite = serializedObject.FindProperty("_sprite");
             _spriteBorderMode = serializedObject.FindProperty("_spriteBorderMode");
             _texture = serializedObject.FindProperty("_texture");
+            _textureRect = serializedObject.FindProperty("_textureRect");
             _channelWeights = serializedObject.FindProperty("_channelWeights");
             Assert.IsNotNull(_source);
             Assert.IsNotNull(_sprite);
             Assert.IsNotNull(_spriteBorderMode);
             Assert.IsNotNull(_texture);
+            Assert.IsNotNull(_textureRect);
             Assert.IsNotNull(_channelWeights);
         }
 
@@ -50,6 +53,7 @@ namespace SoftMask.Editor {
                         break;
                     case SoftMask.MaskSource.Texture:
                         EditorGUILayout.PropertyField(_texture);
+                        EditorGUILayout.PropertyField(_textureRect);
                         break;
                 }
             });
