@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace SoftMask.Editor {
@@ -13,10 +14,8 @@ namespace SoftMask.Editor {
 
         public static void ChannelWeights(GUIContent label, SerializedProperty weightsProp, ref bool customWeightsExpanded) {
             var rect = GUILayoutUtility.GetRect(GUIContent.none, EditorStyles.popup);
-            if (customWeightsExpanded) {
-                var secondLine = GUILayoutUtility.GetRect(GUIContent.none, EditorStyles.textField);
-                rect.max = secondLine.max;
-            }   
+            if (customWeightsExpanded)
+                rect.max = GUILayoutUtility.GetRect(GUIContent.none, EditorStyles.textField).max;
             ChannelWeights(rect, label, weightsProp, ref customWeightsExpanded);
         }
 
@@ -35,24 +34,26 @@ namespace SoftMask.Editor {
         }
 
         static void ChannelWeights(Rect rect, GUIContent label, SerializedProperty weightsProp, ref bool customWeightsExpanded) {
+            var firstLineStyle = EditorStyles.popup;
+            var secondLineStyle = EditorStyles.textField;
             var wasExpanded = customWeightsExpanded;
             var knownChannel =
                 wasExpanded
                     ? KnownMaskChannel.Custom
                     : KnownChannel(weightsProp.colorValue);
-            label = EditorGUI.BeginProperty((Rect)rect, label, weightsProp);
+            label = EditorGUI.BeginProperty(rect, label, weightsProp);
             EditorGUI.BeginChangeCheck();
             if (wasExpanded)
-                rect.height = EditorStyles.popup.CalcSize(label).y;
-            knownChannel = (KnownMaskChannel)EditorGUI.EnumPopup((Rect)rect, label, knownChannel);
+                rect.height = HeightOf(firstLineStyle);
+            knownChannel = (KnownMaskChannel)EditorGUI.EnumPopup(rect, label, knownChannel);
             customWeightsExpanded = knownChannel == KnownMaskChannel.Custom;
             var weights = Weights(knownChannel, weightsProp.colorValue);
             if (wasExpanded) {
-                rect.y += rect.height + Mathf.Max(EditorStyles.popup.margin.bottom, EditorStyles.textField.margin.top);
-                rect.height = EditorStyles.textField.CalcSize(label).y;
-                EditorGUI.indentLevel += 1;
-                weights = ColorField(rect, Labels.ChannelWeights, weights);
-                EditorGUI.indentLevel -= 1;
+                rect.y += rect.height + Mathf.Max(firstLineStyle.margin.bottom, secondLineStyle.margin.top);
+                rect.height = HeightOf(secondLineStyle);
+                WithIndent(() => {
+                    weights = ColorField(rect, Labels.ChannelWeights, weights);
+                });
             }
             if (EditorGUI.EndChangeCheck())
                 weightsProp.colorValue = weights;
@@ -60,16 +61,13 @@ namespace SoftMask.Editor {
         }
 
         static float ColorComponentField(Rect rect, GUIContent label, float value) {
-            var prev = EditorGUI.indentLevel;
-            EditorGUI.indentLevel = 0;
-            var content = new GUIContent(label);
-            var labelWidth = EditorStyles.label.CalcSize(content).x + 1;
-            EditorGUI.LabelField(new Rect(rect) { width = labelWidth }, content);
-            rect.width -= labelWidth;
-            rect.x += labelWidth;
-            value = EditorGUI.FloatField(rect, value);
-            EditorGUI.indentLevel = prev;
-            return value;
+            return WithZeroIndent(() => {
+                var labelWidth = EditorStyles.label.CalcSize(label).x + 1;
+                EditorGUI.LabelField(new Rect(rect) { width = labelWidth }, label);
+                rect.width -= labelWidth;
+                rect.x += labelWidth;
+                return EditorGUI.FloatField(rect, value);
+            });
         }
 
         static Rect Part(Rect whole, int part, int partCount, int spacing) {
@@ -79,6 +77,22 @@ namespace SoftMask.Editor {
             result.x += part * (result.width + spacing);
             return result;
         }
+
+        static void WithIndent(Action f) {
+            ++EditorGUI.indentLevel;
+            f();
+            --EditorGUI.indentLevel;
+        }
+
+        static T WithZeroIndent<T>(Func<T> f) {
+            var prev = EditorGUI.indentLevel;
+            EditorGUI.indentLevel = 0;
+            var result = f();
+            EditorGUI.indentLevel = prev;
+            return result;
+        }
+
+        static float HeightOf(GUIStyle style) { return style.CalcSize(GUIContent.none).y; }
 
         enum KnownMaskChannel { Alpha, Red, Green, Blue, Gray, Custom }
 
