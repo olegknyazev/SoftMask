@@ -29,26 +29,24 @@ namespace SoftMask.Editor {
         }
 
         public static Color ColorField(GUIContent label, Color color) {
-            var rect = GUILayoutUtility.GetRect(GUIContent.none, EditorStyles.label);
+            var rect = GUILayoutUtility.GetRect(GUIContent.none, EditorStyles.textField);
             return ColorField(rect, label, color);
         }
 
         static void ChannelWeights(Rect rect, GUIContent label, SerializedProperty weightsProp, ref bool customWeightsExpanded) {
             var firstLineStyle = EditorStyles.popup;
             var secondLineStyle = EditorStyles.textField;
-            var wasExpanded = customWeightsExpanded;
             var knownChannel =
-                wasExpanded
+                customWeightsExpanded
                     ? KnownMaskChannel.Custom
                     : KnownChannel(weightsProp.colorValue);
             label = EditorGUI.BeginProperty(rect, label, weightsProp);
             EditorGUI.BeginChangeCheck();
-            if (wasExpanded)
+            if (customWeightsExpanded)
                 rect.height = HeightOf(firstLineStyle);
             knownChannel = (KnownMaskChannel)EditorGUI.EnumPopup(rect, label, knownChannel);
-            customWeightsExpanded = knownChannel == KnownMaskChannel.Custom;
             var weights = Weights(knownChannel, weightsProp.colorValue);
-            if (wasExpanded) {
+            if (customWeightsExpanded) {
                 rect.y += rect.height + Mathf.Max(firstLineStyle.margin.bottom, secondLineStyle.margin.top);
                 rect.height = HeightOf(secondLineStyle);
                 WithIndent(() => {
@@ -57,6 +55,8 @@ namespace SoftMask.Editor {
             }
             if (EditorGUI.EndChangeCheck())
                 weightsProp.colorValue = weights;
+            if (Event.current.type != EventType.layout)
+                customWeightsExpanded = knownChannel == KnownMaskChannel.Custom;
             EditorGUI.EndProperty();
         }
 
