@@ -5,6 +5,7 @@ using UnityEngine.Assertions;
 
 namespace SoftMask.Editor {
     [CustomEditor(typeof(SoftMask))]
+    [CanEditMultipleObjects]
     public class SoftMaskEditor : UnityEditor.Editor {
         SerializedProperty maskSource;
         SerializedProperty maskSprite;
