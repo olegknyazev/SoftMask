@@ -159,7 +159,9 @@ namespace SoftMask {
             base.OnValidate();
             _dirty = true;
         }
-        
+
+        static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
+
         RectTransform _rectTransform;
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
 
@@ -263,18 +265,21 @@ namespace SoftMask {
         }
 
         void CalculateImageBased(Image image) {
-            if (image.sprite)
-                CalculateSpriteBased(image.sprite, ToBorderMode(image.type));
-            else
-                CalculateSolidFill();
+            Assert.IsNotNull(image);
+            CalculateSpriteBased(image.sprite, ToBorderMode(image.type));
         }
 
         void CalculateRawImageBased(RawImage image) {
+            Assert.IsNotNull(image);
             CalculateTextureBased(image.texture as Texture2D);
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
-            CalculateCommonParameters();
+            if (!sprite) {
+                CalculateSolidFill();
+                return;
+            }   
+            FillCommonParameters();
             var textureRectInFullRect = Div(BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
             var textureRect = ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
@@ -289,10 +294,8 @@ namespace SoftMask {
                 _maskParameters.tileRepeat = MaskRepeat(sprite, _maskParameters.maskBorder);
         }
 
-        static readonly Vector4 DefaultRectUV = new Vector4(0, 0, 1, 1);
-
         void CalculateTextureBased(Texture2D texture) {
-            CalculateCommonParameters();
+            FillCommonParameters();
             _maskParameters.maskRect = LocalRect(Vector4.zero);
             _maskParameters.maskRectUV = DefaultRectUV;
             _maskParameters.texture = texture;
@@ -303,7 +306,7 @@ namespace SoftMask {
             CalculateTextureBased(null);
         }
 
-        void CalculateCommonParameters() {
+        void FillCommonParameters() {
             _maskParameters.worldToMask = WorldToMask();
             _maskParameters.maskChannelWeights = _maskChannelWeights;
         }

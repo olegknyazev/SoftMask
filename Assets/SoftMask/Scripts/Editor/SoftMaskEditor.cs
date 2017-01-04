@@ -12,6 +12,7 @@ namespace SoftMask.Editor {
         SerializedProperty maskBorderMode;
         SerializedProperty maskTexture;
         SerializedProperty maskChannelWeights;
+
         bool _customWeightsExpanded;
         
         static class Labels {
