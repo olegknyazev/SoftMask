@@ -12,9 +12,8 @@ namespace SoftMask.Editor {
         SerializedProperty maskChannelWeights;
         bool _customChannelWeights;
         
-        static class Content {
+        static class Labels {
             public static readonly GUIContent MaskChannel = new GUIContent("Mask Channel");
-            public static readonly GUIContent ChannelWeights = new GUIContent("Channel Weights");
         }
 
         void OnEnable() {
@@ -46,44 +45,8 @@ namespace SoftMask.Editor {
                     break;
             }
             EditorGUI.indentLevel -= 1;
-            maskChannelWeights.colorValue = ChannelWeightsGUI(maskChannelWeights.colorValue);
+            CustomEditors.ChannelWeights(Labels.MaskChannel, maskChannelWeights, ref _customChannelWeights);
             serializedObject.ApplyModifiedProperties();
-        }
-
-        enum KnownMaskChannel { Alpha, Red, Green, Blue, Gray, Custom }
-
-        KnownMaskChannel KnownChannel(Color weights) {
-            if (weights == MaskChannel.alpha) return KnownMaskChannel.Alpha;
-            else if (weights == MaskChannel.red) return KnownMaskChannel.Red;
-            else if (weights == MaskChannel.green) return KnownMaskChannel.Green;
-            else if (weights == MaskChannel.blue) return KnownMaskChannel.Blue;
-            else if (weights == MaskChannel.gray) return KnownMaskChannel.Gray;
-            else return KnownMaskChannel.Custom;
-        }
-
-        Color Weights(KnownMaskChannel channel, Color weights) {
-            switch (channel) {
-                case KnownMaskChannel.Alpha: return MaskChannel.alpha;
-                case KnownMaskChannel.Red: return MaskChannel.red;
-                case KnownMaskChannel.Green: return MaskChannel.green;
-                case KnownMaskChannel.Blue: return MaskChannel.blue;
-                case KnownMaskChannel.Gray: return MaskChannel.gray;
-                default: return weights;
-            }
-        }
-
-        Color ChannelWeightsGUI(Color weights) {
-            var knownChannel = KnownChannel(weights);
-            knownChannel = (KnownMaskChannel)EditorGUILayout.EnumPopup(Content.MaskChannel, knownChannel);
-            weights = Weights(knownChannel, weights);
-            if (knownChannel == KnownMaskChannel.Custom)
-                _customChannelWeights = true;
-            if (_customChannelWeights) {
-                EditorGUI.indentLevel += 1;
-                weights = PerComponentColorEditor.ColorField(Content.ChannelWeights, weights);
-                EditorGUI.indentLevel -= 1;
-            }
-            return weights;
         }
     }
 }
