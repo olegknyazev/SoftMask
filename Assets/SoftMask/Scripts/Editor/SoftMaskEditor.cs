@@ -7,11 +7,11 @@ namespace SoftMask.Editor {
     [CustomEditor(typeof(SoftMask))]
     [CanEditMultipleObjects]
     public class SoftMaskEditor : UnityEditor.Editor {
-        SerializedProperty maskSource;
-        SerializedProperty maskSprite;
-        SerializedProperty maskBorderMode;
-        SerializedProperty maskTexture;
-        SerializedProperty maskChannelWeights;
+        SerializedProperty _source;
+        SerializedProperty _sprite;
+        SerializedProperty _spriteBorderMode;
+        SerializedProperty _texture;
+        SerializedProperty _channelWeights;
 
         bool _customWeightsExpanded;
         
@@ -25,35 +25,35 @@ namespace SoftMask.Editor {
         }
 
         void OnEnable() {
-            maskSource = serializedObject.FindProperty("_maskSource");
-            maskSprite = serializedObject.FindProperty("_maskSprite");
-            maskBorderMode = serializedObject.FindProperty("_maskBorderMode");
-            maskTexture = serializedObject.FindProperty("_maskTexture");
-            maskChannelWeights = serializedObject.FindProperty("_maskChannelWeights");
-            Assert.IsNotNull(maskSource);
-            Assert.IsNotNull(maskSprite);
-            Assert.IsNotNull(maskBorderMode);
-            Assert.IsNotNull(maskTexture);
-            Assert.IsNotNull(maskChannelWeights);
+            _source = serializedObject.FindProperty("_source");
+            _sprite = serializedObject.FindProperty("_sprite");
+            _spriteBorderMode = serializedObject.FindProperty("_spriteBorderMode");
+            _texture = serializedObject.FindProperty("_texture");
+            _channelWeights = serializedObject.FindProperty("_channelWeights");
+            Assert.IsNotNull(_source);
+            Assert.IsNotNull(_sprite);
+            Assert.IsNotNull(_spriteBorderMode);
+            Assert.IsNotNull(_texture);
+            Assert.IsNotNull(_channelWeights);
         }
 
         public override void OnInspectorGUI() {
             serializedObject.Update();
-            EditorGUILayout.PropertyField(maskSource);
+            EditorGUILayout.PropertyField(_source);
             CustomEditors.WithIndent(() => {
-                switch ((SoftMask.MaskSource)maskSource.enumValueIndex) {
+                switch ((SoftMask.MaskSource)_source.enumValueIndex) {
                     case SoftMask.MaskSource.Graphic:
                         break;
                     case SoftMask.MaskSource.Sprite:
-                        EditorGUILayout.PropertyField(maskSprite);
-                        EditorGUILayout.PropertyField(maskBorderMode);
+                        EditorGUILayout.PropertyField(_sprite);
+                        EditorGUILayout.PropertyField(_spriteBorderMode);
                         break;
                     case SoftMask.MaskSource.Texture:
-                        EditorGUILayout.PropertyField(maskTexture);
+                        EditorGUILayout.PropertyField(_texture);
                         break;
                 }
             });
-            CustomEditors.ChannelWeights(Labels.MaskChannel, maskChannelWeights, ref _customWeightsExpanded);
+            CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
             serializedObject.ApplyModifiedProperties();
         }
 

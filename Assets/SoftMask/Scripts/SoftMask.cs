@@ -4,6 +4,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using SoftMask.Extensions;
+using UnityEngine.Serialization;
 
 namespace SoftMask {
     public static class MaskChannel {
@@ -30,30 +31,30 @@ namespace SoftMask {
         // present, it's SoftMaskable destroys itself.
         //
 
-        [SerializeField] Shader _defaultMaskShader = null;
-        [SerializeField] MaskSource _maskSource = MaskSource.Graphic;
-        [SerializeField] Sprite _maskSprite = null;
-        [SerializeField] BorderMode _maskBorderMode = BorderMode.Simple;
-        [SerializeField] Texture2D _maskTexture = null;
-        [SerializeField] Color _maskChannelWeights = MaskChannel.alpha;
+        [FormerlySerializedAs("_defaultMaskShader")] [SerializeField] Shader _defaultShader = null;
+        [FormerlySerializedAs("_maskSource")] [SerializeField] MaskSource _source = MaskSource.Graphic;
+        [FormerlySerializedAs("_maskSprite")] [SerializeField] Sprite _sprite = null;
+        [FormerlySerializedAs("_maskBorderMode")] [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
+        [FormerlySerializedAs("_maskTexture")] [SerializeField] Texture2D _texture = null;
+        [FormerlySerializedAs("_maskChannelWeights")] [SerializeField] Color _channelWeights = MaskChannel.alpha;
 
         MaterialReplacements _materials;
-        MaskParameters _maskParameters;
+        MaterialParameters _parameters;
         bool _dirty;
 
         public SoftMask() {
-            _materials = new MaterialReplacements(Replace, m => _maskParameters.Apply(m));
+            _materials = new MaterialReplacements(Replace, m => _parameters.Apply(m));
         }
 
         [Serializable] public enum MaskSource { Graphic, Sprite, Texture }
         [Serializable] public enum BorderMode { Simple, Sliced, Tiled }
 
         public Shader defaultMaskShader {
-            get { return _defaultMaskShader; }
+            get { return _defaultShader; }
             set {
-                if (_defaultMaskShader != value) {
-                    _defaultMaskShader = value;
-                    if (!_defaultMaskShader)
+                if (_defaultShader != value) {
+                    _defaultShader = value;
+                    if (!_defaultShader)
                         Debug.LogWarningFormat(this, "Mask may be not work because it's defaultMaskShader is set to null");
                     DestroyMaterials();
                     InvalidateChildren();
@@ -61,41 +62,41 @@ namespace SoftMask {
             }
         }
 
-        public MaskSource maskSource {
-            get { return _maskSource; }
+        public MaskSource source {
+            get { return _source; }
             set {
-                if (_maskSource != value) {
-                    _maskSource = value;
+                if (_source != value) {
+                    _source = value;
                     _dirty = true;
                 }
             } 
         }
 
-        public Sprite maskSprite {
-            get { return _maskSprite; }
+        public Sprite sprite {
+            get { return _sprite; }
             set {
-                if (_maskSprite != value) {
-                    _maskSprite = value;
+                if (_sprite != value) {
+                    _sprite = value;
                     _dirty = true;
                 }
             }
         }
 
-        public Texture2D maskTexture {
-            get { return _maskTexture; }
+        public Texture2D texture {
+            get { return _texture; }
             set {
-                if (_maskTexture != value) {
-                    _maskTexture = value;
+                if (_texture != value) {
+                    _texture = value;
                     _dirty = true;
                 }
             }
         }
 
-        public Color maskChannelWeights {
-            get { return _maskChannelWeights; }
+        public Color channelWeights {
+            get { return _channelWeights; }
             set {
-                if (_maskChannelWeights != value) {
-                    _maskChannelWeights = value;
+                if (_channelWeights != value) {
+                    _channelWeights = value;
                     _dirty = true;
                 }
             }
@@ -170,7 +171,7 @@ namespace SoftMask {
         Canvas _canvas;
         Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
         
-        bool isBasedOnGraphic { get { return _maskSource == MaskSource.Graphic; } }
+        bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
         
         void OnGraphicDirty() {
             if (isBasedOnGraphic)
@@ -218,7 +219,7 @@ namespace SoftMask {
 
         Material Replace(Material original) {
             if (original == null || original.HasDefaultUIShader()) {
-                var replacement = _defaultMaskShader ? new Material(_defaultMaskShader) : null;
+                var replacement = _defaultShader ? new Material(_defaultShader) : null;
                 if (replacement && original)
                     replacement.CopyPropertiesFromMaterial(original);
                 return replacement;
@@ -229,7 +230,7 @@ namespace SoftMask {
         }
 
         void CalculateMaskParameters() {
-            switch (_maskSource) {
+            switch (_source) {
                 case MaskSource.Graphic:
                     if (_graphic is Image)
                         CalculateImageBased((Image)_graphic);
@@ -239,13 +240,13 @@ namespace SoftMask {
                         CalculateSolidFill();
                     break;
                 case MaskSource.Sprite:
-                    CalculateSpriteBased(_maskSprite, _maskBorderMode);
+                    CalculateSpriteBased(_sprite, _spriteBorderMode);
                     break;
                 case MaskSource.Texture:
-                    CalculateTextureBased(_maskTexture);
+                    CalculateTextureBased(_texture);
                     break;
                 default:
-                    Debug.LogWarningFormat("Unknown MaskSource: {0}", _maskSource);
+                    Debug.LogWarningFormat("Unknown MaskSource: {0}", _source);
                     CalculateSolidFill();
                     break;
             }
@@ -284,22 +285,22 @@ namespace SoftMask {
             var textureRect = ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
             var fullMaskRect = LocalRect(Vector4.zero);
-            _maskParameters.maskRect = ApplyBorder(fullMaskRect, Mul(textureRectInFullRect, Size(fullMaskRect)));
-            _maskParameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
-            _maskParameters.maskRectUV = Div(textureRect, textureSize);
-            _maskParameters.maskBorderUV = ApplyBorder(_maskParameters.maskRectUV, Div(sprite.border, textureSize));
-            _maskParameters.texture = sprite.texture;
-            _maskParameters.textureMode = spriteMode;
+            _parameters.maskRect = ApplyBorder(fullMaskRect, Mul(textureRectInFullRect, Size(fullMaskRect)));
+            _parameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
+            _parameters.maskRectUV = Div(textureRect, textureSize);
+            _parameters.maskBorderUV = ApplyBorder(_parameters.maskRectUV, Div(sprite.border, textureSize));
+            _parameters.texture = sprite.texture;
+            _parameters.textureMode = spriteMode;
             if (spriteMode == BorderMode.Tiled)
-                _maskParameters.tileRepeat = MaskRepeat(sprite, _maskParameters.maskBorder);
+                _parameters.tileRepeat = MaskRepeat(sprite, _parameters.maskBorder);
         }
 
         void CalculateTextureBased(Texture2D texture) {
             FillCommonParameters();
-            _maskParameters.maskRect = LocalRect(Vector4.zero);
-            _maskParameters.maskRectUV = DefaultRectUV;
-            _maskParameters.texture = texture;
-            _maskParameters.textureMode = BorderMode.Simple;
+            _parameters.maskRect = LocalRect(Vector4.zero);
+            _parameters.maskRectUV = DefaultRectUV;
+            _parameters.texture = texture;
+            _parameters.textureMode = BorderMode.Simple;
         }
 
         void CalculateSolidFill() {
@@ -307,8 +308,8 @@ namespace SoftMask {
         }
 
         void FillCommonParameters() {
-            _maskParameters.worldToMask = WorldToMask();
-            _maskParameters.maskChannelWeights = _maskChannelWeights;
+            _parameters.worldToMask = WorldToMask();
+            _parameters.maskChannelWeights = _channelWeights;
         }
 
         float GraphicToCanvas(Sprite sprite) {
@@ -344,7 +345,7 @@ namespace SoftMask {
             return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w);
         }
 
-        struct MaskParameters {
+        struct MaterialParameters {
             public Vector4 maskRect;
             public Vector4 maskBorder;
             public Vector4 maskRectUV;
