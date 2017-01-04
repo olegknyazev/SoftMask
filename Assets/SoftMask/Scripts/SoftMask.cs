@@ -17,7 +17,7 @@ namespace SoftMask {
     [ExecuteInEditMode]
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
-    public class SoftMask : UIBehaviour {
+    public class SoftMask : UIBehaviour, ICanvasRaycastFilter {
         //
         // How it works:
         //
@@ -37,6 +37,7 @@ namespace SoftMask {
         [SerializeField] Texture2D _texture = null;
         [SerializeField] Rect _textureRect = DefaultRectUV;
         [SerializeField] Color _channelWeights = MaskChannel.alpha;
+        [SerializeField] float _raycastThreshold = 0.0f;
 
         MaterialReplacements _materials;
         MaterialParameters _parameters;
@@ -124,6 +125,45 @@ namespace SoftMask {
 
         public void ReleaseReplacement(Material replacement) {
             _materials.Release(replacement);
+        }
+
+        public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera) {
+            Vector2 local;
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, eventCamera, out local))
+                return false;
+            if (!_parameters.texture)
+                return true;
+            if (!Inside(local, _parameters.maskRect))
+                return false;
+            var uv = Remap(local, _parameters.maskRect, _parameters.maskRectUV); // TODO support all border types
+            if (_raycastThreshold <= 0.0f)
+                return true;
+            try {
+                return MaskValue(_parameters.texture.GetPixelBilinear(uv.x, uv.y)) >= _raycastThreshold;
+            } catch (UnityException e) {
+                // TODO show error only once?
+                // TODO improve error message
+                Debug.LogError("Using raycastThreshold greater than 0 on SoftMask whose texture cannot be read. " + e.Message + " Also make sure to disable sprite packing for this sprite.", this);
+                return true;
+            }
+        }
+
+        float MaskValue(Color mask) {
+            var value = mask * _parameters.maskChannelWeights;
+            return (value.a + value.r + value.g + value.b) / 4.0f;
+        }
+
+        static Vector2 Min(Vector4 r) { return new Vector2(r.x, r.y); }
+        static Vector2 Max(Vector4 r) { return new Vector2(r.z, r.w); }
+
+        static Vector2 Remap(Vector2 c, Vector4 r1, Vector4 r2) {
+            var r1size = Max(r1) - Min(r1);
+            var r2size = Max(r2) - Min(r2);
+            return Vector2.Scale(Div((c - Min(r1)), r1size), r2size) + Min(r2);
+        }
+
+        static bool Inside(Vector2 v, Vector4 r) {
+            return v.x >= r.x && v.y >= r.y && v.x <= r.z && v.y <= r.w;
         }
 
         protected virtual void LateUpdate() {
@@ -363,10 +403,10 @@ namespace SoftMask {
             public Vector2 tileRepeat;
             public Color maskChannelWeights;
             public Matrix4x4 worldToMask;
-            public Texture texture;
+            public Texture2D texture;
             public BorderMode textureMode;
 
-            public Texture activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
+            public Texture2D activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
 
             public void Apply(Material mat) {
                 mat.SetTexture("_SoftMask", activeTexture);
