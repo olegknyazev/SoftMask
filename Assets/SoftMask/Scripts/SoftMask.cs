@@ -4,7 +4,6 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using SoftMask.Extensions;
-using UnityEngine.Serialization;
 
 namespace SoftMask {
     public static class MaskChannel {
@@ -31,12 +30,12 @@ namespace SoftMask {
         // present, it's SoftMaskable destroys itself.
         //
 
-        [FormerlySerializedAs("_defaultMaskShader")] [SerializeField] Shader _defaultShader = null;
-        [FormerlySerializedAs("_maskSource")] [SerializeField] MaskSource _source = MaskSource.Graphic;
-        [FormerlySerializedAs("_maskSprite")] [SerializeField] Sprite _sprite = null;
-        [FormerlySerializedAs("_maskBorderMode")] [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
-        [FormerlySerializedAs("_maskTexture")] [SerializeField] Texture2D _texture = null;
-        [FormerlySerializedAs("_maskChannelWeights")] [SerializeField] Color _channelWeights = MaskChannel.alpha;
+        [SerializeField] Shader _defaultShader = null;
+        [SerializeField] MaskSource _source = MaskSource.Graphic;
+        [SerializeField] Sprite _sprite = null;
+        [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
+        [SerializeField] Texture2D _texture = null;
+        [SerializeField] Color _channelWeights = MaskChannel.alpha;
 
         MaterialReplacements _materials;
         MaterialParameters _parameters;
