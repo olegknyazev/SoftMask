@@ -132,20 +132,17 @@ namespace SoftMask {
         }
 
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
-            Vector2 local;
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, cam, out local)) return false;
+            Vector2 localPos;
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, cam, out localPos)) return false;
             if (!_parameters.texture) return true;
-            if (!Mathr.Inside(local, _parameters.maskRect)) return false;
+            if (!Mathr.Inside(localPos, _parameters.maskRect)) return false;
             if (_raycastThreshold <= 0.0f) return true;
-            var uv = Mathr.Remap(local, _parameters.maskRect, _parameters.maskRectUV); // TODO support all border types
-            try {
-                return MaskValue(_parameters.texture.GetPixelBilinear(uv.x, uv.y)) >= _raycastThreshold;
-            } catch (UnityException e) {
-                // TODO show error only once?
-                // TODO improve error message
-                Debug.LogError("Using raycastThreshold greater than 0 on SoftMask whose texture cannot be read. " + e.Message + " Also make sure to disable sprite packing for this sprite.", this);
+            float mask;
+            if (!_parameters.SampleMask(localPos, out mask)) {
+                Debug.LogError("raycastThreshold greater than 0 can't be used on SoftMask whose texture cannot be read.", this);
                 return true;
-            }
+            }   
+            return mask >= _raycastThreshold;
         }
 
         protected override void Start() {
@@ -327,7 +324,7 @@ namespace SoftMask {
             _parameters.maskRectUV = Mathr.Div(textureRect, textureSize);
             _parameters.maskBorderUV = Mathr.ApplyBorder(_parameters.maskRectUV, Mathr.Div(sprite.border, textureSize));
             _parameters.texture = sprite.texture;
-            _parameters.textureMode = spriteMode;
+            _parameters.borderMode = spriteMode;
             if (spriteMode == BorderMode.Tiled)
                 _parameters.tileRepeat = MaskRepeat(sprite, _parameters.maskBorder);
         }
@@ -337,7 +334,7 @@ namespace SoftMask {
             _parameters.maskRect = LocalRect(Vector4.zero);
             _parameters.maskRectUV = Mathr.ToVector(uvRect);
             _parameters.texture = texture;
-            _parameters.textureMode = BorderMode.Simple;
+            _parameters.borderMode = BorderMode.Simple;
         }
 
         void CalculateSolidFill() {
@@ -418,9 +415,20 @@ namespace SoftMask {
             public Color maskChannelWeights;
             public Matrix4x4 worldToMask;
             public Texture2D texture;
-            public BorderMode textureMode;
+            public BorderMode borderMode;
 
             public Texture2D activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
+
+            public bool SampleMask(Vector2 localPos, out float mask) {
+                var uv = XY2UV(localPos);
+                try {
+                    mask = MaskValue(texture.GetPixelBilinear(uv.x, uv.y));
+                    return true;
+                } catch (UnityException) {
+                    mask = 0;
+                    return false;
+                }
+            }
 
             public void Apply(Material mat) {
                 mat.SetTexture("_SoftMask", activeTexture);
@@ -428,14 +436,68 @@ namespace SoftMask {
                 mat.SetVector("_SoftMask_UVRect", maskRectUV);
                 mat.SetColor("_SoftMask_ChannelWeights", maskChannelWeights);
                 mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
-                mat.EnableKeyword("SOFTMASK_SLICED", textureMode == BorderMode.Sliced);
-                mat.EnableKeyword("SOFTMASK_TILED", textureMode == BorderMode.Tiled);
-                if (textureMode != BorderMode.Simple) {
+                mat.EnableKeyword("SOFTMASK_SLICED", borderMode == BorderMode.Sliced);
+                mat.EnableKeyword("SOFTMASK_TILED", borderMode == BorderMode.Tiled);
+                if (borderMode != BorderMode.Simple) {
                     mat.SetVector("_SoftMask_BorderRect", maskBorder);
                     mat.SetVector("_SoftMask_UVBorderRect", maskBorderUV);
-                    if (textureMode == BorderMode.Tiled)
+                    if (borderMode == BorderMode.Tiled)
                         mat.SetVector("_SoftMask_TileRepeat", tileRepeat);
                 }
+            }
+
+            // Next functions performs the same logic as functions from SoftMask.cginc. 
+            // They implemented it a bit different way, because there is no such convenient
+            // vector operations in Unity/C# and there is a much little penalties for conditions.
+
+            Vector2 XY2UV(Vector2 localPos) {
+                switch (borderMode) {
+                    case BorderMode.Simple: return MapSimple(localPos);
+                    case BorderMode.Sliced: return MapBorder(localPos, repeat: false);
+                    case BorderMode.Tiled: return MapBorder(localPos, repeat: true);
+                    default:
+                        Debug.LogError("Unknown BorderMode");
+                        return MapSimple(localPos);
+                }
+            }
+
+            Vector2 MapSimple(Vector2 localPos) {
+                return Mathr.Remap(localPos, maskRect, maskRectUV);
+            }
+
+            Vector2 MapBorder(Vector2 localPos, bool repeat) {
+                return
+                    new Vector2(
+                        Inset(
+                            localPos.x, 
+                            maskRect.x, maskBorder.x, maskBorder.z, maskRect.z, 
+                            maskRectUV.x, maskBorderUV.x, maskBorderUV.z, maskRectUV.z, 
+                            repeat ? tileRepeat.x : 1),
+                        Inset(
+                            localPos.y,
+                            maskRect.y, maskBorder.y, maskBorder.w, maskRect.w,
+                            maskRectUV.y, maskBorderUV.y, maskBorderUV.w, maskRectUV.w,
+                            repeat ? tileRepeat.y : 1));
+            }
+            
+            float Inset(float v, float x1, float x2, float u1, float u2, float repeat = 1) {
+                return Frac((v - x1) / (x2 - x1) * repeat) * (u2 - u1) + u1;
+            }
+
+            float Inset(float v, float x1, float x2, float x3, float x4, float u1, float u2, float u3, float u4, float repeat = 1) {
+                if (v < x2)
+                    return Inset(v, x1, x2, u1, u2);
+                else if (v < x3)
+                    return Inset(v, x2, x3, u2, u3, repeat);
+                else
+                    return Inset(v, x3, x4, u3, u4);
+            }
+
+            float Frac(float v) { return v - Mathf.Floor(v); } 
+
+            float MaskValue(Color mask) {
+                var value = mask * maskChannelWeights;
+                return value.a + value.r + value.g + value.b;
             }
         }
     }

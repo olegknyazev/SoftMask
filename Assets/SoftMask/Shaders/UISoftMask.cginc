@@ -30,6 +30,9 @@
     float2 _SoftMask_TileRepeat;
 #endif
 
+    // When change logic of the following functions, don't forget to update
+    // according functions in SoftMask.MaterialParameters (C#).
+    
     inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2, float2 repeat) {
         return frac((a - a1) / (a2 - a1) * repeat) * (u2 - u1) + u1;
     }
