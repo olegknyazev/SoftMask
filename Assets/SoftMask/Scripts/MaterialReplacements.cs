@@ -20,8 +20,10 @@ namespace SoftMask {
                 var entry = _overrides[i];
                 if (ReferenceEquals(entry.original, original)) {
                     var existing = entry.Get();
-                    existing.CopyPropertiesFromMaterial(original);
-                    _applyParameters(existing);
+                    if (existing) { // null may be stored in _overrides
+                        existing.CopyPropertiesFromMaterial(original);
+                        _applyParameters(existing);
+                    }
                     return existing;
                 }   
             }
