@@ -588,7 +588,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 839825150}
-        m_MethodName: ToggleSoftMask
+        m_MethodName: Toggle
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -907,7 +907,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -126, y: 122}
+  m_AnchoredPosition: {x: -89, y: 157}
   m_SizeDelta: {x: 1617, y: 879}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1809466692
