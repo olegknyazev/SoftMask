@@ -50,13 +50,12 @@ namespace SoftMask {
         [Serializable] public enum MaskSource { Graphic, Sprite, Texture }
         [Serializable] public enum BorderMode { Simple, Sliced, Tiled }
 
-        public Shader defaultMaskShader {
+        public Shader defaultShader {
             get { return _defaultShader; }
             set {
                 if (_defaultShader != value) {
                     _defaultShader = value;
-                    if (!_defaultShader)
-                        Debug.LogWarningFormat(this, "Mask may be not work because it's defaultMaskShader is set to null");
+                    WarnIfDefaultShaderIsNotSet();
                     DestroyMaterials();
                     InvalidateChildren();
                 }
@@ -166,11 +165,9 @@ namespace SoftMask {
             return v.x >= r.x && v.y >= r.y && v.x <= r.z && v.y <= r.w;
         }
 
-        protected virtual void LateUpdate() {
-            SpawnMaskablesInChildren();
-            FindGraphic();
-            if (transform.hasChanged || _dirty)
-                UpdateMask();
+        protected override void Start() {
+            base.Start();
+            WarnIfDefaultShaderIsNotSet();
         }
 
         protected override void OnEnable() {
@@ -194,6 +191,13 @@ namespace SoftMask {
         protected override void OnDestroy() {
             base.OnDestroy();
             DestroyMaskablesInChildren();
+        }
+
+        protected virtual void LateUpdate() {
+            SpawnMaskablesInChildren();
+            FindGraphic();
+            if (transform.hasChanged || _dirty)
+                UpdateMask();
         }
 
         protected override void OnRectTransformDimensionsChange() {
@@ -379,6 +383,11 @@ namespace SoftMask {
         Vector2 MaskRepeat(Sprite sprite, Vector4 centralPart) {
             var textureCenter = ApplyBorder(ToVector(sprite.textureRect), sprite.border);
             return Div(Size(centralPart) * GraphicToCanvas(sprite), Size(textureCenter));
+        }
+
+        void WarnIfDefaultShaderIsNotSet() {
+            if (!_defaultShader)
+                Debug.LogWarningFormat(this, "Mask may be not work because it's defaultShader is not set");
         }
 
         static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
