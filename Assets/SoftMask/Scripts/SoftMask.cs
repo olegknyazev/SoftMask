@@ -43,6 +43,11 @@ namespace SoftMasking {
         MaterialParameters _parameters;
         bool _dirty;
 
+        // Cached components
+        RectTransform _rectTransform;
+        Graphic _graphic;
+        Canvas _canvas;
+
         public SoftMask() {
             _materials = new MaterialReplacements(Replace, m => _parameters.Apply(m));
         }
@@ -198,14 +203,9 @@ namespace SoftMasking {
 
         static readonly Rect DefaultRectUV = new Rect(0, 0, 1, 1);
 
-        RectTransform _rectTransform;
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
+        Canvas canvas { get { return _canvas ?? (_canvas = GetCanvas()); } }
 
-        Graphic _graphic;
-
-        Canvas _canvas;
-        Canvas canvas { get { return _canvas ?? (_canvas = _graphic ? _graphic.canvas : null); } } // TODO implement directly!
-        
         bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
         
         void OnGraphicDirty() {
@@ -221,6 +221,14 @@ namespace SoftMasking {
                     _graphic.RegisterDirtyMaterialCallback(OnGraphicDirty);
                 }
             }
+        }
+
+        Canvas GetCanvas() {
+            var canvases = GetComponentsInParent<Canvas>(false);
+            for (int i = 0; i < canvases.Length; ++i)
+                if (canvases[i].isActiveAndEnabled)
+                    return canvases[i];
+            return null;
         }
 
         void UpdateMask() {
