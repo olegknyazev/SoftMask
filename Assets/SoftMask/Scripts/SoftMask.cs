@@ -175,8 +175,9 @@ namespace SoftMask {
 
         protected virtual void LateUpdate() {
             SpawnMaskablesInChildren();
+            var prevGraphic = _graphic;
             FindGraphic();
-            if (transform.hasChanged || _dirty)
+            if (transform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
                 UpdateMask();
         }
 
