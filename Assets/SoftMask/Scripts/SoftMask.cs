@@ -132,9 +132,9 @@ namespace SoftMask {
                 return false;
             if (!_parameters.texture)
                 return true;
-            if (!Inside(local, _parameters.maskRect))
+            if (!Mathr.Inside(local, _parameters.maskRect))
                 return false;
-            var uv = Remap(local, _parameters.maskRect, _parameters.maskRectUV); // TODO support all border types
+            var uv = Mathr.Remap(local, _parameters.maskRect, _parameters.maskRectUV); // TODO support all border types
             if (_raycastThreshold <= 0.0f)
                 return true;
             try {
@@ -145,24 +145,6 @@ namespace SoftMask {
                 Debug.LogError("Using raycastThreshold greater than 0 on SoftMask whose texture cannot be read. " + e.Message + " Also make sure to disable sprite packing for this sprite.", this);
                 return true;
             }
-        }
-
-        float MaskValue(Color mask) {
-            var value = mask * _parameters.maskChannelWeights;
-            return (value.a + value.r + value.g + value.b) / 4.0f;
-        }
-
-        static Vector2 Min(Vector4 r) { return new Vector2(r.x, r.y); }
-        static Vector2 Max(Vector4 r) { return new Vector2(r.z, r.w); }
-
-        static Vector2 Remap(Vector2 c, Vector4 r1, Vector4 r2) {
-            var r1size = Max(r1) - Min(r1);
-            var r2size = Max(r2) - Min(r2);
-            return Vector2.Scale(Div((c - Min(r1)), r1size), r2size) + Min(r2);
-        }
-
-        static bool Inside(Vector2 v, Vector4 r) {
-            return v.x >= r.x && v.y >= r.y && v.x <= r.z && v.y <= r.w;
         }
 
         protected override void Start() {
@@ -335,14 +317,14 @@ namespace SoftMask {
                 return;
             }   
             FillCommonParameters();
-            var textureRectInFullRect = Div(BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
-            var textureRect = ToVector(sprite.textureRect);
+            var textureRectInFullRect = Mathr.Div(Mathr.BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
+            var textureRect = Mathr.ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
             var fullMaskRect = LocalRect(Vector4.zero);
-            _parameters.maskRect = ApplyBorder(fullMaskRect, Mul(textureRectInFullRect, Size(fullMaskRect)));
+            _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(textureRectInFullRect, Mathr.Size(fullMaskRect)));
             _parameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
-            _parameters.maskRectUV = Div(textureRect, textureSize);
-            _parameters.maskBorderUV = ApplyBorder(_parameters.maskRectUV, Div(sprite.border, textureSize));
+            _parameters.maskRectUV = Mathr.Div(textureRect, textureSize);
+            _parameters.maskBorderUV = Mathr.ApplyBorder(_parameters.maskRectUV, Mathr.Div(sprite.border, textureSize));
             _parameters.texture = sprite.texture;
             _parameters.textureMode = spriteMode;
             if (spriteMode == BorderMode.Tiled)
@@ -352,7 +334,7 @@ namespace SoftMask {
         void CalculateTextureBased(Texture2D texture, Rect uvRect) {
             FillCommonParameters();
             _parameters.maskRect = LocalRect(Vector4.zero);
-            _parameters.maskRectUV = ToVector(uvRect);
+            _parameters.maskRectUV = Mathr.ToVector(uvRect);
             _parameters.texture = texture;
             _parameters.textureMode = BorderMode.Simple;
         }
@@ -377,12 +359,17 @@ namespace SoftMask {
         }
 
         Vector4 LocalRect(Vector4 border) {
-            return ApplyBorder(ToVector(rectTransform.rect), border);
+            return Mathr.ApplyBorder(Mathr.ToVector(rectTransform.rect), border);
         }
 
         Vector2 MaskRepeat(Sprite sprite, Vector4 centralPart) {
-            var textureCenter = ApplyBorder(ToVector(sprite.textureRect), sprite.border);
-            return Div(Size(centralPart) * GraphicToCanvas(sprite), Size(textureCenter));
+            var textureCenter = Mathr.ApplyBorder(Mathr.ToVector(sprite.textureRect), sprite.border);
+            return Mathr.Div(Mathr.Size(centralPart) * GraphicToCanvas(sprite), Mathr.Size(textureCenter));
+        }
+
+        float MaskValue(Color mask) {
+            var value = mask * _parameters.maskChannelWeights;
+            return (value.a + value.r + value.g + value.b) / 4.0f;
         }
 
         void WarnIfDefaultShaderIsNotSet() {
@@ -390,18 +377,35 @@ namespace SoftMask {
                 Debug.LogWarningFormat(this, "Mask may be not work because it's defaultShader is not set");
         }
 
-        static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
-        static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
-        static Vector2 Div(Vector2 v, Vector2 s) { return new Vector2(v.x / s.x, v.y / s.y); }
-        static Vector4 Mul(Vector4 v, Vector2 s) { return new Vector4(v.x * s.x, v.y * s.y, v.z * s.x, v.w * s.y); }
-        static Vector2 Size(Vector4 r) { return new Vector2(r.z - r.x, r.w - r.y); }
+        // Various operations on Rect represented as Vector4. 
+        // In Vector4 Rect is stored as (xMin, yMin, xMax, yMax).
+        static class Mathr {
+            public static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
+            public static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
+            public static Vector2 Div(Vector2 v, Vector2 s) { return new Vector2(v.x / s.x, v.y / s.y); }
+            public static Vector4 Mul(Vector4 v, Vector2 s) { return new Vector4(v.x * s.x, v.y * s.y, v.z * s.x, v.w * s.y); }
+            public static Vector2 Size(Vector4 r) { return new Vector2(r.z - r.x, r.w - r.y); }
 
-        static Vector4 BorderOf(Rect outer, Rect inner) {
-            return new Vector4(inner.xMin - outer.xMin, inner.yMin - outer.yMin, outer.xMax - inner.xMax, outer.yMax - inner.yMax);
-        }
+            public static Vector4 BorderOf(Rect outer, Rect inner) {
+                return new Vector4(inner.xMin - outer.xMin, inner.yMin - outer.yMin, outer.xMax - inner.xMax, outer.yMax - inner.yMax);
+            }
 
-        static Vector4 ApplyBorder(Vector4 v, Vector4 b) {
-            return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w);
+            public static Vector4 ApplyBorder(Vector4 v, Vector4 b) {
+                return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w);
+            }
+
+            public static Vector2 Min(Vector4 r) { return new Vector2(r.x, r.y); }
+            public static Vector2 Max(Vector4 r) { return new Vector2(r.z, r.w); }
+
+            public static Vector2 Remap(Vector2 c, Vector4 r1, Vector4 r2) {
+                var r1size = Max(r1) - Min(r1);
+                var r2size = Max(r2) - Min(r2);
+                return Vector2.Scale(Div((c - Min(r1)), r1size), r2size) + Min(r2);
+            }
+
+            public static bool Inside(Vector2 v, Vector4 r) {
+                return v.x >= r.x && v.y >= r.y && v.x <= r.z && v.y <= r.w;
+            }
         }
 
         struct MaterialParameters {
