@@ -131,17 +131,13 @@ namespace SoftMask {
             _materials.Release(replacement);
         }
 
-        public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera) {
+        public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
             Vector2 local;
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, eventCamera, out local))
-                return false;
-            if (!_parameters.texture)
-                return true;
-            if (!Mathr.Inside(local, _parameters.maskRect))
-                return false;
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, cam, out local)) return false;
+            if (!_parameters.texture) return true;
+            if (!Mathr.Inside(local, _parameters.maskRect)) return false;
+            if (_raycastThreshold <= 0.0f) return true;
             var uv = Mathr.Remap(local, _parameters.maskRect, _parameters.maskRectUV); // TODO support all border types
-            if (_raycastThreshold <= 0.0f)
-                return true;
             try {
                 return MaskValue(_parameters.texture.GetPixelBilinear(uv.x, uv.y)) >= _raycastThreshold;
             } catch (UnityException e) {
@@ -374,7 +370,7 @@ namespace SoftMask {
 
         float MaskValue(Color mask) {
             var value = mask * _parameters.maskChannelWeights;
-            return (value.a + value.r + value.g + value.b) / 4.0f;
+            return value.a + value.r + value.g + value.b;
         }
 
         void WarnIfDefaultShaderIsNotSet() {
