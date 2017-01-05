@@ -248,7 +248,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 177.5, y: 165.1}
+  m_AnchoredPosition: {x: 146, y: 109}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &757416842
@@ -508,10 +508,10 @@ RectTransform:
   - {fileID: 757416841}
   m_Father: {fileID: 810066182}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -150, y: 82}
-  m_SizeDelta: {x: -654, y: -295}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 54, y: 14}
+  m_SizeDelta: {x: 318, y: 253}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1277678873
 MonoBehaviour:
@@ -529,7 +529,14 @@ MonoBehaviour:
   _sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   _spriteBorderMode: 0
   _texture: {fileID: 0}
+  _textureRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
   _channelWeights: {r: 0, g: 0, b: 0, a: 1}
+  _raycastThreshold: 0
 --- !u!114 &1277678874
 MonoBehaviour:
   m_ObjectHideFlags: 0
