@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 0bac33ade27cf4542bd53b1b13d90941
-timeCreated: 1483549786
+timeCreated: 1483653110
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
@@ -9,7 +9,7 @@ MonoImporter:
   - _sprite: {instanceID: 0}
   - _texture: {instanceID: 0}
   executionOrder: 0
-  icon: {instanceID: 0}
+  icon: {fileID: 2800000, guid: 6f9555d9fbe1e964b84cd2ec1294775c, type: 3}
   userData: 
   assetBundleName: 
   assetBundleVariant: 
