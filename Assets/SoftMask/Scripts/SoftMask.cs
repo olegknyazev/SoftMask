@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using SoftMask.Extensions;
+using SoftMasking.Extensions;
 
-namespace SoftMask {
+namespace SoftMasking {
     public static class MaskChannel {
         public static Color alpha   = new Color(0, 0, 0, 1);
         public static Color red     = new Color(1, 0, 0, 0);

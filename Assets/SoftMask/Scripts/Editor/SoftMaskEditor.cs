@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace SoftMask.Editor {
+namespace SoftMasking.Editor {
     [CustomEditor(typeof(SoftMask))]
     [CanEditMultipleObjects]
     public class SoftMaskEditor : UnityEditor.Editor {
