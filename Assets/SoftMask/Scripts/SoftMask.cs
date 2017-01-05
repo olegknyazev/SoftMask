@@ -112,6 +112,11 @@ namespace SoftMask {
             }
         }
 
+        public float raycastThreshold {
+            get { return _raycastThreshold; }
+            set { _raycastThreshold = value; }
+        }
+
         public bool maskingEnabled {
             get { return isActiveAndEnabled; }
         }

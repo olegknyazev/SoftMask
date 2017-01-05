@@ -13,6 +13,7 @@ namespace SoftMask.Editor {
         SerializedProperty _texture;
         SerializedProperty _textureRect;
         SerializedProperty _channelWeights;
+        SerializedProperty _raycastThreshold;
 
         bool _customWeightsExpanded;
         
@@ -32,12 +33,14 @@ namespace SoftMask.Editor {
             _texture = serializedObject.FindProperty("_texture");
             _textureRect = serializedObject.FindProperty("_textureRect");
             _channelWeights = serializedObject.FindProperty("_channelWeights");
+            _raycastThreshold = serializedObject.FindProperty("_raycastThreshold");
             Assert.IsNotNull(_source);
             Assert.IsNotNull(_sprite);
             Assert.IsNotNull(_spriteBorderMode);
             Assert.IsNotNull(_texture);
             Assert.IsNotNull(_textureRect);
             Assert.IsNotNull(_channelWeights);
+            Assert.IsNotNull(_raycastThreshold);
         }
 
         public override void OnInspectorGUI() {
@@ -57,6 +60,7 @@ namespace SoftMask.Editor {
                         break;
                 }
             });
+            EditorGUILayout.Slider(_raycastThreshold, 0, 1);
             CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
             serializedObject.ApplyModifiedProperties();
         }
