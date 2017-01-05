@@ -7,13 +7,13 @@ namespace SoftMasking {
     [ExecuteInEditMode]
     [AddComponentMenu("")]
     public class SoftMaskable : UIBehaviour, IMaterialModifier {
-        SoftMask _mask;
+        ISoftMask _mask;
         Graphic _graphic;
         Material _replacement;
         bool _warned;
 
         public Material GetModifiedMaterial(Material baseMaterial) {
-            if (_mask && _mask.isActiveAndEnabled) {
+            if (_mask != null && _mask.isMaskingEnabled) {
                 // We should find new replacement first and only then Release() the previous 
                 // one. It allows us to not delete the old material if it may be reused.
                 var newMat = _mask.GetReplacement(baseMaterial);
@@ -44,7 +44,7 @@ namespace SoftMasking {
         }
 
         protected virtual void Update() {
-            if (!mask || !graphic)
+            if (mask == null || graphic == null)
                 DestroyImmediate(this);
         }
 
@@ -69,18 +69,18 @@ namespace SoftMasking {
             get { return _replacement; }
             set {
                 if (_replacement != value) {
-                    if (_replacement && _mask)
+                    if (_replacement != null && _mask != null)
                         _mask.ReleaseReplacement(_replacement);
                     _replacement = value;
                 }
             }
         }
 
-        SoftMask mask {
+        ISoftMask mask {
             get { return _mask; }
             set {
                 if (_mask != value) {
-                    if (_mask)
+                    if (_mask != null)
                         replacement = null;
                     _mask = value;
                     Invalidate();

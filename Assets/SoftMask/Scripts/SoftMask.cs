@@ -17,7 +17,7 @@ namespace SoftMasking {
     [ExecuteInEditMode]
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
-    public class SoftMask : UIBehaviour, ICanvasRaycastFilter {
+    public class SoftMask : UIBehaviour, ICanvasRaycastFilter, ISoftMask {
         //
         // How it works:
         //
@@ -117,7 +117,7 @@ namespace SoftMasking {
             set { _raycastThreshold = value; }
         }
 
-        public bool maskingEnabled {
+        public bool isMaskingEnabled {
             get { return isActiveAndEnabled; }
         }
 
