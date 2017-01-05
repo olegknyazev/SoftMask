@@ -6,7 +6,6 @@ using SoftMask.Extensions;
 namespace SoftMask {
     [ExecuteInEditMode]
     [AddComponentMenu("")]
-    [RequireComponent(typeof(Graphic))]
     public class SoftMaskable : UIBehaviour, IMaterialModifier {
         SoftMask _mask;
         Graphic _graphic;
@@ -35,7 +34,8 @@ namespace SoftMask {
         }
         
         public void Invalidate() {
-            graphic.SetMaterialDirty();
+            if (graphic)
+                graphic.SetMaterialDirty();
         }
 
         protected override void Awake() {
@@ -44,7 +44,7 @@ namespace SoftMask {
         }
 
         protected virtual void Update() {
-            if (!mask)
+            if (!mask || !graphic)
                 DestroyImmediate(this);
         }
 
