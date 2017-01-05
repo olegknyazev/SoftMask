@@ -455,6 +455,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   panel: {fileID: 819296861}
+  shader: {fileID: 4800000, guid: 8d19bf0a0d7a69643b050c159096b413, type: 3}
 --- !u!4 &539783288
 Transform:
   m_ObjectHideFlags: 0
