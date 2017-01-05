@@ -41,6 +41,13 @@
         return (a - a1) / (a2 - a1) * (u2 - u1) + u1;
     }
 
+    // Anti-aliased version of UnityGet2DClipping()
+    inline float __SoftMask_Get2DClippingAntialiased(in float2 position, in float4 clipRect)
+    {
+        float2 inside = saturate(position.xy - clipRect.xy) * saturate(clipRect.zw - position.xy);
+        return inside.x * inside.y;
+    }
+
 #if defined(SOFTMASK_SLICED) || defined(SOFTMASK_TILED)
 #   if SOFTMASK_TILED
 #       define __SOFTMASK_REPEAT , _SoftMask_TileRepeat
@@ -85,6 +92,6 @@
     float SoftMask_GetMask(float2 maskPosition) {
         float2 uv = SoftMask_GetMaskUV(maskPosition);
         float4 mask = tex2D(_SoftMask, uv) * _SoftMask_ChannelWeights;
-        return (mask.r + mask.g + mask.b + mask.a) * UnityGet2DClipping(maskPosition, _SoftMask_Rect);
+        return (mask.r + mask.g + mask.b + mask.a) * __SoftMask_Get2DClippingAntialiased(maskPosition, _SoftMask_Rect);
     }
 #endif
