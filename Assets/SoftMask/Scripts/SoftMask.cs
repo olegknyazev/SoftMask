@@ -491,18 +491,18 @@ namespace SoftMasking {
             }
 
             public void Apply(Material mat) {
-                mat.SetTexture("_SoftMask", activeTexture);
-                mat.SetVector("_SoftMask_Rect", maskRect);
-                mat.SetVector("_SoftMask_UVRect", maskRectUV);
-                mat.SetColor("_SoftMask_ChannelWeights", maskChannelWeights);
-                mat.SetMatrix("_SoftMask_WorldToMask", worldToMask);
+                mat.SetTexture(Ids.SoftMask, activeTexture);
+                mat.SetVector(Ids.SoftMask_Rect, maskRect);
+                mat.SetVector(Ids.SoftMask_UVRect, maskRectUV);
+                mat.SetColor(Ids.SoftMask_ChannelWeights, maskChannelWeights);
+                mat.SetMatrix(Ids.SoftMask_WorldToMask, worldToMask);
                 mat.EnableKeyword("SOFTMASK_SLICED", borderMode == BorderMode.Sliced);
                 mat.EnableKeyword("SOFTMASK_TILED", borderMode == BorderMode.Tiled);
                 if (borderMode != BorderMode.Simple) {
-                    mat.SetVector("_SoftMask_BorderRect", maskBorder);
-                    mat.SetVector("_SoftMask_UVBorderRect", maskBorderUV);
+                    mat.SetVector(Ids.SoftMask_BorderRect, maskBorder);
+                    mat.SetVector(Ids.SoftMask_UVBorderRect, maskBorderUV);
                     if (borderMode == BorderMode.Tiled)
-                        mat.SetVector("_SoftMask_TileRepeat", tileRepeat);
+                        mat.SetVector(Ids.SoftMask_TileRepeat, tileRepeat);
                 }
             }
 
@@ -558,6 +558,17 @@ namespace SoftMasking {
             float MaskValue(Color mask) {
                 var value = mask * maskChannelWeights;
                 return value.a + value.r + value.g + value.b;
+            }
+
+            static class Ids {
+                public static readonly int SoftMask = Shader.PropertyToID("_SoftMask");
+                public static readonly int SoftMask_Rect = Shader.PropertyToID("_SoftMask_Rect");
+                public static readonly int SoftMask_UVRect = Shader.PropertyToID("_SoftMask_UVRect");
+                public static readonly int SoftMask_ChannelWeights = Shader.PropertyToID("_SoftMask_ChannelWeights");
+                public static readonly int SoftMask_WorldToMask = Shader.PropertyToID("_SoftMask_WorldToMask");
+                public static readonly int SoftMask_BorderRect = Shader.PropertyToID("_SoftMask_BorderRect");
+                public static readonly int SoftMask_UVBorderRect = Shader.PropertyToID("_SoftMask_UVBorderRect");
+                public static readonly int SoftMask_TileRepeat = Shader.PropertyToID("_SoftMask_TileRepeat");
             }
         }
     }
