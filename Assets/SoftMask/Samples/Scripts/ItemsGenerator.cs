@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SoftMasking.Samples {
     public class ItemsGenerator : MonoBehaviour {
@@ -32,11 +31,8 @@ namespace SoftMasking.Samples {
         }
 
         void DestroyChildren() {
-            var children = new List<Transform>();
-            for (int i = 0; i < target.childCount; ++i)
-                children.Add(target.GetChild(i));
-            foreach (var c in children)
-                DestroyImmediate(c.gameObject);
+            while (target.childCount > 0)
+                DestroyImmediate(target.GetChild(0).gameObject);
         }
     }
 }

@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 
 namespace SoftMasking.Samples {
-    public class ToggleSoftMask : MonoBehaviour {
+    public class SoftMaskToggler : MonoBehaviour {
         public GameObject viewport;
 
         public void Toggle(bool enabled) {

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace SoftMasking.Samples {
-    public class AlignMiniMap : MonoBehaviour {
+    public class MiniMapAligner : MonoBehaviour {
         public RectTransform map;
         public RectTransform marker;
 
