@@ -54,8 +54,59 @@ namespace SoftMasking {
             _materials = new MaterialReplacements(Replace, m => _parameters.Apply(m));
         }
 
-        [Serializable] public enum MaskSource { Graphic, Sprite, Texture }
-        [Serializable] public enum BorderMode { Simple, Sliced, Tiled }
+        /// <summary>
+        /// Source of mask's image.
+        /// </summary>
+        [Serializable] public enum MaskSource {
+            /// <summary>
+            /// Mask image should be taken from Graphic component of containing GameObject.
+            /// Only Image and RawImage components are supported. If there is no appropriate
+            /// Graphic on the GameObject, solid rectangle of RectTransform dimensions will
+            /// be used.
+            /// </summary>
+            Graphic,
+            /// <summary>
+            /// Mask image should be taken from an explicitly specified <see cref="Sprite"/>. 
+            /// When sprite is used, <see cref="spriteBorderMode"/> can also be set to 
+            /// determine how to process Sprite's borders. If sprite isn't set, solid rectangle
+            /// of RectTransform dimensions will be used. This mode is analogous to using 
+            /// <see cref="Image"/> with according <see cref="Image.sprite"/> and 
+            /// <see cref="Image.type"/> set.
+            /// </summary>
+            Sprite,
+            /// <summary>
+            /// Mask image should be taken from an explicitly specified <see cref="Texture2D"/>. 
+            /// When Texture is used, <see cref="textureUVRect"/> can also be set to determine
+            /// what part of the texture should be used. If texture isn't set, solid rectangle
+            /// of RectTransform dimensions will be used. This mode is analogous to using
+            /// <see cref="RawImage"/> with according <see cref="RawImage.texture"/> and 
+            /// <see cref="RawImage.uvRect"/> set.
+            /// </summary>
+            Texture
+        }
+
+        /// <summary>
+        /// How Sprite's borders should be processed. It is a reduced set of 
+        /// <see cref="Image.Type"/> values.
+        /// </summary>
+        [Serializable] public enum BorderMode {
+            /// <summary>
+            /// Sprite should be drawn as a whole, ignoring any borders set. This is the same
+            /// as <see cref="Image.Type.Simple"/>.
+            /// </summary>
+            Simple,
+            /// <summary>
+            /// Sprite borders should be stretched when the drawn image is larger that the
+            /// source. This is the same as <see cref="Image.Type.Sliced"/>.
+            /// </summary>
+            Sliced,
+            /// <summary>
+            /// Same as <see cref="Sliced"/>, but border fragments should be repeated
+            /// instead of stretched. This is the same as <see cref="Image.Type.Tiled"/>.
+            /// </summary>
+            Tiled
+        }
+        
         [Flags]
         [Serializable] public enum Errors {
             NoError = 0,
@@ -63,6 +114,11 @@ namespace SoftMasking {
             NestedMasks = 1 << 1
         }
 
+        /// <summary>
+        /// Specifies Shader that should be used as replacement for default Unity UI shader.
+        /// If you add SoftMask component to GameObject at runtime, you should manually
+        /// specify defaultShader.
+        /// </summary>
         public Shader defaultShader {
             get { return _defaultShader; }
             set {
@@ -75,75 +131,96 @@ namespace SoftMasking {
             }
         }
 
+        /// <summary>
+        /// Determines from where mask image should be taken.
+        /// </summary>
         public MaskSource source {
             get { return _source; }
-            set {
-                if (_source != value) {
-                    _source = value;
-                    _dirty = true;
-                }
-            } 
+            set { if (_source != value) Set(ref _source, value); }
         }
 
+        /// <summary>
+        /// Specifies Sprite that should be used as mask image. This property takes effect
+        /// only when source is MaskSource.Sprite.
+        /// </summary>
+        /// <seealso cref="spriteBorderMode"/>
         public Sprite sprite {
             get { return _sprite; }
-            set {
-                if (_sprite != value) {
-                    _sprite = value;
-                    _dirty = true;
-                }
-            }
+            set { if (_sprite != value) Set(ref _sprite, value); }
         }
 
+        /// <summary>
+        /// Specifies draw mode of sprite's borders. This property takes effect only when
+        /// source is MaskSource.Sprite.
+        /// </summary>
+        /// <seealso cref="sprite"/>
         public BorderMode spriteBorderMode {
             get { return _spriteBorderMode; }
-            set {
-                if (_spriteBorderMode != value) {
-                    _spriteBorderMode = value;
-                    _dirty = true;
-                }
-            }
+            set { if (_spriteBorderMode != value) Set(ref _spriteBorderMode, value); }
         }
 
+        /// <summary>
+        /// Specifies Texture2D that should be used as mask image. This property takes effect
+        /// only when source is MaskSource.Texture.
+        /// </summary>
+        /// <seealso cref="textureUVRect"/>
         public Texture2D texture {
             get { return _texture; }
-            set {
-                if (_texture != value) {
-                    _texture = value;
-                    _dirty = true;
-                }
-            }
+            set { if (_texture != value) Set(ref _texture, value); }
         }
 
+        /// <summary>
+        /// Specifies UV rectangle in normalized coordinates defining part of image, that should
+        /// be used as mask image. This property takes effect only when source is MaskSource.Texture.
+        /// Default value is (0, 0, 1, 1) which means that whole texture is used.
+        /// </summary>
+        /// <seealso cref="texture"/>
         public Rect textureUVRect {
             get { return _textureRect; }
-            set {
-                if (_textureRect != value) {
-                    _textureRect = value;
-                    _dirty = true;
-                }
-            }
+            set { if (_textureRect != value) Set(ref _textureRect, value); }
         }
 
+        /// <summary>
+        /// Specifies weights of color channels of mask. Color sampled from mask texture is
+        /// multiplied by this value, after what all components are added together. That is,
+        /// final mask value is calculated as:
+        ///     mask = (texture * channelWeights)
+        ///     value = mask.a + mask.r + mask.g + mask.b
+        /// This is the value, by which resulting's pixel alpha is multiplied.
+        /// Static class <see cref="MaskChannel"/> contains some predefined weights.
+        /// </summary>
+        /// <seealso cref="MaskChannel"/>
         public Color channelWeights {
             get { return _channelWeights; }
-            set {
-                if (_channelWeights != value) {
-                    _channelWeights = value;
-                    _dirty = true;
-                }
-            }
+            set { if (_channelWeights != value) Set(ref _channelWeights, value); }
         }
 
+        /// <summary>
+        /// Specifies the value that should be less or equal than the calculated mask value
+        /// for the input events to pass. Mask value is compared with raycastThreshold after
+        /// <see cref="channelWeights"/> are applied.
+        /// Default value is 0, which means that any pixel belonging to RectTransform is
+        /// considered as opaque to input events. If you specify value greater than 0,
+        /// the mask's texture should be readable.
+        /// Accepts values in range [0..1].
+        /// </summary>
         public float raycastThreshold {
             get { return _raycastThreshold; }
             set { _raycastThreshold = value; }
         }
 
+        /// <summary>
+        /// Returns true when masking is currently active.
+        /// </summary>
         public bool isMaskingEnabled {
             get { return isActiveAndEnabled; }
         }
 
+        /// <summary>
+        /// Checks for errors and returns its as flags. It is used in editor to determine
+        /// which warnings should be displayed.
+        /// </summary>
+        /// <returns>An Errors instance containing found errors.</returns>
         public Errors PollErrors() {
             Errors result = Errors.NoError;
             GetComponentsInChildren(_s_maskables);
@@ -271,10 +348,6 @@ namespace SoftMasking {
             transform.hasChanged = false;
             _dirty = false;
         }
-
-        static readonly List<Graphic> _s_graphics = new List<Graphic>();
-        static readonly List<SoftMask> _s_masks = new List<SoftMask>();
-        static readonly List<SoftMaskable> _s_maskables = new List<SoftMaskable>();
 
         void SpawnMaskablesInChildren() {
             transform.GetComponentsInChildren(_s_graphics);
@@ -447,6 +520,15 @@ namespace SoftMasking {
             result |= _s_masks.Any(maskEnabled);
             return result;
         }
+
+        void Set<T>(ref T field, T value) {
+            field = value;
+            _dirty = true;
+        }
+
+        static readonly List<Graphic> _s_graphics = new List<Graphic>();
+        static readonly List<SoftMask> _s_masks = new List<SoftMask>();
+        static readonly List<SoftMaskable> _s_maskables = new List<SoftMaskable>();
 
         // Various operations on Rect represented as Vector4. 
         // In Vector4 Rect is stored as (xMin, yMin, xMax, yMax).
