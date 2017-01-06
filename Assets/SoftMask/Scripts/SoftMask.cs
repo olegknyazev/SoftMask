@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -237,20 +238,26 @@ namespace SoftMasking {
             _dirty = false;
         }
 
+        static readonly List<Graphic> _s_graphics = new List<Graphic>();
+        static readonly List<SoftMaskable> _s_maskables = new List<SoftMaskable>();
+
         void SpawnMaskablesInChildren() {
-            foreach (var g in transform.GetComponentsInChildren<Graphic>())
+            transform.GetComponentsInChildren(_s_graphics);
+            foreach (var g in _s_graphics)
                 if (g.gameObject != gameObject)
                     if (!g.GetComponent<SoftMaskable>())
                         g.gameObject.AddComponent<SoftMaskable>();
         }
 
         void DestroyMaskablesInChildren() {
-            foreach (var m in transform.GetComponentsInChildren<SoftMaskable>())
+            transform.GetComponentsInChildren(_s_maskables);
+            foreach (var m in _s_maskables)
                 DestroyImmediate(m);
         }
 
         void InvalidateChildren() {
-            foreach (var maskable in transform.GetComponentsInChildren<SoftMaskable>())
+            transform.GetComponentsInChildren(_s_maskables);
+            foreach (var maskable in _s_maskables)
                 if (maskable)
                     maskable.Invalidate();
         }
