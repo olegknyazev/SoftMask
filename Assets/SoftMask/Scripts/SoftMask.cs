@@ -372,9 +372,12 @@ namespace SoftMasking {
             var textureRect = Mathr.ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
             var fullMaskRect = LocalRect(Vector4.zero);
-            _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, textureBorder * GraphicToCanvas(sprite));
             _parameters.maskRectUV = Mathr.Div(textureRect, textureSize);
-            if (borderMode != BorderMode.Simple) {
+            if (borderMode == BorderMode.Simple) {
+                var textureRectInFullRect = Mathr.Div(Mathr.BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
+                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(textureRectInFullRect, Mathr.Size(fullMaskRect)));
+            } else {
+                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, textureBorder * GraphicToCanvas(sprite));
                 var fullMaskRectUV = Mathr.Div(Mathr.ToVector(sprite.rect), textureSize);
                 _parameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
                 _parameters.maskBorderUV = Mathr.ApplyBorder(fullMaskRectUV, Mathr.Div(sprite.border, textureSize));
