@@ -1,25 +1,12 @@
-﻿Shader "Hidden/UI Default (Soft Masked)"
+﻿Shader "UI/Custom with Soft Mask support"
 {
-    // It is a standart UI shader with Soft Mask support added. You can use it as a guide to
-    // implement your own shaders that supports Soft Mask. All places where something should 
-    // be added to Soft Mask to work are marked with comment 'Soft Mask Support'.
-
     Properties
     {
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
 
-        // Soft Mask support
+        // SoftMask support
         _SoftMask("Mask", 2D) = "white" {}
-
-        // This block isn't required. You may not include it in your material if you don't
-        // want to modify these properties from Unity editor (you normally wont modify them).
-        _SoftMask_Rect("Mask Rect", Vector) = (0,0,0,0)
-        _SoftMask_UVRect("Mask UV Rect", Vector) = (0,0,1,1)
-        _SoftMask_BorderRect("Mask Border", Vector) = (0,0,0,0)
-        _SoftMask_UVBorderRect("Mask UV Border", Vector) = (0,0,1,1)
-        _SoftMask_ChannelWeights("Mask Channel Weights", Vector) = (0,0,0,1)
-        _SoftMask_TileRepeat("Mask Tile Repeat", Vector) = (1,1,0,0)
 
         _StencilComp("Stencil Comparison", Float) = 8
         _Stencil("Stencil ID", Float) = 0
@@ -67,11 +54,9 @@
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-            #include "UISoftMask.cginc" // Soft Mask support
+            #include "../../Shaders/UISoftMask.cginc"
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
-
-            // Soft Mask support
             #pragma multi_compile __ SOFTMASK_SLICED SOFTMASK_TILED
 
             struct appdata_t
@@ -87,9 +72,6 @@
                 fixed4 color : COLOR;
                 half2 texcoord : TEXCOORD0;
                 float4 worldPosition : TEXCOORD1;
-                // Soft Mask support
-                // Like in standard Unity's UNITY_FOG_COORDS(), the number in braces determines
-                // interpolator index that should be used by Soft Mask (it's `n` in TEXCOORDn).
                 SOFT_MASK_COORDS(2)
             };
 
@@ -110,7 +92,7 @@
             #endif
 
                 OUT.color = IN.color * _Color;
-                SOFT_MASK_CALCULATE_COORDS(OUT, IN.vertex) // Soft Mask support
+                SOFT_MASK_CALCULATE_COORDS(OUT, IN.vertex)
                 return OUT;
             }
 
@@ -120,7 +102,8 @@
             {
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 
-                color.a *= SoftMask_GetMask(IN.maskPosition.xy); // Soft Mask support
+                color.r = IN.worldPosition.y / 100.0f; // customness
+                color.a *= SoftMask_GetMask(IN.maskPosition.xy);
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 
             #ifdef UNITY_UI_ALPHACLIP
