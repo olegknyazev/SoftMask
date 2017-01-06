@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 12740451}
   - component: {fileID: 12740452}
   m_Layer: 5
-  m_Name: Toggler1
+  m_Name: MenuToggler
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -137,6 +137,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewport: {fileID: 113706373}
+  doNotTouchImage: 0
 --- !u!1 &113480430
 GameObject:
   m_ObjectHideFlags: 0
@@ -256,7 +257,7 @@ GameObject:
   - component: {fileID: 113706379}
   - component: {fileID: 113706376}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: Menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -501,7 +502,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -416.19998
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -511,7 +512,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 83.6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1044,7 +1045,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -322.59998
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1054,7 +1055,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 83.6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1178,7 +1179,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -229
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1188,7 +1189,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 83.6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1405,7 +1406,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -135.4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1415,7 +1416,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 83.6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1539,7 +1540,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -41.8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1549,7 +1550,7 @@ Prefab:
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 83.6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224759101493669456, guid: c15f6a6f3bbea9449a335fd4cc3538a1,
         type: 2}
@@ -1698,7 +1699,7 @@ GameObject:
   - component: {fileID: 1625308908}
   - component: {fileID: 1625308909}
   m_Layer: 5
-  m_Name: Toggler2
+  m_Name: ScrollViewToggler
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1734,6 +1735,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewport: {fileID: 2139125411}
+  doNotTouchImage: 1
 --- !u!1 &1952407896
 GameObject:
   m_ObjectHideFlags: 0
@@ -1816,7 +1818,7 @@ GameObject:
   - component: {fileID: 2139125413}
   - component: {fileID: 2139125417}
   m_Layer: 5
-  m_Name: Viewport
+  m_Name: ScrollView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1871,7 +1873,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2139125411}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
@@ -1909,7 +1911,7 @@ MonoBehaviour:
   m_Script: {fileID: -1200242548, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ShowMaskGraphic: 0
+  m_ShowMaskGraphic: 1
 --- !u!114 &2139125417
 MonoBehaviour:
   m_ObjectHideFlags: 0
