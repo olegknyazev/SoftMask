@@ -61,9 +61,11 @@
 
         Pass
         {
+            Name "Default"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 2.0
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
@@ -80,6 +82,9 @@
                 float4 vertex : POSITION;
                 float4 color : COLOR;
                 float2 texcoord : TEXCOORD0;
+            #if UNITY_VERSION >= 550
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            #endif
             };
 
             struct v2f
@@ -88,6 +93,9 @@
                 fixed4 color : COLOR;
                 half2 texcoord : TEXCOORD0;
                 float4 worldPosition : TEXCOORD1;
+            #if UNITY_VERSION >= 550
+                UNITY_VERTEX_OUTPUT_STEREO
+            #endif
                 // Soft Mask support
                 // Like in standard Unity's UNITY_FOG_COORDS(), the number in braces determines
                 // interpolator index that should be used by Soft Mask (it's `n` in TEXCOORDn).
@@ -101,13 +109,23 @@
             v2f vert(appdata_t IN)
             {
                 v2f OUT;
+            #if UNITY_VERSION >= 550
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+            #endif
                 OUT.worldPosition = IN.vertex;
-                OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
+            #if UNITY_VERSION >= 540
+                OUT.vertex = UnityObjectToClipPos(OUT.worldPosition);
+            #else
+                OUT.vertex = mul(UNITY_MATRIX_MVP, OUT.worldPosition);
+            #endif
 
                 OUT.texcoord = IN.texcoord;
 
-            #ifdef UNITY_HALF_TEXEL_OFFSET
+            #if UNITY_VERSION < 550
+            # ifdef UNITY_HALF_TEXEL_OFFSET
                 OUT.vertex.xy += (_ScreenParams.zw - 1.0) * float2(-1, 1);
+            # endif
             #endif
 
                 OUT.color = IN.color * _Color;
