@@ -10,7 +10,8 @@ namespace SoftMasking {
         ISoftMask _mask;
         Graphic _graphic;
         Material _replacement;
-        bool _warned;
+
+        public bool shaderIsNotSupported { get; private set; }
 
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (_mask != null && _mask.isMaskingEnabled) {
@@ -19,15 +20,16 @@ namespace SoftMasking {
                 var newMat = _mask.GetReplacement(baseMaterial);
                 replacement = newMat;
                 if (replacement) {
-                    _warned = false;
+                    shaderIsNotSupported = false;
                     return replacement;
                 }
                 // Warn only if material has non-default UI shader. Otherwise, it seems that
                 // replacement is null because SoftMask.defaultShader isn't set. If so, it's
                 // SoftMask's business.
                 if (!baseMaterial.HasDefaultUIShader())
-                    WarnMaskingWillNotWork(baseMaterial);
+                    SetShaderNotSupported(baseMaterial);
             } else {
+                shaderIsNotSupported = false;
                 replacement = null;
             }   
             return baseMaterial;
@@ -93,8 +95,8 @@ namespace SoftMasking {
             
         }
 
-        void WarnMaskingWillNotWork(Material material) {
-            if (!_warned) {
+        void SetShaderNotSupported(Material material) {
+            if (!shaderIsNotSupported) {
                 Debug.LogWarningFormat(
                     gameObject,
                     "Soft Mask will not work on {0} because material {1} doesn't support masking. " +
@@ -102,7 +104,7 @@ namespace SoftMasking {
                     "a default one.",
                     graphic,
                     material);
-                _warned = true;
+                shaderIsNotSupported = true;
             }
         }
     }

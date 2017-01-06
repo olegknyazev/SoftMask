@@ -24,9 +24,16 @@ namespace SoftMasking.Editor {
             public static readonly GUIContent G = new GUIContent("G");
             public static readonly GUIContent B = new GUIContent("B");
             public static readonly GUIContent A = new GUIContent("A");
+            public static readonly string UnsupportedShaders = 
+                "Some of children's shaders aren't supported. Mask wouldn't work on those elements. " +
+                "See documentation on how to add Soft Mask support to custom shaders.";
+            public static readonly string NestedMasks = 
+                "Mask is disabled because there is already a Soft Mask child or parent element. " +
+                "Soft Mask doesn't support nesting. You can work around this limitation by nesting " +
+                "Soft Mask into Unity standard Mask or Mask Rect 2D or vice versa.";
         }
 
-        void OnEnable() {
+        public void OnEnable() {
             _source = serializedObject.FindProperty("_source");
             _sprite = serializedObject.FindProperty("_sprite");
             _spriteBorderMode = serializedObject.FindProperty("_spriteBorderMode");
@@ -62,7 +69,19 @@ namespace SoftMasking.Editor {
             });
             EditorGUILayout.Slider(_raycastThreshold, 0, 1);
             CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
+            var errors = CollectErrors();
+            if ((errors & SoftMask.Errors.UnsupportedShaders) != 0)
+                EditorGUILayout.HelpBox(Labels.UnsupportedShaders, MessageType.Warning);
+            if ((errors & SoftMask.Errors.NestedMasks) != 0)
+                EditorGUILayout.HelpBox(Labels.NestedMasks, MessageType.Error);
             serializedObject.ApplyModifiedProperties();
+        }
+
+        SoftMask.Errors CollectErrors() {
+            SoftMask.Errors result = SoftMask.Errors.NoError;
+            foreach (var t in targets)
+                result |= ((SoftMask)t).DetermineErrors();
+            return result;
         }
 
         public static class CustomEditors {

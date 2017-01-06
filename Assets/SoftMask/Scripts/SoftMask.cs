@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -55,6 +56,12 @@ namespace SoftMasking {
 
         [Serializable] public enum MaskSource { Graphic, Sprite, Texture }
         [Serializable] public enum BorderMode { Simple, Sliced, Tiled }
+        [Flags]
+        [Serializable] public enum Errors {
+            NoError = 0,
+            UnsupportedShaders = 1 << 0,
+            NestedMasks = 1 << 1
+        }
 
         public Shader defaultShader {
             get { return _defaultShader; }
@@ -126,7 +133,15 @@ namespace SoftMasking {
         public bool isMaskingEnabled {
             get { return isActiveAndEnabled; }
         }
-        
+
+        public Errors DetermineErrors() {
+            Errors result = Errors.NoError;
+            GetComponentsInChildren(_s_maskables);
+            if (_s_maskables.Any(m => m.shaderIsNotSupported))
+                result |= Errors.UnsupportedShaders;
+            return result;
+        }
+
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
             Vector2 localPos;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, cam, out localPos)) return false;
