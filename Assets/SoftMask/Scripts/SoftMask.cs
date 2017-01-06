@@ -318,23 +318,26 @@ namespace SoftMasking {
             CalculateTextureBased(image.texture as Texture2D, image.uvRect);
         }
 
-        void CalculateSpriteBased(Sprite sprite, BorderMode spriteMode) {
+        void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
             if (!sprite) {
                 CalculateSolidFill();
                 return;
             }   
             FillCommonParameters();
-            var textureRectInFullRect = Mathr.Div(Mathr.BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
+            var textureBorder = Mathr.BorderOf(sprite.rect, sprite.textureRect);
             var textureRect = Mathr.ToVector(sprite.textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
             var fullMaskRect = LocalRect(Vector4.zero);
-            _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(textureRectInFullRect, Mathr.Size(fullMaskRect)));
-            _parameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
+            _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, textureBorder * GraphicToCanvas(sprite));
             _parameters.maskRectUV = Mathr.Div(textureRect, textureSize);
-            _parameters.maskBorderUV = Mathr.ApplyBorder(_parameters.maskRectUV, Mathr.Div(sprite.border, textureSize));
+            if (borderMode != BorderMode.Simple) {
+                var fullMaskRectUV = Mathr.Div(Mathr.ToVector(sprite.rect), textureSize);
+                _parameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
+                _parameters.maskBorderUV = Mathr.ApplyBorder(fullMaskRectUV, Mathr.Div(sprite.border, textureSize));
+            }
             _parameters.texture = sprite.texture;
-            _parameters.borderMode = spriteMode;
-            if (spriteMode == BorderMode.Tiled)
+            _parameters.borderMode = borderMode;
+            if (borderMode == BorderMode.Tiled)
                 _parameters.tileRepeat = MaskRepeat(sprite, _parameters.maskBorder);
         }
 
