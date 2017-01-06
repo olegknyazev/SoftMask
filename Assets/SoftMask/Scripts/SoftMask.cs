@@ -95,6 +95,16 @@ namespace SoftMasking {
             }
         }
 
+        public BorderMode spriteBorderMode {
+            get { return _spriteBorderMode; }
+            set {
+                if (_spriteBorderMode != value) {
+                    _spriteBorderMode = value;
+                    _dirty = true;
+                }
+            }
+        }
+
         public Texture2D texture {
             get { return _texture; }
             set {
