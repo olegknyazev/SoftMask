@@ -1,8 +1,8 @@
 ﻿Shader "Hidden/UI Default (Soft Masked)"
 {
-    // It is a standart UI shader with Soft Mask support added. You can use it as a guide to
-    // implement your own shaders that supports Soft Mask. All places where something should 
-    // be added to Soft Mask to work are marked with comment 'Soft Mask Support'.
+    // It is a standard UI shader with Soft Mask support added. You can use it as a guide to
+    // implement your own shaders that support Soft Mask. All places where something should 
+    // be added to enable Soft Mask are marked with comment 'Soft Mask Support'.
 
     Properties
     {
@@ -68,11 +68,12 @@
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
             #include "UISoftMask.cginc" // Soft Mask support
+                                        // This file may be referenced by full (Assets/...) or relative path.
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
 
             // Soft Mask support
-            #pragma multi_compile __ SOFTMASK_SLICED SOFTMASK_TILED
+            #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 
             struct appdata_t
             {
@@ -90,7 +91,7 @@
                 // Soft Mask support
                 // Like in standard Unity's UNITY_FOG_COORDS(), the number in braces determines
                 // interpolator index that should be used by Soft Mask (it's `n` in TEXCOORDn).
-                SOFT_MASK_COORDS(2)
+                SOFTMASK_COORDS(2)
             };
 
             fixed4 _Color;
@@ -110,7 +111,7 @@
             #endif
 
                 OUT.color = IN.color * _Color;
-                SOFT_MASK_CALCULATE_COORDS(OUT, IN.vertex) // Soft Mask support
+                SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex) // Soft Mask support
                 return OUT;
             }
 
@@ -120,7 +121,7 @@
             {
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 
-                color.a *= SoftMask_GetMask(IN.maskPosition.xy); // Soft Mask support
+                color.a *= SOFTMASK_GET_MASK(IN); // Soft Mask support
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 
             #ifdef UNITY_UI_ALPHACLIP

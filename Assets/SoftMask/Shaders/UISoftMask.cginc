@@ -3,34 +3,62 @@
 
 #include "UnityUI.cginc"
 
-// Use it in structure that is passed from vertex to fragment shader.
-//   idx    Number of interpolator to use. Specify first free TEXCOORD index.
-#define SOFT_MASK_COORDS(idx) float4 maskPosition : TEXCOORD ## idx;
+/*  API Reference
+    -------------
 
-// Use it in vertex shader to calculate mask-related data.
-//   pos    Source vertex position that was passed to vertex shader
-//   out_   Instance of an output structure that will be passed to fragment shader.
-//          It should be of type to which SOFT_MASK_COORDS() was added. 
-#define SOFT_MASK_CALCULATE_COORDS(out_, pos) (out_).maskPosition = mul(_SoftMask_WorldToMask, pos);
+    #define SOFTMASK_COORDS(idx)
+        Use it in structure that is passed from vertex to fragment shader.
+          idx    Number of interpolator to use. Specify first free TEXCOORD index.
 
-#if defined(SOFTMASK_SLICED) || defined(SOFTMASK_TILED)
-#   define __SOFTMASK_USE_BORDER
+    #define SOFTMASK_CALCULATE_COORDS(OUT, pos)
+        Use it in vertex shader to calculate mask-related data.
+          pos    Source vertex position that was passed to vertex shader
+          OUT    Instance of an output structure that will be passed to fragment shader.
+                 It should be of type to which SOFTMASK_COORDS() was added.
+
+    #define SOFTMASK_GET_MASK(IN)
+        Use it in fragment shader to get mask value for current pixel.
+          IN     Instance of an vertex shader output structure, for which SOFTMASK_COORDS()
+                 was defined.
+
+    inline float SoftMask_GetMask(float2 maskPosition)
+        Returns mask value for a given pixel.
+          maskPosition   Position of current pixel in mask's local space.
+                         To get this position use macro SOFTMASK_CALCULATE_COORDS().
+
+    inline float4 SoftMask_GetMaskTexture(float2 maskPosition)
+        Returns color of mask texture for a given pixel. maskPosition is the same
+        as in SoftMask_GetMask(). This function returns original pixel of the mask,
+        which may be useful for debugging.                 
+*/
+
+#if defined(SOFTMASK_SIMPLE) || defined(SOFTMASK_SLICED) || defined(SOFTMASK_TILED)
+#   define __SOFTMASK_ENABLE
+#   if defined(SOFTMASK_SLICED) || defined(SOFTMASK_TILED)
+#       define __SOFTMASK_USE_BORDER
+#   endif
 #endif
+
+#ifdef __SOFTMASK_ENABLE
+
+# define SOFTMASK_COORDS(idx)                  float4 maskPosition : TEXCOORD ## idx;
+# define SOFTMASK_CALCULATE_COORDS(OUT, pos)   (OUT).maskPosition = mul(_SoftMask_WorldToMask, pos);
+# define SOFTMASK_GET_MASK(IN)                 SoftMask_GetMask((IN).maskPosition.xy)
 
     sampler2D _SoftMask;
     float4 _SoftMask_Rect;
     float4 _SoftMask_UVRect;
     float4x4 _SoftMask_WorldToMask;
     float4 _SoftMask_ChannelWeights;
-#ifdef __SOFTMASK_USE_BORDER
+# ifdef __SOFTMASK_USE_BORDER
     float4 _SoftMask_BorderRect;
     float4 _SoftMask_UVBorderRect;
-#endif
-#ifdef SOFTMASK_TILED
+# endif
+# ifdef SOFTMASK_TILED
     float2 _SoftMask_TileRepeat;
-#endif
+# endif
 
-    // When change logic of the following functions, don't forget to update
+    // On changing logic of the following functions, don't forget to update
     // according functions in SoftMask.MaterialParameters (C#).
     
     inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2, float2 repeat) {
@@ -48,7 +76,7 @@
         return inside.x * inside.y;
     }
 
-#if defined(SOFTMASK_SLICED) || defined(SOFTMASK_TILED)
+# ifdef __SOFTMASK_USE_BORDER
 #   if SOFTMASK_TILED
 #       define __SOFTMASK_REPEAT , _SoftMask_TileRepeat
 #   else
@@ -67,31 +95,39 @@
              + __SoftMask_Inset(a, a3, a4, u3, u4)                   * s1  * s2;
     }
 
-    float2 SoftMask_GetMaskUV(float2 maskPosition) {
+    inline float2 SoftMask_GetMaskUV(float2 maskPosition) {
         return
             __SoftMask_XY2UV(
                 maskPosition,
                 _SoftMask_Rect.xy, _SoftMask_BorderRect.xy, _SoftMask_BorderRect.zw, _SoftMask_Rect.zw,
                 _SoftMask_UVRect.xy, _SoftMask_UVBorderRect.xy, _SoftMask_UVBorderRect.zw, _SoftMask_UVRect.zw);
     }
-#   undef REPEAT
-#else
-    float2 SoftMask_GetMaskUV(float2 maskPosition) {
+#   undef __SOFTMASK_REPEAT
+# else
+    inline float2 SoftMask_GetMaskUV(float2 maskPosition) {
         return 
             __SoftMask_Inset(
                 maskPosition, 
                 _SoftMask_Rect.xy, _SoftMask_Rect.zw, _SoftMask_UVRect.xy, _SoftMask_UVRect.zw);
     }
-#endif
-
-    // Samples mask texture at given world position. It may be useful for debugging.
-    float4 SoftMask_GetMaskTexture(float2 maskPosition) {
+# endif
+    inline float4 SoftMask_GetMaskTexture(float2 maskPosition) {
         return tex2D(_SoftMask, SoftMask_GetMaskUV(maskPosition));
     }
 
-    float SoftMask_GetMask(float2 maskPosition) {
+    inline float SoftMask_GetMask(float2 maskPosition) {
         float2 uv = SoftMask_GetMaskUV(maskPosition);
         float4 mask = tex2D(_SoftMask, uv) * _SoftMask_ChannelWeights;
         return (mask.r + mask.g + mask.b + mask.a) * __SoftMask_Get2DClippingAntialiased(maskPosition, _SoftMask_Rect);
     }
+#else // __SOFTMASK_ENABLED
+
+# define SOFTMASK_COORDS(idx)                  
+# define SOFTMASK_CALCULATE_COORDS(OUT, pos)   
+# define SOFTMASK_GET_MASK(IN)                 (1.0f)
+
+    inline float4 SoftMask_GetMaskTexture(float2 maskPosition) { return 1.0f; }
+    inline float SoftMask_GetMask(float2 maskPosition) { return 1.0f;  }
+#endif
+
 #endif

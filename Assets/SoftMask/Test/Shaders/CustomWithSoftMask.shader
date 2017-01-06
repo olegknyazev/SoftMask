@@ -7,12 +7,6 @@
 
         // SoftMask support
         _SoftMask("Mask", 2D) = "white" {}
-        _SoftMask_Rect("Mask Rect", Vector) = (0,0,0,0)
-        _SoftMask_UVRect("Mask UV Rect", Vector) = (0,0,1,1)
-        _SoftMask_BorderRect("Mask Border", Vector) = (0,0,0,0)
-        _SoftMask_UVBorderRect("Mask UV Border", Vector) = (0,0,1,1)
-        _SoftMask_ChannelWeights("Mask Channel Weights", Vector) = (0,0,0,1)
-        _SoftMask_TileRepeat("Mask Tile Repeat", Vector) = (1,1,0,0)
 
         _StencilComp("Stencil Comparison", Float) = 8
         _Stencil("Stencil ID", Float) = 0
@@ -63,7 +57,7 @@
             #include "../../Shaders/UISoftMask.cginc"
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
-            #pragma multi_compile __ SOFTMASK_SLICED SOFTMASK_TILED
+            #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 
             struct appdata_t
             {
@@ -78,7 +72,7 @@
                 fixed4 color : COLOR;
                 half2 texcoord : TEXCOORD0;
                 float4 worldPosition : TEXCOORD1;
-                SOFT_MASK_COORDS(2)
+                SOFTMASK_COORDS(2)
             };
 
             fixed4 _Color;
@@ -98,7 +92,7 @@
             #endif
 
                 OUT.color = IN.color * _Color;
-                SOFT_MASK_CALCULATE_COORDS(OUT, IN.vertex)
+                SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex)
                 return OUT;
             }
 
@@ -109,7 +103,7 @@
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 
                 color.r = IN.worldPosition.y / 100.0f; // customness
-                color.a *= SoftMask_GetMask(IN.maskPosition.xy);
+                color.a *= SOFTMASK_GET_MASK(IN);
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 
             #ifdef UNITY_UI_ALPHACLIP
