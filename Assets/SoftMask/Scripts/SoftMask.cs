@@ -496,6 +496,7 @@ namespace SoftMasking {
                 mat.SetVector(Ids.SoftMask_UVRect, maskRectUV);
                 mat.SetColor(Ids.SoftMask_ChannelWeights, maskChannelWeights);
                 mat.SetMatrix(Ids.SoftMask_WorldToMask, worldToMask);
+                mat.EnableKeyword("SOFTMASK_SIMPLE", borderMode == BorderMode.Simple);
                 mat.EnableKeyword("SOFTMASK_SLICED", borderMode == BorderMode.Sliced);
                 mat.EnableKeyword("SOFTMASK_TILED", borderMode == BorderMode.Tiled);
                 if (borderMode != BorderMode.Simple) {
