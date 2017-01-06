@@ -134,11 +134,13 @@ namespace SoftMasking {
             get { return isActiveAndEnabled; }
         }
 
-        public Errors DetermineErrors() {
+        public Errors PollErrors() {
             Errors result = Errors.NoError;
             GetComponentsInChildren(_s_maskables);
             if (_s_maskables.Any(m => m.shaderIsNotSupported))
                 result |= Errors.UnsupportedShaders;
+            if (ThereIsNestedMasks())
+                result |= Errors.NestedMasks;
             return result;
         }
 
@@ -163,9 +165,11 @@ namespace SoftMasking {
 
         protected override void OnEnable() {
             base.OnEnable();
+            if (DisableIfThereAreNestedMasks())
+                return;
             FindGraphic();
             UpdateMask();
-            InvalidateChildren();
+            InvalidateChildren(maskMightChange: true);
         }
 
         protected override void OnDisable() {
@@ -175,7 +179,7 @@ namespace SoftMasking {
                 _graphic.UnregisterDirtyMaterialCallback(OnGraphicDirty);
                 _graphic = null;
             }
-            InvalidateChildren();
+            InvalidateChildren(maskMightChange: true);
             DestroyMaterials();
         }
 
@@ -207,10 +211,15 @@ namespace SoftMasking {
             _dirty = true;
         }
 
+        protected override void OnTransformParentChanged() {
+            base.OnTransformParentChanged();
+            DisableIfThereAreNestedMasks();
+        }
+
         static readonly Rect DefaultRectUV = new Rect(0, 0, 1, 1);
 
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
-        Canvas canvas { get { return _canvas ?? (_canvas = GetCanvas()); } }
+        Canvas canvas { get { return _canvas ?? (_canvas = NearestEnabledCanvas()); } }
 
         bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
         
@@ -238,7 +247,7 @@ namespace SoftMasking {
             }
         }
 
-        Canvas GetCanvas() {
+        Canvas NearestEnabledCanvas() {
             var canvases = GetComponentsInParent<Canvas>(false);
             for (int i = 0; i < canvases.Length; ++i)
                 if (canvases[i].isActiveAndEnabled)
@@ -254,6 +263,7 @@ namespace SoftMasking {
         }
 
         static readonly List<Graphic> _s_graphics = new List<Graphic>();
+        static readonly List<SoftMask> _s_masks = new List<SoftMask>();
         static readonly List<SoftMaskable> _s_maskables = new List<SoftMaskable>();
 
         void SpawnMaskablesInChildren() {
@@ -270,11 +280,14 @@ namespace SoftMasking {
                 DestroyImmediate(m);
         }
 
-        void InvalidateChildren() {
+        void InvalidateChildren(bool maskMightChange = false) {
             transform.GetComponentsInChildren(_s_maskables);
             foreach (var maskable in _s_maskables)
-                if (maskable)
+                if (maskable) {
+                    if (maskMightChange)
+                        maskable.MaskMightChange();
                     maskable.Invalidate();
+                }   
         }
         
         void DestroyMaterials() {
@@ -398,14 +411,28 @@ namespace SoftMasking {
             return Mathr.Div(Mathr.Size(centralPart) * GraphicToCanvas(sprite), Mathr.Size(textureCenter));
         }
 
-        float MaskValue(Color mask) {
-            var value = mask * _parameters.maskChannelWeights;
-            return value.a + value.r + value.g + value.b;
+        bool DisableIfThereAreNestedMasks() {
+            if (ThereIsNestedMasks()) {
+                enabled = false;
+                Debug.LogErrorFormat(this, "Soft Mask is disabled because there are nested masks, which is not supported");
+                return true;
+            }
+            return false;
         }
 
         void WarnIfDefaultShaderIsNotSet() {
             if (!_defaultShader)
-                Debug.LogWarningFormat(this, "Mask may be not work because it's defaultShader is not set");
+                Debug.LogWarningFormat(this, "Soft Mask may not work because it's defaultShader is not set");
+        }
+
+        bool ThereIsNestedMasks() {
+            var result = false;
+            Func<SoftMask, bool> maskEnabled = m => m != this && m.isMaskingEnabled;
+            GetComponentsInParent(false, _s_masks);
+            result |= _s_masks.Any(maskEnabled);
+            GetComponentsInChildren(false, _s_masks);
+            result |= _s_masks.Any(maskEnabled);
+            return result;
         }
 
         // Various operations on Rect represented as Vector4. 

@@ -30,7 +30,7 @@ namespace SoftMasking.Editor {
             public static readonly string NestedMasks = 
                 "Mask is disabled because there is already a Soft Mask child or parent element. " +
                 "Soft Mask doesn't support nesting. You can work around this limitation by nesting " +
-                "Soft Mask into Unity standard Mask or Mask Rect 2D or vice versa.";
+                "Soft Mask into Unity standard Mask or Rect Mask 2D or vice versa.";
         }
 
         public void OnEnable() {
@@ -80,7 +80,7 @@ namespace SoftMasking.Editor {
         SoftMask.Errors CollectErrors() {
             SoftMask.Errors result = SoftMask.Errors.NoError;
             foreach (var t in targets)
-                result |= ((SoftMask)t).DetermineErrors();
+                result |= ((SoftMask)t).PollErrors();
             return result;
         }
 

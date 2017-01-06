@@ -35,9 +35,15 @@ namespace SoftMasking {
             return baseMaterial;
         }
         
+        // Called when replacement material might changed, so, material should be reevaluated.
         public void Invalidate() {
             if (graphic)
                 graphic.SetMaterialDirty();
+        }
+
+        // Called when active mask might changed, so, mask should be searched again.
+        public void MaskMightChange() {
+            FindMask();
         }
 
         protected override void Awake() {
@@ -90,9 +96,15 @@ namespace SoftMasking {
             }
         }
 
-        void FindMask() {
-            mask = GetComponentInParent<SoftMask>();
-            
+        void FindMask() { mask = NearestEnabledMask(transform); }
+
+        SoftMask NearestEnabledMask(Transform root) {
+            if (!root)
+                return null;
+            var mask = root.GetComponent<SoftMask>();
+            if (mask && mask.isMaskingEnabled)
+                return mask;
+            return NearestEnabledMask(root.parent);
         }
 
         void SetShaderNotSupported(Material material) {

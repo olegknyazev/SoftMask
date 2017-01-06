@@ -1594,7 +1594,7 @@ MonoBehaviour:
     width: 1
     height: 1
   _channelWeights: {r: 0, g: 0, b: 0, a: 1}
-  _raycastThreshold: 0.529
+  _raycastThreshold: 0.905
 --- !u!114 &2027481551
 MonoBehaviour:
   m_ObjectHideFlags: 0
