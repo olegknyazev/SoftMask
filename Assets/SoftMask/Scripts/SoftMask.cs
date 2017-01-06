@@ -125,22 +125,12 @@ namespace SoftMasking {
         public bool isMaskingEnabled {
             get { return isActiveAndEnabled; }
         }
-
-        // May return null.
-        public Material GetReplacement(Material original) {
-            Assert.IsTrue(isActiveAndEnabled);
-            return _materials.Get(original);
-        }
-
-        public void ReleaseReplacement(Material replacement) {
-            _materials.Release(replacement);
-        }
-
+        
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
             Vector2 localPos;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, cam, out localPos)) return false;
-            if (!_parameters.texture) return true;
             if (!Mathr.Inside(localPos, _parameters.maskRect)) return false;
+            if (!_parameters.texture) return true;
             if (_raycastThreshold <= 0.0f) return true;
             float mask;
             if (!_parameters.SampleMask(localPos, out mask)) {
@@ -208,6 +198,15 @@ namespace SoftMasking {
 
         bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
         
+        Material ISoftMask.GetReplacement(Material original) {
+            Assert.IsTrue(isActiveAndEnabled);
+            return _materials.Get(original);
+        }
+
+        void ISoftMask.ReleaseReplacement(Material replacement) {
+            _materials.Release(replacement);
+        }
+
         void OnGraphicDirty() {
             if (isBasedOnGraphic)
                 _dirty = true;
