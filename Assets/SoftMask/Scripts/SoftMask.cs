@@ -234,7 +234,7 @@ namespace SoftMasking {
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
             Vector2 localPos;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, cam, out localPos)) return false;
-            if (!Mathr.Inside(localPos, _parameters.maskRect)) return false;
+            if (!Mathr.Inside(localPos, LocalRect(Vector4.zero))) return false;
             if (!_parameters.texture) return true;
             if (_raycastThreshold <= 0.0f) return true;
             float mask;
