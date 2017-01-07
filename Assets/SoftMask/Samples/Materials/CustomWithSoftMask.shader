@@ -1,5 +1,9 @@
-﻿Shader "UI/Custom Shader with Soft Mask support"
+﻿Shader "UI/Soft Mask/Custom Shader with Soft Mask support"
 {
+    // This is example of UI shader with Soft Mask support added. All places where
+    // something related to soft mask support was added marked with comment
+    // 'Soft Mask Support'.
+
     Properties
     {
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
@@ -17,7 +21,10 @@
 
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip("Use Alpha Clip", Float) = 0
 
-        // SoftMask support
+        // Soft Mask support
+        // Soft Mask determines that shader supports soft masking by presence of this
+        // property. All other properties listed in SoftMask.shader aren't required
+        // to include. 
         _SoftMask("Mask", 2D) = "white" {}
     }
 
@@ -56,9 +63,14 @@
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-            #include "../../Shaders/SoftMask.cginc"
+
+            // Soft Mask Support
+            // You also can use full path (Assets/...)
+            #include "../../Shaders/SoftMask.cginc" 
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
+
+            // Soft Mask Support
             #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 
             struct appdata_t
@@ -74,6 +86,9 @@
                 fixed4 color : COLOR;
                 half2 texcoord : TEXCOORD0;
                 float4 worldPosition : TEXCOORD1;
+                // Soft Mask Support
+                // The number in braces determines what TEXCOORDn Soft Mask may use
+                // (it required only one TEXCOORD).
                 SOFTMASK_COORDS(2)
             };
 
@@ -81,6 +96,8 @@
             fixed4 _TextureSampleAdd;
             float4 _ClipRect;
             float _TwistAngle;
+
+            float2 Twist(float2 uv, float2 pos);
 
             v2f vert(appdata_t IN)
             {
@@ -95,27 +112,18 @@
             #endif
 
                 OUT.color = IN.color * _Color;
-                SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex)
+                SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex) // Soft Mask Support
                 return OUT;
             }
 
             sampler2D _MainTex;
 
-            float2 Twist(float2 uv, float2 pos) {
-                float2 offset = uv - 0.5f;
-                float distance = length(offset);
-                float twist = saturate((0.5f - distance) / 0.5f);
-                float sina, cosa;
-                sincos(twist * _TwistAngle, sina, cosa);
-                return 0.5f + float2(offset.x * cosa - offset.y * sina, offset.x * sina + offset.y * cosa);
-            }
-
             fixed4 frag(v2f IN) : SV_Target
             {
-                float2 uv = Twist(IN.texcoord, IN.worldPosition.xy);
+                float2 uv = Twist(IN.texcoord);
                 half4 color = (tex2D(_MainTex, uv) + _TextureSampleAdd) * IN.color;
 
-                color.a *= SOFTMASK_GET_MASK(IN);
+                color.a *= SOFTMASK_GET_MASK(IN); // Soft Mask Support
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 
             #ifdef UNITY_UI_ALPHACLIP
@@ -124,6 +132,16 @@
 
                 return color;
             }
+
+            float2 Twist(float2 uv) {
+                float2 offset = uv - 0.5f;
+                float distance = length(offset);
+                float twist = saturate((0.5f - distance) / 0.5f);
+                float sina, cosa;
+                sincos(twist * _TwistAngle, sina, cosa);
+                return 0.5f + float2(offset.x * cosa - offset.y * sina, offset.x * sina + offset.y * cosa);
+            }
+
             ENDCG
         }
     }

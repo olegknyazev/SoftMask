@@ -1,19 +1,17 @@
 ﻿Shader "Hidden/UI Default (Soft Masked)"
 {
-    // It is a standard UI shader with Soft Mask support added. You can use it as a guide to
-    // implement your own shaders that support Soft Mask. All places where something should 
-    // be added to enable Soft Mask are marked with comment 'Soft Mask Support'.
+    // This is a shader that replaces Default Unity UI shader. It supports all capabilities
+    // of Default UI and also adds Soft Mask support. It is a bit complicated because it
+    // reflects changing of Default UI shader between Unity versions. If you search
+    // example of how to add Soft Mask support, you may check CustomWithSoftMask.shader
+    // that included in the package.
 
     Properties
     {
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
 
-        // Soft Mask support
         _SoftMask("Mask", 2D) = "white" {}
-
-        // This block isn't required. You may not include it in your material if you don't
-        // want to modify these properties from Unity editor (you normally wont modify them).
         _SoftMask_Rect("Mask Rect", Vector) = (0,0,0,0)
         _SoftMask_UVRect("Mask UV Rect", Vector) = (0,0,1,1)
         _SoftMask_BorderRect("Mask Border", Vector) = (0,0,0,0)
@@ -69,12 +67,9 @@
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-            #include "SoftMask.cginc" // Soft Mask support
-                                      // This file may be referenced by full (Assets/...) or relative path.
+            #include "SoftMask.cginc"
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
-
-            // Soft Mask support
             #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 
             struct appdata_t
@@ -96,9 +91,6 @@
             #if UNITY_VERSION >= 550
                 UNITY_VERTEX_OUTPUT_STEREO
             #endif
-                // Soft Mask support
-                // Like in standard Unity's UNITY_FOG_COORDS(), the number in braces determines
-                // interpolator index that should be used by Soft Mask (it's `n` in TEXCOORDn).
                 SOFTMASK_COORDS(2)
             };
 
@@ -129,7 +121,7 @@
             #endif
 
                 OUT.color = IN.color * _Color;
-                SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex) // Soft Mask support
+                SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex)
                 return OUT;
             }
 
@@ -139,7 +131,7 @@
             {
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 
-                color.a *= SOFTMASK_GET_MASK(IN); // Soft Mask support
+                color.a *= SOFTMASK_GET_MASK(IN);
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 
             #ifdef UNITY_UI_ALPHACLIP

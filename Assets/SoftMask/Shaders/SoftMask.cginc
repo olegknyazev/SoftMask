@@ -7,27 +7,27 @@
     -------------
 
     #define SOFTMASK_COORDS(idx)
-        Use it in structure that is passed from vertex to fragment shader.
+        Use it in a structure that is passed from vertex to fragment shader.
           idx    Number of interpolator to use. Specify first free TEXCOORD index.
 
     #define SOFTMASK_CALCULATE_COORDS(OUT, pos)
-        Use it in vertex shader to calculate mask-related data.
+        Use it in a vertex shader to calculate mask-related data.
           pos    Source vertex position that was passed to vertex shader
           OUT    Instance of an output structure that will be passed to fragment shader.
                  It should be of type to which SOFTMASK_COORDS() was added.
 
     #define SOFTMASK_GET_MASK(IN)
-        Use it in fragment shader to get mask value for current pixel.
+        Use it in a fragment shader to get mask value for current pixel.
           IN     Instance of an vertex shader output structure, for which SOFTMASK_COORDS()
                  was defined.
 
     inline float SoftMask_GetMask(float2 maskPosition)
-        Returns mask value for a given pixel.
+        Returns a mask value for a given pixel.
           maskPosition   Position of current pixel in mask's local space.
                          To get this position use macro SOFTMASK_CALCULATE_COORDS().
 
     inline float4 SoftMask_GetMaskTexture(float2 maskPosition)
-        Returns color of mask texture for a given pixel. maskPosition is the same
+        Returns a color of mask texture for a given pixel. maskPosition is the same
         as in SoftMask_GetMask(). This function returns original pixel of the mask,
         which may be useful for debugging.                 
 */
