@@ -56,7 +56,7 @@
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-            #include "../../Shaders/UISoftMask.cginc"
+            #include "../../Shaders/SoftMask.cginc"
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
             #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED

@@ -69,8 +69,8 @@
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-            #include "UISoftMask.cginc" // Soft Mask support
-                                        // This file may be referenced by full (Assets/...) or relative path.
+            #include "SoftMask.cginc" // Soft Mask support
+                                      // This file may be referenced by full (Assets/...) or relative path.
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
 
