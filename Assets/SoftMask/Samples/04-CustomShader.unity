@@ -323,8 +323,8 @@ MonoBehaviour:
   - {fileID: 2800000, guid: a2433788424c33b4cb491d344be9571b, type: 3}
   - {fileID: 2800000, guid: 5cfb0cb36fbfc2b429e0fd283b3bc52b, type: 3}
   twistSpeed: 25
-  twist: 10
-  pause: 2
+  twistAngle: 10
+  delay: 2
 --- !u!114 &492765643
 MonoBehaviour:
   m_ObjectHideFlags: 0

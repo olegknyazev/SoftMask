@@ -7,22 +7,22 @@ namespace SoftMasking.Samples {
         public RawImage image;
         public Texture2D[] textures;
         public float twistSpeed = 10.0f;
-        public float twist = 10.0f;
-        public float pause = 2.0f;
+        public float twistAngle = 10.0f;
+        public float delay = 2.0f;
 
         public IEnumerator Start() {
             var idx = 0;
             while (true) {
                 // Twist in
                 image.texture = textures[idx];
-                yield return StartCoroutine(Twist(0.0f, twist));
+                yield return StartCoroutine(Twist(0.0f, twistAngle));
                 // Change image
                 idx = (idx + 1) % textures.Length;
                 image.texture = textures[idx];
                 // Twist out
-                yield return StartCoroutine(Twist(twist, 0.0f));
+                yield return StartCoroutine(Twist(twistAngle, 0.0f));
                 // Delay
-                yield return new WaitForSeconds(pause);
+                yield return new WaitForSeconds(delay);
             }
         }
 
