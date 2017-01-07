@@ -61,7 +61,7 @@ Material:
       data:
         first:
           name: _TwistAngle
-        second: 0
+        second: 10
       data:
         first:
           name: _TwistRange
