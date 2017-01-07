@@ -101,8 +101,8 @@ GameObject:
   - component: {fileID: 266323606}
   - component: {fileID: 266323609}
   - component: {fileID: 266323608}
-  - component: {fileID: 266323607}
   - component: {fileID: 266323610}
+  - component: {fileID: 266323607}
   m_Layer: 5
   m_Name: Viewport
   m_TagString: Untagged
@@ -627,6 +627,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewport: {fileID: 266323605}
+  doNotTouchImage: 0
 --- !u!1 &927513744
 GameObject:
   m_ObjectHideFlags: 0
