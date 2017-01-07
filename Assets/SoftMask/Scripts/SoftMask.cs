@@ -293,10 +293,12 @@ namespace SoftMasking {
             _dirty = true;
         }
 
+#if UNITY_EDITOR
         protected override void OnValidate() {
             base.OnValidate();
             _dirty = true;
         }
+#endif
 
         protected override void OnTransformParentChanged() {
             base.OnTransformParentChanged();
