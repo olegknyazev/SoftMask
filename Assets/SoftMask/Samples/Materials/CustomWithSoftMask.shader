@@ -1,12 +1,11 @@
-﻿Shader "UI/Custom with Soft Mask support"
+﻿Shader "UI/Custom Shader with Soft Mask support"
 {
     Properties
     {
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
 
-        // SoftMask support
-        _SoftMask("Mask", 2D) = "white" {}
+        _TwistAngle("Twist Angle", Float) = 1
 
         _StencilComp("Stencil Comparison", Float) = 8
         _Stencil("Stencil ID", Float) = 0
@@ -17,6 +16,9 @@
         _ColorMask("Color Mask", Float) = 15
 
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip("Use Alpha Clip", Float) = 0
+
+        // SoftMask support
+        _SoftMask("Mask", 2D) = "white" {}
     }
 
     SubShader
@@ -78,6 +80,7 @@
             fixed4 _Color;
             fixed4 _TextureSampleAdd;
             float4 _ClipRect;
+            float _TwistAngle;
 
             v2f vert(appdata_t IN)
             {
@@ -98,11 +101,20 @@
 
             sampler2D _MainTex;
 
+            float2 Twist(float2 uv, float2 pos) {
+                float2 offset = uv - 0.5f;
+                float distance = length(offset);
+                float twist = saturate((0.5f - distance) / 0.5f);
+                float sina, cosa;
+                sincos(twist * _TwistAngle, sina, cosa);
+                return 0.5f + float2(offset.x * cosa - offset.y * sina, offset.x * sina + offset.y * cosa);
+            }
+
             fixed4 frag(v2f IN) : SV_Target
             {
-                half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
+                float2 uv = Twist(IN.texcoord, IN.worldPosition.xy);
+                half4 color = (tex2D(_MainTex, uv) + _TextureSampleAdd) * IN.color;
 
-                color.r = IN.worldPosition.y / 100.0f; // customness
                 color.a *= SOFTMASK_GET_MASK(IN);
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 
