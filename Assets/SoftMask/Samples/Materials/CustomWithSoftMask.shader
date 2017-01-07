@@ -97,7 +97,7 @@
             float4 _ClipRect;
             float _TwistAngle;
 
-            float2 Twist(float2 uv, float2 pos);
+            float2 Twist(float2 uv);
 
             v2f vert(appdata_t IN)
             {
