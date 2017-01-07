@@ -4,4 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/SoftMask/Samples/01-TextVanishing.unity
+  - enabled: 1
+    path: Assets/SoftMask/Samples/02-MiniMap.unity
+  - enabled: 1
+    path: Assets/SoftMask/Samples/03-WorldSpaceCanvas.unity
+  - enabled: 1
+    path: Assets/SoftMask/Samples/04-CustomShader.unity

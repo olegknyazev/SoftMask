@@ -1,16 +1,17 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace SoftMasking.Samples {
     public class SoftMaskToggler : MonoBehaviour {
-        public GameObject viewport;
+        [FormerlySerializedAs("viewport")] public GameObject mask;
         public bool doNotTouchImage = false;
 
         public void Toggle(bool enabled) {
-            viewport.GetComponent<SoftMask>().enabled = enabled;
-            viewport.GetComponent<Mask>().enabled = !enabled;
+            mask.GetComponent<SoftMask>().enabled = enabled;
+            mask.GetComponent<Mask>().enabled = !enabled;
             if (!doNotTouchImage)
-                viewport.GetComponent<Image>().enabled = !enabled;
+                mask.GetComponent<Image>().enabled = !enabled;
         }
     }
 }
