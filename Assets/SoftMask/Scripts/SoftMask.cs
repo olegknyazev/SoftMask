@@ -470,17 +470,18 @@ namespace SoftMasking {
                 return;
             }
             FillCommonParameters();
-            var textureBorder = Mathr.BorderOf(sprite.rect, sprite.textureRect);
+            var spriteRect = Mathr.Move(Mathr.ToVector(sprite.rect), sprite.textureRect.position - sprite.textureRectOffset);
             var textureRect = Mathr.ToVector(sprite.textureRect);
+            var textureBorder = Mathr.BorderOf(spriteRect, textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
             var fullMaskRect = LocalRect(Vector4.zero);
             _parameters.maskRectUV = Mathr.Div(textureRect, textureSize);
             if (borderMode == BorderMode.Simple) {
-                var textureRectInFullRect = Mathr.Div(Mathr.BorderOf(sprite.rect, sprite.textureRect), sprite.rect.size);
+                var textureRectInFullRect = Mathr.Div(textureBorder, Mathr.Size(spriteRect));
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(textureRectInFullRect, Mathr.Size(fullMaskRect)));
             } else {
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, textureBorder * GraphicToCanvas(sprite));
-                var fullMaskRectUV = Mathr.Div(Mathr.ToVector(sprite.rect), textureSize);
+                var fullMaskRectUV = Mathr.Div(spriteRect, textureSize);
                 _parameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
                 _parameters.maskBorderUV = Mathr.ApplyBorder(fullMaskRectUV, Mathr.Div(sprite.border, textureSize));
             }
@@ -584,9 +585,10 @@ namespace SoftMasking {
             public static Vector2 Div(Vector2 v, Vector2 s) { return new Vector2(v.x / s.x, v.y / s.y); }
             public static Vector4 Mul(Vector4 v, Vector2 s) { return new Vector4(v.x * s.x, v.y * s.y, v.z * s.x, v.w * s.y); }
             public static Vector2 Size(Vector4 r) { return new Vector2(r.z - r.x, r.w - r.y); }
+            public static Vector4 Move(Vector4 v, Vector2 o) { return new Vector4(v.x + o.x, v.y + o.y, v.z + o.x, v.w + o.y); }
 
-            public static Vector4 BorderOf(Rect outer, Rect inner) {
-                return new Vector4(inner.xMin - outer.xMin, inner.yMin - outer.yMin, outer.xMax - inner.xMax, outer.yMax - inner.yMax);
+            public static Vector4 BorderOf(Vector4 outer, Vector4 inner) {
+                return new Vector4(inner.x - outer.x, inner.y - outer.y, outer.z - inner.z, outer.w - inner.w);
             }
 
             public static Vector4 ApplyBorder(Vector4 v, Vector4 b) {
