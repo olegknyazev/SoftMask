@@ -31,6 +31,12 @@ namespace SoftMasking.Editor {
                 "Mask is disabled because there is already a Soft Mask child or parent element. " +
                 "Soft Mask doesn't support nesting. You can work around this limitation by nesting " +
                 "Soft Mask into Unity standard Mask or Rect Mask 2D or vice versa.";
+            public static readonly string TightPackedSprite =
+                "Soft Mask doesn't support tight packed sprites. Disable packing for mask sprite " +
+                "or use Rectangle pack mode.";
+            public static readonly string AlphaSplitSprite =
+                "Soft Mask doesn't support sprites with alpha split texture. Disable compression of " +
+                "sprite texture or use another compression type.";
         }
 
         public void OnEnable() {
@@ -69,12 +75,20 @@ namespace SoftMasking.Editor {
             });
             EditorGUILayout.Slider(_raycastThreshold, 0, 1);
             CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
+            ShowErrorsIfAny();
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        void ShowErrorsIfAny() {
             var errors = CollectErrors();
             if ((errors & SoftMask.Errors.UnsupportedShaders) != 0)
                 EditorGUILayout.HelpBox(Labels.UnsupportedShaders, MessageType.Warning);
             if ((errors & SoftMask.Errors.NestedMasks) != 0)
                 EditorGUILayout.HelpBox(Labels.NestedMasks, MessageType.Error);
-            serializedObject.ApplyModifiedProperties();
+            if ((errors & SoftMask.Errors.TightPackedSprite) != 0)
+                EditorGUILayout.HelpBox(Labels.TightPackedSprite, MessageType.Error);
+            if ((errors & SoftMask.Errors.AlphaSplitSprite) != 0)
+                EditorGUILayout.HelpBox(Labels.AlphaSplitSprite, MessageType.Error);
         }
 
         SoftMask.Errors CollectErrors() {

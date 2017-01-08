@@ -44,6 +44,7 @@ namespace SoftMasking {
 
         MaterialReplacements _materials;
         MaterialParameters _parameters;
+        Sprite _lastUsedSprite;
         bool _dirty;
 
         // Cached components
@@ -112,7 +113,9 @@ namespace SoftMasking {
         [Serializable] public enum Errors {
             NoError = 0,
             UnsupportedShaders = 1 << 0,
-            NestedMasks = 1 << 1
+            NestedMasks = 1 << 1,
+            TightPackedSprite = 1 << 2,
+            AlphaSplitSprite = 1 << 3
         }
 
         /// <summary>
@@ -221,14 +224,15 @@ namespace SoftMasking {
         /// Checks for errors and returns its as flags. It is used in editor to determine
         /// which warnings should be displayed.
         /// </summary>
-        /// <returns>An Errors instance containing found errors.</returns>
+        /// <returns>An Errors value with flags set for all detected errors.</returns>
         public Errors PollErrors() {
             Errors result = Errors.NoError;
             GetComponentsInChildren(_s_maskables);
             if (_s_maskables.Any(m => m.shaderIsNotSupported))
                 result |= Errors.UnsupportedShaders;
-            if (ThereIsNestedMasks())
+            if (ThereAreNestedMasks())
                 result |= Errors.NestedMasks;
+            result |= CheckSprite(activeSprite);
             return result;
         }
 
@@ -312,7 +316,20 @@ namespace SoftMasking {
         Canvas canvas { get { return _canvas ?? (_canvas = NearestEnabledCanvas()); } }
 
         bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
-        
+
+        Sprite activeSprite {
+            get {
+                switch (source) {
+                    case MaskSource.Sprite: return _sprite;
+                    case MaskSource.Graphic: {
+                            var image = _graphic as Image;
+                            return image ? image.sprite : null;
+                        }
+                    default: return null;
+                }
+            }
+        }
+
         Material ISoftMask.GetReplacement(Material original) {
             Assert.IsTrue(isActiveAndEnabled);
             return _materials.Get(original);
@@ -439,10 +456,19 @@ namespace SoftMasking {
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
+            var lastSprite = _lastUsedSprite;
+            _lastUsedSprite = sprite;
+            var spriteErrors = CheckSprite(sprite);
+            if (spriteErrors != Errors.NoError) {
+                if (lastSprite != sprite)
+                    WarnSpriteErrors(spriteErrors);
+                CalculateSolidFill();
+                return;
+            }
             if (!sprite) {
                 CalculateSolidFill();
                 return;
-            }   
+            }
             FillCommonParameters();
             var textureBorder = Mathr.BorderOf(sprite.rect, sprite.textureRect);
             var textureRect = Mathr.ToVector(sprite.textureRect);
@@ -501,7 +527,7 @@ namespace SoftMasking {
         }
 
         bool DisableIfThereAreNestedMasks() {
-            if (ThereIsNestedMasks()) {
+            if (ThereAreNestedMasks()) {
                 enabled = false;
                 Debug.LogErrorFormat(this, "Soft Mask is disabled because there are nested masks, which is not supported");
                 return true;
@@ -514,7 +540,14 @@ namespace SoftMasking {
                 Debug.LogWarningFormat(this, "Soft Mask may not work because it's defaultShader is not set");
         }
 
-        bool ThereIsNestedMasks() {
+        void WarnSpriteErrors(Errors errors) {
+            if ((errors & Errors.TightPackedSprite) != 0)
+                Debug.LogError("Soft Mask doesn't support Tight packed sprites", this);
+            if ((errors & Errors.AlphaSplitSprite) != 0)
+                Debug.LogError("Soft Mask doesn't support sprites with alpha split texture", this);
+        }
+
+        bool ThereAreNestedMasks() {
             var result = false;
             Func<SoftMask, bool> maskEnabled = m => m != this && m.isMaskingEnabled;
             GetComponentsInParent(false, _s_masks);
@@ -527,6 +560,16 @@ namespace SoftMasking {
         void Set<T>(ref T field, T value) {
             field = value;
             _dirty = true;
+        }
+
+        static Errors CheckSprite(Sprite sprite) {
+            var result = Errors.NoError;
+            if (!sprite) return result;
+            if (sprite.packed && sprite.packingMode == SpritePackingMode.Tight)
+                result |= Errors.TightPackedSprite;
+            if (sprite.associatedAlphaSplitTexture)
+                result |= Errors.AlphaSplitSprite;
+            return result;
         }
 
         static readonly List<Graphic> _s_graphics = new List<Graphic>();
