@@ -17,6 +17,7 @@ namespace SoftMasking {
     }
 
     [ExecuteInEditMode]
+    [DisallowMultipleComponent]
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
     public class SoftMask : UIBehaviour, ICanvasRaycastFilter, ISoftMask {
