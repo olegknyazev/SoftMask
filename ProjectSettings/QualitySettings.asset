@@ -163,7 +163,7 @@ QualitySettings:
     asyncUploadBufferSize: 4
     excludedTargetPlatforms: []
   m_PerPlatformDefaultQuality:
-    Android: 2
+    Android: 5
     BlackBerry: 2
     GLES Emulation: 5
     Nintendo 3DS: 5
@@ -176,7 +176,7 @@ QualitySettings:
     Tizen: 2
     WP8: 5
     Web: 5
-    WebGL: 3
+    WebGL: 5
     WiiU: 5
     Windows Store Apps: 5
     XBOX360: 5
