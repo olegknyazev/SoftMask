@@ -1,6 +1,7 @@
 ﻿Shader "Hidden/UI Default ETC1 (Soft Masked)"
 {
     // ETC1-version (with alpha split texture) of SoftMask.shader.
+    // In Unity 5.3 this shader is the same as SoftMask.shader and it's never used.
 
     Properties
     {
@@ -65,7 +66,9 @@
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
             #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 
-            #define SOFTMASK_ETC1
+            #if UNITY_VERSION >= 540
+            #   define SOFTMASK_ETC1
+            #endif
             #include "SoftMaskTemplate.cginc"
         ENDCG
         }
