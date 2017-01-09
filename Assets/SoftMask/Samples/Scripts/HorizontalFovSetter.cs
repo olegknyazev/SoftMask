@@ -1,12 +1,18 @@
 ﻿using UnityEngine;
 
 namespace SoftMasking.Samples {
+    [RequireComponent(typeof(Camera))]
     public class HorizontalFovSetter : MonoBehaviour {
-        public new Camera camera;
         public float horizontalFov;
 
+        Camera _camera;
+
+        public void Awake() {
+            _camera = GetComponent<Camera>();
+        }
+
         public void Update() {
-            camera.fieldOfView = horizontalFov / camera.aspect;
+            _camera.fieldOfView = horizontalFov / _camera.aspect;
         }
     }
 }
