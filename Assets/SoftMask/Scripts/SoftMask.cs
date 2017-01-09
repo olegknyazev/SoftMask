@@ -8,6 +8,9 @@ using UnityEngine.UI;
 using SoftMasking.Extensions;
 
 namespace SoftMasking {
+    /// <summary>
+    /// Static class containing some predefined combinations of mask channel weights.
+    /// </summary>
     public static class MaskChannel {
         public static Color alpha   = new Color(0, 0, 0, 1);
         public static Color red     = new Color(1, 0, 0, 0);
@@ -16,6 +19,10 @@ namespace SoftMasking {
         public static Color gray    = new Color(1, 1, 1, 0) / 3.0f;
     }
 
+    /// <summary>
+    /// SoftMask is a component that can be added to UI elements to mask children. It works
+    /// like a standard Unity's <see cref="Mask"/>, but supports gradually-transparent masks.
+    /// </summary>
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
     [AddComponentMenu("UI/Soft Mask", 14)]
@@ -24,13 +31,30 @@ namespace SoftMasking {
         //
         // How it works:
         //
-        // Soft Mask works by using special Shader when rendering child elements. That Shader
-        // samples Mask texture and multiplies the resulted color accordingly. To override
-        // Shader in child elements, SoftMask spawns invisible SoftMaskable components on them,
-        // on the fly. SoftMaskable is kept on the children elements while there is a SoftMask
-        // parent. When the parent is gone, SoftMaskable components are destroyed. When a child
-        // element is moved to another place in the hierarchy where is no SoftMask parent 
-        // present, it's SoftMaskable destroys itself.
+        // Soft Mask overrides Shader used by child elements. To do so, SoftMask spawns invisible 
+        // SoftMaskable components on them, on the fly. SoftMaskable implements IMaterialOverride,
+        // which allows it to override the shader that performs actual rendering. Use of
+        // IMaterialOverride is transparent to the user: material assigned to Graphic in inspector
+        // is leaved untouched.
+        //
+        // SoftMaskables management is fully automated. They are kept on the children objects
+        // while there is any SoftMask parent. When something changes that there is no longer
+        // SoftMask parent exists, SoftMaskable is destroyed automatically. So, user of SoftMask
+        // doesn't have to worry about any Components changes in the hierarchy.
+        //
+        // The replacement shader should sample mask texture and multiply the resulted color 
+        // accordingly. SoftMask have a predefined replacement for Unity's default UI shader 
+        // (and it's ETC1-version in Unity 5.4). So, when SoftMask 'sees' a material using a known
+        // shader, it overrides shader by predefined version. If SoftMask encounters unknonwn 
+        // material, it can't do anything reasonable (because it doesn't know what that shader 
+        // should do). In such case SoftMask will not work and an according message will be 
+        // displayed in Console. If you want SoftMask to work with a custom Shader, you always can 
+        // add support to this Shader. For reference how to do it, see CustomWithSoftMask.shader
+        // from included samples.
+        //
+        // All replacements are cached per mask. By default Unity draws UI with a very small
+        // amount of material instances (they spawned only for masking/clipping layers), so,
+        // SoftMask creates relatively small amount of overrides.
         //
 
         [SerializeField] Shader _defaultShader = null;
@@ -60,58 +84,60 @@ namespace SoftMasking {
         /// <summary>
         /// Source of mask's image.
         /// </summary>
-        [Serializable] public enum MaskSource {
+        [Serializable]
+        public enum MaskSource {
             /// <summary>
-            /// Mask image should be taken from Graphic component of containing GameObject.
+            /// Mask image should be taken from the Graphic component of containing GameObject.
             /// Only Image and RawImage components are supported. If there is no appropriate
             /// Graphic on the GameObject, solid rectangle of RectTransform dimensions will
             /// be used.
             /// </summary>
             Graphic,
             /// <summary>
-            /// Mask image should be taken from an explicitly specified <see cref="Sprite"/>. 
-            /// When sprite is used, <see cref="spriteBorderMode"/> can also be set to 
-            /// determine how to process Sprite's borders. If sprite isn't set, solid rectangle
-            /// of RectTransform dimensions will be used. This mode is analogous to using 
-            /// <see cref="Image"/> with according <see cref="Image.sprite"/> and 
-            /// <see cref="Image.type"/> set.
+            /// Mask image should be taken from an explicitly specified Sprite. When this mode
+            /// is used, spriteBorderMode can also be set to determine how to process Sprite's
+            /// borders. If sprite isn't set, a solid rectangle of RectTransform dimensions will
+            /// be used. This mode is analogous to using an Image with according sprite and type set.
             /// </summary>
             Sprite,
             /// <summary>
-            /// Mask image should be taken from an explicitly specified <see cref="Texture2D"/>. 
-            /// When Texture is used, <see cref="textureUVRect"/> can also be set to determine
-            /// what part of the texture should be used. If texture isn't set, solid rectangle
-            /// of RectTransform dimensions will be used. This mode is analogous to using
-            /// <see cref="RawImage"/> with according <see cref="RawImage.texture"/> and 
-            /// <see cref="RawImage.uvRect"/> set.
+            /// Mask image should be taken from an explicitly specified Texture2D. When this
+            /// mode is used, textureUVRect can also be set to determine what part of the texture
+            /// should be used. If texture isn't set, a solid rectangle of RectTransform dimensions
+            /// will be used. This mode is analogous to using a RawImage with according 
+            /// texture and uvRect set.
             /// </summary>
             Texture
         }
 
         /// <summary>
-        /// How Sprite's borders should be processed. It is a reduced set of 
-        /// <see cref="Image.Type"/> values.
+        /// How Sprite's borders should be processed. It is a reduced set of Image.Type values.
         /// </summary>
-        [Serializable] public enum BorderMode {
+        [Serializable]
+        public enum BorderMode {
             /// <summary>
-            /// Sprite should be drawn as a whole, ignoring any borders set. This is the same
-            /// as <see cref="Image.Type.Simple"/>.
+            /// Sprite should be drawn as a whole, ignoring any borders set. It works in the
+            /// same way as Unity's Image.Type.Simple.
             /// </summary>
             Simple,
             /// <summary>
             /// Sprite borders should be stretched when the drawn image is larger that the
-            /// source. This is the same as <see cref="Image.Type.Sliced"/>.
+            /// source. It works in the same way as Unity's Image.Type.Sliced.
             /// </summary>
             Sliced,
             /// <summary>
-            /// Same as <see cref="Sliced"/>, but border fragments should be repeated
-            /// instead of stretched. This is the same as <see cref="Image.Type.Tiled"/>.
+            /// The same as Sliced, but border fragments will be repeated instead of
+            /// stretched. It works in the same way as Unity's Image.Type.Tiled.
             /// </summary>
             Tiled
         }
         
+        /// <summary>
+        /// Errors encountered during SoftMask diagnostics. Mostly intended to use in Unity Editor.
+        /// </summary>
         [Flags]
-        [Serializable] public enum Errors {
+        [Serializable]
+        public enum Errors {
             NoError = 0,
             UnsupportedShaders = 1 << 0,
             NestedMasks = 1 << 1,
@@ -120,30 +146,27 @@ namespace SoftMasking {
         }
 
         /// <summary>
-        /// Specifies a Shader that should be used as replacement of default Unity UI shader.
-        /// If you add SoftMask in play-time by <see cref="GameObject.AddComponent{T}"/>,
-        /// you should set this property manually.
+        /// Specifies a Shader that should be used as a replacement of Unity's default UI
+        /// shader. If you add SoftMask in play-time by AddComponent(), you should set 
+        /// this property manually.
         /// </summary>
-        /// <seealso cref="defaultShader"/>
         public Shader defaultShader {
             get { return _defaultShader; }
             set { SetShader(ref _defaultShader, value); }
         }
 
         /// <summary>
-        /// Specifies a Shader that should be used as replacement of default Unity's UI
+        /// Specifies a Shader that should be used as a replacement of Unity's default UI
         /// shader with ETC1 (alpha-split) support. If you use ETC1 textures in UI and
-        /// add SoftMask in play-time by <see cref="GameObject.AddComponent{T}"/>,
-        /// you should set this property manually.
+        /// add SoftMask in play-time by AddComponent(), you should set this property manually.
         /// </summary>
-        /// <seealso cref="defaultShader"/>
         public Shader defaultETC1Shader {
             get { return _defaultETC1Shader; }
             set { SetShader(ref _defaultETC1Shader, value, warnIfNotSet: false); }
         }
 
         /// <summary>
-        /// Determines from where mask image should be taken.
+        /// Determines from where to get mask image.
         /// </summary>
         public MaskSource source {
             get { return _source; }
@@ -151,68 +174,68 @@ namespace SoftMasking {
         }
 
         /// <summary>
-        /// Specifies Sprite that should be used as mask image. This property takes effect
-        /// only when source is MaskSource.Sprite.
+        /// Specifies a Sprite that should be used as the mask image. This property takes
+        /// effect only when source is MaskSource.Sprite.
         /// </summary>
-        /// <seealso cref="spriteBorderMode"/>
         public Sprite sprite {
             get { return _sprite; }
             set { if (_sprite != value) Set(ref _sprite, value); }
         }
 
         /// <summary>
-        /// Specifies draw mode of sprite's borders. This property takes effect only when
+        /// Specifies the draw mode of sprite borders. This property takes effect only when
         /// source is MaskSource.Sprite.
         /// </summary>
-        /// <seealso cref="sprite"/>
         public BorderMode spriteBorderMode {
             get { return _spriteBorderMode; }
             set { if (_spriteBorderMode != value) Set(ref _spriteBorderMode, value); }
         }
 
         /// <summary>
-        /// Specifies Texture2D that should be used as mask image. This property takes effect
-        /// only when source is MaskSource.Texture.
+        /// Specifies a Texture2D that should be used as the mask image. This property takes
+        /// effect only when source is MaskSource.Texture.
         /// </summary>
-        /// <seealso cref="textureUVRect"/>
         public Texture2D texture {
             get { return _texture; }
             set { if (_texture != value) Set(ref _texture, value); }
         }
 
         /// <summary>
-        /// Specifies UV rectangle in normalized coordinates defining part of image, that should
-        /// be used as mask image. This property takes effect only when source is MaskSource.Texture.
-        /// Default value is (0, 0, 1, 1) which means that whole texture is used.
+        /// Specifies an UV rectangle defining the part of image, that should be used as 
+        /// the mask image. This property takes effect only when source is MaskSource.Texture.
+        /// Value is set in normalized coordinates. Default value is (0, 0, 1, 1), which means
+        /// that whole texture is used.
         /// </summary>
-        /// <seealso cref="texture"/>
         public Rect textureUVRect {
             get { return _textureRect; }
             set { if (_textureRect != value) Set(ref _textureRect, value); }
         }
 
         /// <summary>
-        /// Specifies weights of color channels of mask. Color sampled from mask texture is
-        /// multiplied by this value, after what all components are added together. That is,
-        /// final mask value is calculated as:
-        ///     mask = (texture * channelWeights)
-        ///     value = mask.a + mask.r + mask.g + mask.b
-        /// This is the value, by which resulting's pixel alpha is multiplied.
-        /// Static class <see cref="MaskChannel"/> contains some predefined weights.
+        /// Specifies weights of the color channels of mask. The color sampled from mask 
+        /// texture is multiplied by this value, after what all components are added together.
+        /// That is, the final mask value is calculated as:
+        ///     color = `pixel-from-mask` * channelWeights
+        ///     value = color.r + color.g + color.b + color.a
+        /// The `value` is a number by which resulting's pixel alpha is multiplied. As you
+        /// can see, the result value isn't normalized, so, you should account it while
+        /// defining custom values for this property.
+        /// Static class MaskChannel contains some useful predefined values.
+        /// Default value is MaskChannel.alpha.
         /// </summary>
-        /// <seealso cref="MaskChannel"/>
         public Color channelWeights {
             get { return _channelWeights; }
             set { if (_channelWeights != value) Set(ref _channelWeights, value); }
         }
 
         /// <summary>
-        /// Specifies the value that should be less or equal than the calculated mask value
-        /// for the input events to pass. Mask value is compared with raycastThreshold after
-        /// <see cref="channelWeights"/> are applied.
+        /// Specifies the minimum mask value that point should have for an input event to pass.
+        /// If value sampled from the mask is greater or equal this value value, input event
+        /// is considered 'hit'. The mask value is compared with raycastThreshold after
+        /// channelWeights applied.
         /// Default value is 0, which means that any pixel belonging to RectTransform is
-        /// considered as opaque to input events. If you specify value greater than 0,
-        /// the mask's texture should be readable.
+        /// considered in input events. If you specify value greater than 0, the mask's 
+        /// texture should be readable.
         /// Accepts values in range [0..1].
         /// </summary>
         public float raycastThreshold {
@@ -221,17 +244,16 @@ namespace SoftMasking {
         }
 
         /// <summary>
-        /// Returns true when masking is currently active.
+        /// Returns true if masking is currently active.
         /// </summary>
         public bool isMaskingEnabled {
             get { return isActiveAndEnabled && canvas; }
         }
 
         /// <summary>
-        /// Checks for errors and returns its as flags. It is used in editor to determine
+        /// Checks for errors and returns them as flags. It is used in editor to determine
         /// which warnings should be displayed.
         /// </summary>
-        /// <returns>An Errors value with flags set for all detected errors.</returns>
         public Errors PollErrors() {
             Errors result = Errors.NoError;
             GetComponentsInChildren(_s_maskables);
