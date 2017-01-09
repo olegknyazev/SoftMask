@@ -112,7 +112,7 @@ namespace SoftMasking {
             if (!shaderIsNotSupported) {
                 Debug.LogWarningFormat(
                     gameObject,
-                    "Soft Mask will not work on {0} because material {1} doesn't support masking. " +
+                    "SoftMask will not work on {0} because material {1} doesn't support masking. " +
                     "Add masking support to your material or set Graphic's material to None to use " +
                     "a default one.",
                     graphic,

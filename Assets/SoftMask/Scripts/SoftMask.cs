@@ -466,7 +466,7 @@ namespace SoftMasking {
                     CalculateTextureBased(_texture, _textureRect);
                     break;
                 default:
-                    Debug.LogWarningFormat("Unknown MaskSource: {0}", _source);
+                    Debug.LogErrorFormat("Unknown MaskSource: {0}", _source);
                     CalculateSolidFill();
                     break;
             }
@@ -570,7 +570,7 @@ namespace SoftMasking {
         bool DisableIfThereAreNestedMasks() {
             if (ThereAreNestedMasks()) {
                 enabled = false;
-                Debug.LogErrorFormat(this, "Soft Mask is disabled because there are nested masks, which is not supported");
+                Debug.LogError("SoftMask is disabled because there are nested masks, which is not supported", this);
                 return true;
             }
             return false;
@@ -578,14 +578,14 @@ namespace SoftMasking {
 
         void WarnIfDefaultShaderIsNotSet() {
             if (!_defaultShader)
-                Debug.LogWarningFormat(this, "Soft Mask may not work because it's defaultShader is not set");
+                Debug.LogWarning("SoftMask may not work because it's defaultShader is not set", this);
         }
 
         void WarnSpriteErrors(Errors errors) {
             if ((errors & Errors.TightPackedSprite) != 0)
-                Debug.LogError("Soft Mask doesn't support Tight packed sprites", this);
+                Debug.LogError("SoftMask doesn't support Tight packed sprites", this);
             if ((errors & Errors.AlphaSplitSprite) != 0)
-                Debug.LogError("Soft Mask doesn't support sprites with alpha split texture", this);
+                Debug.LogError("SoftMask doesn't support sprites with alpha split texture", this);
         }
 
         bool ThereAreNestedMasks() {
