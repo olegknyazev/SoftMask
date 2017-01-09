@@ -16,8 +16,8 @@ namespace SoftMasking {
 
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (_mask != null && _mask.isMaskingEnabled) {
-                // We should find new replacement first and only then Release() the previous 
-                // one. It allows us to not delete the old material if it may be reused.
+                // First get a new, then release the old. It allows us to reuse old material
+                // if it's still actual.
                 var newMat = _mask.GetReplacement(baseMaterial);
                 replacement = newMat;
                 if (replacement) {
@@ -99,7 +99,7 @@ namespace SoftMasking {
 
         void FindMask() { mask = NearestEnabledMask(transform); }
 
-        SoftMask NearestEnabledMask(Transform root) {
+        static SoftMask NearestEnabledMask(Transform root) {
             if (!root)
                 return null;
             var mask = root.GetComponent<SoftMask>();

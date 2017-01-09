@@ -8,12 +8,12 @@ namespace SoftMasking {
         Func<Material, Material> _replace;
         Action<Material> _applyParameters;
 
+        readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
+
         public MaterialReplacements(Func<Material, Material> replace, Action<Material> applyParameters) {
             _replace = replace;
             _applyParameters = applyParameters;
         }
-
-        readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
 
         public Material Get(Material original) {
             for (int i = 0; i < _overrides.Count; ++i) {
