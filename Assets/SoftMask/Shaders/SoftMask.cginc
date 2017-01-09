@@ -118,7 +118,7 @@
     inline float SoftMask_GetMask(float2 maskPosition) {
         float2 uv = SoftMask_GetMaskUV(maskPosition);
         float4 mask = tex2D(_SoftMask, uv) * _SoftMask_ChannelWeights;
-        return (mask.r + mask.g + mask.b + mask.a) * __SoftMask_Get2DClippingAntialiased(maskPosition, _SoftMask_Rect);
+        return dot(mask, 1) * __SoftMask_Get2DClippingAntialiased(maskPosition, _SoftMask_Rect);
     }
 #else // __SOFTMASK_ENABLED
 
