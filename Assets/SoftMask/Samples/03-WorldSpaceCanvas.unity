@@ -585,7 +585,7 @@ Canvas:
   m_RenderMode: 0
   m_Camera: {fileID: 927513748}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -678,7 +678,7 @@ Canvas:
   m_RenderMode: 2
   m_Camera: {fileID: 927513748}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -876,7 +876,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a756e8e42c2dbd94e841417d51867a8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camera: {fileID: 927513748}
   horizontalFov: 60
 --- !u!1 &1228636537
 GameObject:
@@ -1077,7 +1076,7 @@ Canvas:
   m_RenderMode: 2
   m_Camera: {fileID: 927513748}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
