@@ -224,7 +224,7 @@ namespace SoftMasking {
         /// Returns true when masking is currently active.
         /// </summary>
         public bool isMaskingEnabled {
-            get { return isActiveAndEnabled; }
+            get { return isActiveAndEnabled && canvas; }
         }
 
         /// <summary>
@@ -267,7 +267,8 @@ namespace SoftMasking {
             if (DisableIfThereAreNestedMasks())
                 return;
             FindGraphic();
-            UpdateMask();
+            if (isMaskingEnabled)
+                UpdateMask();
             InvalidateChildren(maskMightChange: true);
         }
 
@@ -288,6 +289,8 @@ namespace SoftMasking {
         }
 
         protected virtual void LateUpdate() {
+            if (!isMaskingEnabled)
+                return;
             SpawnMaskablesInChildren();
             var prevGraphic = _graphic;
             FindGraphic();
@@ -370,6 +373,7 @@ namespace SoftMasking {
         }
 
         void UpdateMask() {
+            Assert.IsTrue(isMaskingEnabled);
             CalculateMaskParameters();
             _materials.ApplyAll();
             transform.hasChanged = false;
