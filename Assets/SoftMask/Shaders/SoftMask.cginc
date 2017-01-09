@@ -72,7 +72,7 @@
     // Anti-aliased version of UnityGet2DClipping()
     inline float __SoftMask_Get2DClippingAntialiased(in float2 position, in float4 clipRect)
     {
-        float2 inside = saturate(position.xy - clipRect.xy) * saturate(clipRect.zw - position.xy);
+        float2 inside = saturate(position - clipRect.xy) * saturate(clipRect.zw - position);
         return inside.x * inside.y;
     }
 
