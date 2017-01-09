@@ -34,6 +34,7 @@ namespace SoftMasking {
         //
 
         [SerializeField] Shader _defaultShader = null;
+        [SerializeField] Shader _defaultETC1Shader = null;
         [SerializeField] MaskSource _source = MaskSource.Graphic;
         [SerializeField] Sprite _sprite = null;
         [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
@@ -119,20 +120,26 @@ namespace SoftMasking {
         }
 
         /// <summary>
-        /// Specifies Shader that should be used as replacement for default Unity UI shader.
-        /// If you add SoftMask component to GameObject at runtime, you should manually
-        /// specify defaultShader.
+        /// Specifies a Shader that should be used as replacement of default Unity UI shader.
+        /// If you add SoftMask in play-time by <see cref="GameObject.AddComponent{T}"/>,
+        /// you should set this property manually.
         /// </summary>
+        /// <seealso cref="defaultShader"/>
         public Shader defaultShader {
             get { return _defaultShader; }
-            set {
-                if (_defaultShader != value) {
-                    _defaultShader = value;
-                    WarnIfDefaultShaderIsNotSet();
-                    DestroyMaterials();
-                    InvalidateChildren();
-                }
-            }
+            set { SetShader(ref _defaultShader, value); }
+        }
+
+        /// <summary>
+        /// Specifies a Shader that should be used as replacement of default Unity's UI
+        /// shader with ETC1 (alpha-split) support. If you use ETC1 textures in UI and
+        /// add SoftMask in play-time by <see cref="GameObject.AddComponent{T}"/>,
+        /// you should set this property manually.
+        /// </summary>
+        /// <seealso cref="defaultShader"/>
+        public Shader defaultETC1Shader {
+            get { return _defaultETC1Shader; }
+            set { SetShader(ref _defaultETC1Shader, value, warnIfNotSet: false); }
         }
 
         /// <summary>
@@ -403,6 +410,13 @@ namespace SoftMasking {
                 if (replacement && original)
                     replacement.CopyPropertiesFromMaterial(original);
                 return replacement;
+#if UNITY_5_4_OR_NEWER
+            } else if (original.HasDefaultETC1UIShader()) {
+                var replacement = _defaultETC1Shader ? new Material(_defaultETC1Shader) : null;
+                if (replacement && original)
+                    replacement.CopyPropertiesFromMaterial(original);
+                return replacement;
+#endif
             } else if (original.SupportsSoftMask())
                 return new Material(original);
             else
@@ -561,6 +575,16 @@ namespace SoftMasking {
         void Set<T>(ref T field, T value) {
             field = value;
             _dirty = true;
+        }
+
+        void SetShader(ref Shader field, Shader value, bool warnIfNotSet = true) {
+            if (field != value) {
+                field = value;
+                if (warnIfNotSet)
+                    WarnIfDefaultShaderIsNotSet();
+                DestroyMaterials();
+                InvalidateChildren();
+            }
         }
 
         static Errors CheckSprite(Sprite sprite) {

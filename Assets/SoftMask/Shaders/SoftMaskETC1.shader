@@ -1,14 +1,11 @@
-﻿Shader "Hidden/UI Default (Soft Masked)"
+﻿Shader "Hidden/UI Default ETC1 (Soft Masked)"
 {
-    // This is a shader that replaces Default Unity UI shader. It supports all capabilities
-    // of Default UI and also adds Soft Mask support. It is a bit complicated because it
-    // reflects changing of Default UI shader between Unity versions. If you search
-    // example of how to add Soft Mask support, you may check CustomWithSoftMask.shader
-    // that included in the package.
+    // ETC1-version (with alpha split texture) of SoftMask.shader.
 
     Properties
     {
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
+        [PerRendererData] _AlphaTex("Sprite Alpha Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
 
         _SoftMask("Mask", 2D) = "white" {}
@@ -68,6 +65,7 @@
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
             #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 
+            #define SOFTMASK_ETC1
             #include "SoftMaskTemplate.cginc"
         ENDCG
         }
