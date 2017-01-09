@@ -35,7 +35,7 @@ namespace SoftMasking.Editor {
                 "SoftMask doesn't support tight packed sprites. Disable packing for mask sprite " +
                 "or use Rectangle pack mode.";
             public static readonly string AlphaSplitSprite =
-                "SoftMask doesn't support sprites with alpha split texture. Disable compression of " +
+                "SoftMask doesn't support sprites with an alpha split texture. Disable compression of " +
                 "sprite texture or use another compression type.";
             public static readonly string UnsupportedImageType =
                 "SoftMask doesn't support this image type. Supported image types are Simple, Sliced " +
