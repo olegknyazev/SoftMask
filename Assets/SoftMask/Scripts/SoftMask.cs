@@ -512,7 +512,7 @@ namespace SoftMasking {
                 return;
             }
             FillCommonParameters();
-            var spriteRect = Mathr.Move(Mathr.ToVector(sprite.rect), sprite.textureRect.position - sprite.textureRectOffset);
+            var spriteRect = Mathr.Move(Mathr.ToVector(sprite.rect), sprite.textureRect.position - sprite.rect.position - sprite.textureRectOffset);
             var textureRect = Mathr.ToVector(sprite.textureRect);
             var textureBorder = Mathr.BorderOf(spriteRect, textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
