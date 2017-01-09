@@ -138,11 +138,12 @@ namespace SoftMasking {
         [Flags]
         [Serializable]
         public enum Errors {
-            NoError = 0,
-            UnsupportedShaders = 1 << 0,
-            NestedMasks = 1 << 1,
-            TightPackedSprite = 1 << 2,
-            AlphaSplitSprite = 1 << 3
+            NoError                 = 0,
+            UnsupportedShaders      = 1 << 0,
+            NestedMasks             = 1 << 1,
+            TightPackedSprite       = 1 << 2,
+            AlphaSplitSprite        = 1 << 3,
+            UnsupportedImageType    = 1 << 4
         }
 
         /// <summary>
@@ -262,6 +263,7 @@ namespace SoftMasking {
             if (ThereAreNestedMasks())
                 result |= Errors.NestedMasks;
             result |= CheckSprite(activeSprite);
+            result |= CheckImage();
             return result;
         }
 
@@ -478,8 +480,8 @@ namespace SoftMasking {
                 case Image.Type.Sliced: return BorderMode.Sliced;
                 case Image.Type.Tiled: return BorderMode.Tiled;
                 default:
-                    Debug.LogWarningFormat(
-                        "Image.Type {0} isn't supported by SoftMask. Image.Type.Simple will be used.",
+                    Debug.LogErrorFormat(
+                        "SoftMask doesn't support image type {0}. Image type Simple will be used.",
                         imageType);
                     return BorderMode.Simple;
             }
@@ -611,6 +613,15 @@ namespace SoftMasking {
                 DestroyMaterials();
                 InvalidateChildren();
             }
+        }
+
+        Errors CheckImage() {
+            var result = Errors.NoError;
+            if (!isBasedOnGraphic) return result;
+            var image = _graphic as Image;
+            if (image && image.type == Image.Type.Filled)
+                result |= Errors.UnsupportedImageType;
+            return result;
         }
 
         static Errors CheckSprite(Sprite sprite) {

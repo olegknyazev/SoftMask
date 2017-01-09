@@ -28,15 +28,18 @@ namespace SoftMasking.Editor {
                 "Some of children's shaders aren't supported. Mask wouldn't work on those elements. " +
                 "See documentation on how to add Soft Mask support to custom shaders.";
             public static readonly string NestedMasks = 
-                "Mask is disabled because there is already a Soft Mask child or parent element. " +
-                "Soft Mask doesn't support nesting. You can work around this limitation by nesting " +
-                "Soft Mask into Unity standard Mask or Rect Mask 2D or vice versa.";
+                "Mask is disabled because there is already a SoftMask child or parent element. " +
+                "SoftMask doesn't support nesting. You can work around this limitation by nesting " +
+                "SoftMask into Unity standard Mask or RectMask2D or vice versa.";
             public static readonly string TightPackedSprite =
-                "Soft Mask doesn't support tight packed sprites. Disable packing for mask sprite " +
+                "SoftMask doesn't support tight packed sprites. Disable packing for mask sprite " +
                 "or use Rectangle pack mode.";
             public static readonly string AlphaSplitSprite =
-                "Soft Mask doesn't support sprites with alpha split texture. Disable compression of " +
+                "SoftMask doesn't support sprites with alpha split texture. Disable compression of " +
                 "sprite texture or use another compression type.";
+            public static readonly string UnsupportedImageType =
+                "SoftMask doesn't support this image type. Supported image types are Simple, Sliced " +
+                "and Tiled.";
         }
 
         public void OnEnable() {
@@ -89,6 +92,8 @@ namespace SoftMasking.Editor {
                 EditorGUILayout.HelpBox(Labels.TightPackedSprite, MessageType.Error);
             if ((errors & SoftMask.Errors.AlphaSplitSprite) != 0)
                 EditorGUILayout.HelpBox(Labels.AlphaSplitSprite, MessageType.Error);
+            if ((errors & SoftMask.Errors.UnsupportedImageType) != 0)
+                EditorGUILayout.HelpBox(Labels.UnsupportedImageType, MessageType.Error);
         }
 
         SoftMask.Errors CollectErrors() {
