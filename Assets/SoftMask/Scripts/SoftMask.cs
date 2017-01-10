@@ -524,13 +524,33 @@ namespace SoftMasking {
             } else {
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, textureBorder * GraphicToCanvas(sprite));
                 var fullMaskRectUV = Mathr.Div(spriteRect, textureSize);
-                _parameters.maskBorder = LocalRect(sprite.border * GraphicToCanvas(sprite));
+                var adjustedBorder = AdjustBorders(sprite.border * GraphicToCanvas(sprite), fullMaskRect);
+                _parameters.maskBorder = LocalRect(adjustedBorder);
                 _parameters.maskBorderUV = Mathr.ApplyBorder(fullMaskRectUV, Mathr.Div(sprite.border, textureSize));
             }
             _parameters.texture = sprite.texture;
             _parameters.borderMode = borderMode;
             if (borderMode == BorderMode.Tiled)
                 _parameters.tileRepeat = MaskRepeat(sprite, _parameters.maskBorder);
+        }
+
+        static Vector4 AdjustBorders(Vector4 border, Vector4 rect) {
+            // Copied from Unity's Image.
+            // The only difference in calculation is that we subtract one from size[axis].
+            // It prevents from division by zero in __SoftMask_Inset() from SoftMask.cginc.
+            var size = Mathr.Size(rect);
+            for (int axis = 0; axis <= 1; axis++) {
+                // If the rect is smaller than the combined borders, then there's not room for
+                // the borders at their normal size. In order to avoid artefacts with overlapping
+                // borders, we scale the borders down to fit.
+                float combinedBorders = border[axis] + border[axis + 2];
+                if (size[axis] < combinedBorders && combinedBorders != 0) {
+                    float borderScaleRatio = (size[axis] - 1) / combinedBorders;
+                    border[axis] *= borderScaleRatio;
+                    border[axis + 2] *= borderScaleRatio;
+                }
+            }
+            return border;
         }
 
         void CalculateTextureBased(Texture2D texture, Rect uvRect) {
@@ -658,6 +678,7 @@ namespace SoftMasking {
 
             public static Vector2 Min(Vector4 r) { return new Vector2(r.x, r.y); }
             public static Vector2 Max(Vector4 r) { return new Vector2(r.z, r.w); }
+            public static Vector2 Center(Vector4 r) { return new Vector2((r.x + r.z) * 0.5f, (r.y + r.w) * 0.5f); }
 
             public static Vector2 Remap(Vector2 c, Vector4 r1, Vector4 r2) {
                 var r1size = Max(r1) - Min(r1);
