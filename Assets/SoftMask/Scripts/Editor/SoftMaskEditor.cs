@@ -25,18 +25,18 @@ namespace SoftMasking.Editor {
             public static readonly GUIContent B = new GUIContent("B");
             public static readonly GUIContent A = new GUIContent("A");
             public static readonly string UnsupportedShaders = 
-                "Some of children's shaders aren't supported. Mask wouldn't work on those elements. " +
-                "See documentation on how to add Soft Mask support to custom shaders.";
+                "Some of children's shaders aren't supported. Mask won't work on these elements. " +
+                "See the documentation for more details about how to add Soft Mask support for custom shaders.";
             public static readonly string NestedMasks = 
-                "Mask is disabled because there is already a SoftMask child or parent element. " +
+                "Mask is disabled because a SoftMask child or parent element exists. " +
                 "SoftMask doesn't support nesting. You can work around this limitation by nesting " +
                 "SoftMask into Unity standard Mask or RectMask2D or vice versa.";
             public static readonly string TightPackedSprite =
-                "SoftMask doesn't support tight packed sprites. Disable packing for mask sprite " +
+                "SoftMask doesn't support tight packed sprites. Disable packing for the mask sprite " +
                 "or use Rectangle pack mode.";
             public static readonly string AlphaSplitSprite =
                 "SoftMask doesn't support sprites with an alpha split texture. Disable compression of " +
-                "sprite texture or use another compression type.";
+                "the sprite texture or use another compression type.";
             public static readonly string UnsupportedImageType =
                 "SoftMask doesn't support this image type. Supported image types are Simple, Sliced " +
                 "and Tiled.";
