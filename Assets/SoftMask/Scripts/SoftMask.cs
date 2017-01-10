@@ -34,12 +34,12 @@ namespace SoftMasking {
         // SoftMask overrides Shader used by child elements. To do that, SoftMask spawns invisible 
         // SoftMaskable components on them on the fly. SoftMaskable implements IMaterialOverride,
         // which allows it to override the shader that performs actual rendering. Use of
-        // IMaterialOverride is transparent to the user: a material assigned to Graphic in the inspector
-        // is left untouched.
+        // IMaterialOverride is transparent to the user: a material assigned to Graphic in the 
+        // inspector is left untouched.
         //
-        // Management of SoftMaskables is fully automated. SoftMaskables are kept on the children objects
-        // while there is any SoftMask parent. When something changes and 
-        // SoftMask parent no longer exists, SoftMaskable is destroyed automatically. So, a user of SoftMask
+        // Management of SoftMaskables is fully automated. SoftMaskables are kept on the children
+        // objects while there is any SoftMask parent. When something changes and SoftMask parent
+        // no longer exists, SoftMaskable is destroyed automatically. So, a user of SoftMask
         // doesn't have to worry about any Components changes in the hierarchy.
         //
         // The replacement shader should sample the mask texture and multiply the resulted color 
@@ -52,9 +52,9 @@ namespace SoftMasking {
         // add support for this Shader. For reference how to do it, see CustomWithSoftMask.shader
         // from included samples.
         //
-        // All replacements are cached in the level of the SoftMask instance. By default, Unity draws UI with a very small
-        // amount of material instances (they are spawned only for masking/clipping layers), so,
-        // SoftMask creates a relatively small amount of overrides.
+        // All replacements are cached in the level of the SoftMask instance. By default, Unity
+        // draws UI with a very small amount of material instances (they are spawned only for
+        // masking/clipping layers), so, SoftMask creates a relatively small amount of overrides.
         //
 
         [SerializeField] Shader _defaultShader = null;
@@ -103,8 +103,8 @@ namespace SoftMasking {
             /// <summary>
             /// Mask image should be taken from an explicitly specified Texture2D. When this
             /// mode is used, textureUVRect can also be set to determine what part of the texture
-            /// should be used. If the texture isn't set, a solid rectangle of RectTransform dimensions
-            /// will be used. This mode is analogous to using a RawImage with according 
+            /// should be used. If the texture isn't set, a solid rectangle of RectTransform
+            /// dimensions will be used. This mode is analogous to using a RawImage with according 
             /// texture and uvRect set.
             /// </summary>
             Texture
