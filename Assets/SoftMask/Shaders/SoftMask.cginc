@@ -17,18 +17,18 @@
                  It should be of type to which SOFTMASK_COORDS() was added.
 
     #define SOFTMASK_GET_MASK(IN)
-        Use it in a fragment shader to get mask value for current pixel.
+        Use it in a fragment shader to get the mask value for the current pixel.
           IN     Instance of an vertex shader output structure, for which SOFTMASK_COORDS()
                  was defined.
 
     inline float SoftMask_GetMask(float2 maskPosition)
         Returns a mask value for a given pixel.
-          maskPosition   Position of current pixel in mask's local space.
+          maskPosition   Position of the current pixel in mask's local space.
                          To get this position use macro SOFTMASK_CALCULATE_COORDS().
 
     inline float4 SoftMask_GetMaskTexture(float2 maskPosition)
-        Returns a color of mask texture for a given pixel. maskPosition is the same
-        as in SoftMask_GetMask(). This function returns original pixel of the mask,
+        Returns a color of the mask texture for a given pixel. maskPosition is the same
+        as in SoftMask_GetMask(). This function returns the original pixel of the mask,
         which may be useful for debugging.                 
 */
 
