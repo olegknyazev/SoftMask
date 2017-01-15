@@ -87,23 +87,24 @@ namespace SoftMasking {
         [Serializable]
         public enum MaskSource {
             /// <summary>
-            /// Mask image should be taken from the Graphic component of the containing GameObject.
-            /// Only Image and RawImage components are supported. If there is no appropriate
-            /// Graphic on the GameObject, a solid rectangle of RectTransform dimensions will
-            /// be used.
+            /// The mask image should be taken from the Graphic component of the containing 
+            /// GameObject. Only Image and RawImage components are supported. If there is no
+            /// appropriate Graphic on the GameObject, a solid rectangle of the RectTransform
+            /// dimensions will be used.
             /// </summary>
             Graphic,
             /// <summary>
-            /// Mask image should be taken from an explicitly specified Sprite. When this mode
+            /// The mask image should be taken from an explicitly specified Sprite. When this mode
             /// is used, spriteBorderMode can also be set to determine how to process Sprite's
-            /// borders. If the sprite isn't set, a solid rectangle of RectTransform dimensions will
-            /// be used. This mode is analogous to using an Image with according sprite and type set.
+            /// borders. If the sprite isn't set, a solid rectangle of the RectTransform dimensions 
+            /// will be used. This mode is analogous to using an Image with according sprite and 
+            /// type set.
             /// </summary>
             Sprite,
             /// <summary>
-            /// Mask image should be taken from an explicitly specified Texture2D. When this
+            /// The mask image should be taken from an explicitly specified Texture2D. When this
             /// mode is used, textureUVRect can also be set to determine what part of the texture
-            /// should be used. If the texture isn't set, a solid rectangle of RectTransform
+            /// should be used. If the texture isn't set, a solid rectangle of the RectTransform
             /// dimensions will be used. This mode is analogous to using a RawImage with according 
             /// texture and uvRect set.
             /// </summary>
@@ -214,14 +215,15 @@ namespace SoftMasking {
 
         /// <summary>
         /// Specifies weights of the color channels of the mask. The color sampled from the mask 
-        /// texture is multiplied by this value, after what all components are  summarized together.
+        /// texture is multiplied by this value, after what all components are summed up together.
         /// That is, the final mask value is calculated as:
         ///     color = `pixel-from-mask` * channelWeights
         ///     value = color.r + color.g + color.b + color.a
-        /// The `value` is a number by which resulting's pixel alpha is multiplied. As you
-        /// can see, the result value isn't normalized, so, you should account it while
-        /// defining custom values for this property.
-        /// Static class MaskChannel contains some useful predefined values.
+        /// The `value` is a number by which the resulting pixel's alpha is multiplied. As you
+        /// can see, the result value isn't normalized, so, you should account it while defining
+        /// custom values for this property.
+        /// Static class MaskChannel contains some useful predefined values. You can use they
+        /// as example of how mask calculation works.
         /// The default value is MaskChannel.alpha.
         /// </summary>
         public Color channelWeights {
