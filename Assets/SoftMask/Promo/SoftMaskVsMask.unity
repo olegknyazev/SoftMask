@@ -355,6 +355,10 @@ Prefab:
       propertyPath: m_Text
       value: Soft Mask
       objectReference: {fileID: 0}
+    - target: {fileID: 195446, guid: d1382b8c9a9c9bb4b9f0d1992e0e0996, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d1382b8c9a9c9bb4b9f0d1992e0e0996, type: 2}
   m_IsPrefabParent: 0
@@ -721,7 +725,7 @@ MonoBehaviour:
   _sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   _spriteBorderMode: 1
   _texture: {fileID: 0}
-  _textureRect:
+  _textureUVRect:
     serializedVersion: 2
     x: 0
     y: 0

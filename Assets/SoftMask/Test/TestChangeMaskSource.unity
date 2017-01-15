@@ -611,7 +611,7 @@ MonoBehaviour:
   _sprite: {fileID: 21300000, guid: cf1541205fbfbd24e9e1359ead79b521, type: 3}
   _spriteBorderMode: 0
   _texture: {fileID: 2800000, guid: cf1541205fbfbd24e9e1359ead79b521, type: 3}
-  _textureRect:
+  _textureUVRect:
     serializedVersion: 2
     x: 0
     y: 0

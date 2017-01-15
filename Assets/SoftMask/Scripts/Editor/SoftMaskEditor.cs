@@ -11,7 +11,7 @@ namespace SoftMasking.Editor {
         SerializedProperty _sprite;
         SerializedProperty _spriteBorderMode;
         SerializedProperty _texture;
-        SerializedProperty _textureRect;
+        SerializedProperty _textureUVRect;
         SerializedProperty _channelWeights;
         SerializedProperty _raycastThreshold;
 
@@ -48,14 +48,14 @@ namespace SoftMasking.Editor {
             _sprite = serializedObject.FindProperty("_sprite");
             _spriteBorderMode = serializedObject.FindProperty("_spriteBorderMode");
             _texture = serializedObject.FindProperty("_texture");
-            _textureRect = serializedObject.FindProperty("_textureRect");
+            _textureUVRect = serializedObject.FindProperty("_textureUVRect");
             _channelWeights = serializedObject.FindProperty("_channelWeights");
             _raycastThreshold = serializedObject.FindProperty("_raycastThreshold");
             Assert.IsNotNull(_source);
             Assert.IsNotNull(_sprite);
             Assert.IsNotNull(_spriteBorderMode);
             Assert.IsNotNull(_texture);
-            Assert.IsNotNull(_textureRect);
+            Assert.IsNotNull(_textureUVRect);
             Assert.IsNotNull(_channelWeights);
             Assert.IsNotNull(_raycastThreshold);
         }
@@ -73,7 +73,7 @@ namespace SoftMasking.Editor {
                         break;
                     case SoftMask.MaskSource.Texture:
                         EditorGUILayout.PropertyField(_texture);
-                        EditorGUILayout.PropertyField(_textureRect);
+                        EditorGUILayout.PropertyField(_textureUVRect);
                         break;
                 }
             });

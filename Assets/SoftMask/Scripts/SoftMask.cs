@@ -63,7 +63,7 @@ namespace SoftMasking {
         [SerializeField] Sprite _sprite = null;
         [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
         [SerializeField] Texture2D _texture = null;
-        [SerializeField] Rect _textureRect = DefaultRectUV;
+        [SerializeField] Rect _textureUVRect = DefaultUVRect;
         [SerializeField] Color _channelWeights = MaskChannel.alpha;
         [SerializeField] float _raycastThreshold = 0.0f;
 
@@ -209,8 +209,8 @@ namespace SoftMasking {
         /// that the whole texture is used.
         /// </summary>
         public Rect textureUVRect {
-            get { return _textureRect; }
-            set { if (_textureRect != value) Set(ref _textureRect, value); }
+            get { return _textureUVRect; }
+            set { if (_textureUVRect != value) Set(ref _textureUVRect, value); }
         }
 
         /// <summary>
@@ -346,7 +346,7 @@ namespace SoftMasking {
             DisableIfThereAreNestedMasks();
         }
 
-        static readonly Rect DefaultRectUV = new Rect(0, 0, 1, 1);
+        static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
 
         RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
         Canvas canvas { get { return _canvas ?? (_canvas = NearestEnabledCanvas()); } }
@@ -467,7 +467,7 @@ namespace SoftMasking {
                     CalculateSpriteBased(_sprite, _spriteBorderMode);
                     break;
                 case MaskSource.Texture:
-                    CalculateTextureBased(_texture, _textureRect);
+                    CalculateTextureBased(_texture, _textureUVRect);
                     break;
                 default:
                     Debug.LogErrorFormat("Unknown MaskSource: {0}", _source);
@@ -564,7 +564,7 @@ namespace SoftMasking {
         }
 
         void CalculateSolidFill() {
-            CalculateTextureBased(null, DefaultRectUV);
+            CalculateTextureBased(null, DefaultUVRect);
         }
 
         void FillCommonParameters() {
