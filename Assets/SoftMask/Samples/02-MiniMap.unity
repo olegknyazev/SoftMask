@@ -137,6 +137,7 @@ MonoBehaviour:
   _defaultShader: {fileID: 4800000, guid: 8d19bf0a0d7a69643b050c159096b413, type: 3}
   _defaultETC1Shader: {fileID: 4800000, guid: 9734f2045a9c1f74d956d0573ac8a2f3, type: 3}
   _source: 0
+  _separateMask: {fileID: 0}
   _sprite: {fileID: 0}
   _spriteBorderMode: 0
   _texture: {fileID: 0}
@@ -691,8 +692,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d485610d1ded27d4bb0f7aec66e0ee3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  content: {fileID: 1809466691}
-  viewport: {fileID: 696416198}
+  map: {fileID: 1809466691}
+  marker: {fileID: 696416198}
 --- !u!114 &1809466693
 MonoBehaviour:
   m_ObjectHideFlags: 2
