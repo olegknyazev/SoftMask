@@ -114,8 +114,11 @@ namespace SoftMasking.Editor {
 
             public static void WithIndent(Action f) {
                 ++EditorGUI.indentLevel;
-                f();
-                --EditorGUI.indentLevel;
+                try {
+                    f();
+                } finally {
+                    --EditorGUI.indentLevel;
+                }
             }
 
             static readonly GUIStyle KnownChannelStyle = EditorStyles.popup;
@@ -176,9 +179,11 @@ namespace SoftMasking.Editor {
             static T WithZeroIndent<T>(Func<T> f) {
                 var prev = EditorGUI.indentLevel;
                 EditorGUI.indentLevel = 0;
-                var result = f();
-                EditorGUI.indentLevel = prev;
-                return result;
+                try {
+                    return f();
+                } finally {
+                    EditorGUI.indentLevel = prev;
+                }
             }
 
             static float HeightOf(GUIStyle style) { return style.CalcSize(GUIContent.none).y; }

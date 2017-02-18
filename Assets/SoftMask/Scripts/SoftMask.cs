@@ -21,7 +21,7 @@ namespace SoftMasking {
 
     /// <summary>
     /// SoftMask is a component that can be added to UI elements for masking the children. It works
-    /// like a standard Unity's <see cref="Mask"/> but supports gradually-transparent masks.
+    /// like a standard Unity's <see cref="Mask"/> but supports alpha.
     /// </summary>
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
@@ -270,6 +270,7 @@ namespace SoftMasking {
             return result;
         }
 
+        // ICanvasRaycastFilter
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
             Vector2 localPos;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, cam, out localPos)) return false;
@@ -436,22 +437,23 @@ namespace SoftMasking {
         }
 
         Material Replace(Material original) {
-            if (original == null || original.HasDefaultUIShader()) {
-                var replacement = _defaultShader ? new Material(_defaultShader) : null;
-                if (replacement && original)
-                    replacement.CopyPropertiesFromMaterial(original);
-                return replacement;
+            if (original == null || original.HasDefaultUIShader())
+                return Replace(original, _defaultShader);
 #if UNITY_5_4_OR_NEWER
-            } else if (original.HasDefaultETC1UIShader()) {
-                var replacement = _defaultETC1Shader ? new Material(_defaultETC1Shader) : null;
-                if (replacement && original)
-                    replacement.CopyPropertiesFromMaterial(original);
-                return replacement;
+            else if (original.HasDefaultETC1UIShader())
+                return Replace(original, _defaultETC1Shader);
 #endif
-            } else if (original.SupportsSoftMask())
+            else if (original.SupportsSoftMask())
                 return new Material(original);
             else
                 return null;
+        }
+
+        static Material Replace(Material original, Shader defaultReplacementShader) {
+            var replacement = defaultReplacementShader ? new Material(defaultReplacementShader) : null;
+            if (replacement && original)
+                replacement.CopyPropertiesFromMaterial(original);
+            return replacement;
         }
 
         void CalculateMaskParameters() {
@@ -595,7 +597,7 @@ namespace SoftMasking {
         bool DisableIfThereAreNestedMasks() {
             if (ThereAreNestedMasks()) {
                 enabled = false;
-                Debug.LogError("SoftMask is disabled because there are nested masks, which are not supported", this);
+                Debug.LogError("SoftMask is disabled because there are nested masks, which is not supported", this);
                 return true;
             }
             return false;
@@ -608,9 +610,9 @@ namespace SoftMasking {
 
         void WarnSpriteErrors(Errors errors) {
             if ((errors & Errors.TightPackedSprite) != 0)
-                Debug.LogError("SoftMask doesn't support Tight packed sprites", this);
+                Debug.LogError("SoftMask doesn't support tight packed sprites", this);
             if ((errors & Errors.AlphaSplitSprite) != 0)
-                Debug.LogError("SoftMask doesn't support sprites with alpha split texture", this);
+                Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", this);
         }
 
         bool ThereAreNestedMasks() {
@@ -661,7 +663,7 @@ namespace SoftMasking {
         static readonly List<SoftMask> _s_masks = new List<SoftMask>();
         static readonly List<SoftMaskable> _s_maskables = new List<SoftMaskable>();
 
-        // Various operations on Rect represented as Vector4. 
+        // Various operations on a Rect represented as Vector4. 
         // In Vector4 Rect is stored as (xMin, yMin, xMax, yMax).
         static class Mathr {
             public static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
@@ -737,7 +739,7 @@ namespace SoftMasking {
 
             // Next functions performs the same logic as functions from SoftMask.cginc. 
             // They implemented it a bit different way, because there is no such convenient
-            // vector operations in Unity/C# and there is much cheaper conditions.
+            // vector operations in Unity/C# and conditions are much cheaper here.
 
             Vector2 XY2UV(Vector2 localPos) {
                 switch (borderMode) {
