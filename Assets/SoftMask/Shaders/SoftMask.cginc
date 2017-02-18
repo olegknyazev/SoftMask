@@ -66,7 +66,8 @@
     }
 
     inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2) {
-        return (a - a1) / (a2 - a1) * (u2 - u1) + u1;
+        float2 x = (a2 - a1);
+        return x != 0.0f ? (a - a1) / (a2 - a1) * (u2 - u1) + u1 : 0.0f;
     }
 
     // Anti-aliased version of UnityGet2DClipping()
