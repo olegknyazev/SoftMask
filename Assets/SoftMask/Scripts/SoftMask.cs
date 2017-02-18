@@ -61,6 +61,7 @@ namespace SoftMasking {
         [SerializeField] Shader _defaultShader = null;
         [SerializeField] Shader _defaultETC1Shader = null;
         [SerializeField] MaskSource _source = MaskSource.Graphic;
+        [SerializeField] RectTransform _separateMask = null;
         [SerializeField] Sprite _sprite = null;
         [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
         [SerializeField] Texture2D _texture = null;
@@ -74,7 +75,7 @@ namespace SoftMasking {
         bool _dirty;
 
         // Cached components
-        RectTransform _rectTransform;
+        RectTransform _maskTransform;
         Graphic _graphic;
         Canvas _canvas;
 
@@ -177,6 +178,24 @@ namespace SoftMasking {
         }
 
         /// <summary>
+        /// Specifies a RectTransform that should be used as a mask. It allows to separate 
+        /// a mask from a masking hierarchy root, which simplifies creation of moving or 
+        /// sliding masks. When null, the RectTransform of the current object will be used.
+        /// Default value is null.
+        /// </summary>
+        public RectTransform separateMask {
+            get { return _separateMask; }
+            set {
+                if (_separateMask != value) {
+                    Set(ref _separateMask, value);
+                    // We should search them again
+                    _graphic = null;
+                    _maskTransform = null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Specifies a Sprite that should be used as the mask image. This property takes
         /// effect only when the source is MaskSource.Sprite.
         /// </summary>
@@ -273,8 +292,8 @@ namespace SoftMasking {
         // ICanvasRaycastFilter
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
             Vector2 localPos;
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, sp, cam, out localPos)) return false;
-            if (!Mathr.Inside(localPos, LocalRect(Vector4.zero))) return false;
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(maskTransform, sp, cam, out localPos)) return false;
+            if (!Mathr.Inside(localPos, LocalMaskRect(Vector4.zero))) return false;
             if (!_parameters.texture) return true;
             if (_raycastThreshold <= 0.0f) return true;
             float mask;
@@ -322,7 +341,7 @@ namespace SoftMasking {
             SpawnMaskablesInChildren();
             var prevGraphic = _graphic;
             FindGraphic();
-            if (transform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
+            if (maskTransform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
                 UpdateMask();
         }
 
@@ -340,6 +359,8 @@ namespace SoftMasking {
         protected override void OnValidate() {
             base.OnValidate();
             _dirty = true;
+            _maskTransform = null;
+            _graphic = null;
         }
 #endif
 
@@ -350,8 +371,13 @@ namespace SoftMasking {
 
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
 
-        RectTransform rectTransform { get { return _rectTransform ?? (_rectTransform = GetComponent<RectTransform>()); } }
-        Canvas canvas { get { return _canvas ?? (_canvas = NearestEnabledCanvas()); } }
+        RectTransform maskTransform {
+            get { return _maskTransform ?? (_maskTransform = _separateMask ? _separateMask : GetComponent<RectTransform>()); }
+        }
+
+        Canvas canvas {
+            get { return _canvas ?? (_canvas = NearestEnabledCanvas()); }
+        }
 
         bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
 
@@ -384,7 +410,7 @@ namespace SoftMasking {
 
         void FindGraphic() {
             if (!_graphic) {
-                _graphic = GetComponent<Graphic>();
+                _graphic = maskTransform.GetComponent<Graphic>();
                 if (_graphic) {
                     _graphic.RegisterDirtyVerticesCallback(OnGraphicDirty);
                     _graphic.RegisterDirtyMaterialCallback(OnGraphicDirty);
@@ -404,7 +430,7 @@ namespace SoftMasking {
             Assert.IsTrue(isMaskingEnabled);
             CalculateMaskParameters();
             _materials.ApplyAll();
-            transform.hasChanged = false;
+            maskTransform.hasChanged = false;
             _dirty = false;
         }
 
@@ -521,7 +547,7 @@ namespace SoftMasking {
             var textureRect = Mathr.ToVector(sprite.textureRect);
             var textureBorder = Mathr.BorderOf(spriteRect, textureRect);
             var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
-            var fullMaskRect = LocalRect(Vector4.zero);
+            var fullMaskRect = LocalMaskRect(Vector4.zero);
             _parameters.maskRectUV = Mathr.Div(textureRect, textureSize);
             if (borderMode == BorderMode.Simple) {
                 var textureRectInFullRect = Mathr.Div(textureBorder, Mathr.Size(spriteRect));
@@ -530,7 +556,7 @@ namespace SoftMasking {
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, textureBorder * GraphicToCanvas(sprite));
                 var fullMaskRectUV = Mathr.Div(spriteRect, textureSize);
                 var adjustedBorder = AdjustBorders(sprite.border * GraphicToCanvas(sprite), fullMaskRect);
-                _parameters.maskBorder = LocalRect(adjustedBorder);
+                _parameters.maskBorder = LocalMaskRect(adjustedBorder);
                 _parameters.maskBorderUV = Mathr.ApplyBorder(fullMaskRectUV, Mathr.Div(sprite.border, textureSize));
             }
             _parameters.texture = sprite.texture;
@@ -560,7 +586,7 @@ namespace SoftMasking {
 
         void CalculateTextureBased(Texture2D texture, Rect uvRect) {
             FillCommonParameters();
-            _parameters.maskRect = LocalRect(Vector4.zero);
+            _parameters.maskRect = LocalMaskRect(Vector4.zero);
             _parameters.maskRectUV = Mathr.ToVector(uvRect);
             _parameters.texture = texture;
             _parameters.borderMode = BorderMode.Simple;
@@ -582,11 +608,11 @@ namespace SoftMasking {
         }
 
         Matrix4x4 WorldToMask() {
-            return transform.worldToLocalMatrix * canvas.transform.localToWorldMatrix;
+            return maskTransform.worldToLocalMatrix * canvas.transform.localToWorldMatrix;
         }
 
-        Vector4 LocalRect(Vector4 border) {
-            return Mathr.ApplyBorder(Mathr.ToVector(rectTransform.rect), border);
+        Vector4 LocalMaskRect(Vector4 border) {
+            return Mathr.ApplyBorder(Mathr.ToVector(maskTransform.rect), border);
         }
 
         Vector2 MaskRepeat(Sprite sprite, Vector4 centralPart) {

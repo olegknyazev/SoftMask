@@ -8,6 +8,7 @@ namespace SoftMasking.Editor {
     [CanEditMultipleObjects]
     public class SoftMaskEditor : UnityEditor.Editor {
         SerializedProperty _source;
+        SerializedProperty _separateMask;
         SerializedProperty _sprite;
         SerializedProperty _spriteBorderMode;
         SerializedProperty _texture;
@@ -45,6 +46,7 @@ namespace SoftMasking.Editor {
 
         public void OnEnable() {
             _source = serializedObject.FindProperty("_source");
+            _separateMask = serializedObject.FindProperty("_separateMask");
             _sprite = serializedObject.FindProperty("_sprite");
             _spriteBorderMode = serializedObject.FindProperty("_spriteBorderMode");
             _texture = serializedObject.FindProperty("_texture");
@@ -52,6 +54,7 @@ namespace SoftMasking.Editor {
             _channelWeights = serializedObject.FindProperty("_channelWeights");
             _raycastThreshold = serializedObject.FindProperty("_raycastThreshold");
             Assert.IsNotNull(_source);
+            Assert.IsNotNull(_separateMask);
             Assert.IsNotNull(_sprite);
             Assert.IsNotNull(_spriteBorderMode);
             Assert.IsNotNull(_texture);
@@ -77,6 +80,7 @@ namespace SoftMasking.Editor {
                         break;
                 }
             });
+            EditorGUILayout.PropertyField(_separateMask);
             EditorGUILayout.Slider(_raycastThreshold, 0, 1);
             CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
             ShowErrorsIfAny();
