@@ -796,7 +796,8 @@ namespace SoftMasking {
             }
             
             float Inset(float v, float x1, float x2, float u1, float u2, float repeat = 1) {
-                return Frac((v - x1) / (x2 - x1) * repeat) * (u2 - u1) + u1;
+                var w = (x2 - x1);
+                return Mathf.Lerp(u1, u2, w != 0.0f ? Frac((v - x1) / w * repeat) : 0.0f);
             }
 
             float Inset(float v, float x1, float x2, float x3, float x4, float u1, float u2, float u3, float u4, float repeat = 1) {
