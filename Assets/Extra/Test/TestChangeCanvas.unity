@@ -358,7 +358,7 @@ GameObject:
   - 81: {fileID: 488188993}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -424,10 +424,10 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 488188992}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 490.2712, y: 361.8016, z: 0}
+  m_LocalRotation: {x: -0.10555588, y: 0.2238542, z: 0.024395566, w: 0.9685826}
+  m_LocalPosition: {x: 0, y: 0, z: -400}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -12.439099, y: 26.0269, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -459,10 +459,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   panel: {fileID: 819296862}
-  canvases:
-  - {fileID: 284765002}
-  - {fileID: 2009315408}
-  - {fileID: 0}
+  steps:
+  - canvas: {fileID: 284765002}
+    spawnCanvasOnItself: 0
+  - canvas: {fileID: 2009315408}
+    spawnCanvasOnItself: 0
+  - canvas: {fileID: 0}
+    spawnCanvasOnItself: 0
+  - canvas: {fileID: 284765002}
+    spawnCanvasOnItself: 1
+  - canvas: {fileID: 0}
+    spawnCanvasOnItself: 1
 --- !u!4 &539783288
 Transform:
   m_ObjectHideFlags: 0

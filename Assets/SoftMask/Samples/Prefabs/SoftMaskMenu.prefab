@@ -26,6 +26,7 @@ GameObject:
   - 224: {fileID: 22467374}
   - 222: {fileID: 22226834}
   - 114: {fileID: 11420350}
+  - 114: {fileID: 11414580}
   m_Layer: 5
   m_Name: Handle
   m_TagString: Untagged
@@ -77,6 +78,7 @@ GameObject:
   - 224: {fileID: 22492336}
   - 222: {fileID: 22201410}
   - 114: {fileID: 11406064}
+  - 114: {fileID: 11445594}
   m_Layer: 5
   m_Name: Item Background
   m_TagString: Untagged
@@ -181,6 +183,7 @@ GameObject:
   - 224: {fileID: 22429824}
   - 222: {fileID: 22259018}
   - 114: {fileID: 11442688}
+  - 114: {fileID: 11405682}
   m_Layer: 5
   m_Name: Item Label
   m_TagString: Untagged
@@ -234,7 +237,6 @@ GameObject:
   - 114: {fileID: 11486048}
   - 114: {fileID: 11422688}
   - 114: {fileID: 11401444}
-  - 114: {fileID: 11431618}
   m_Layer: 5
   m_Name: Template
   m_TagString: Untagged
@@ -270,6 +272,7 @@ GameObject:
   - 222: {fileID: 22255442}
   - 114: {fileID: 11421878}
   - 114: {fileID: 11494032}
+  - 114: {fileID: 11412284}
   m_Layer: 5
   m_Name: Scrollbar
   m_TagString: Untagged
@@ -317,6 +320,7 @@ GameObject:
   - 224: {fileID: 22480252}
   - 222: {fileID: 22262996}
   - 114: {fileID: 11489046}
+  - 114: {fileID: 11413280}
   m_Layer: 5
   m_Name: Item Checkmark
   m_TagString: Untagged
@@ -347,7 +351,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 168182}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0bac33ade27cf4542bd53b1b13d90941, type: 3}
   m_Name: 
@@ -394,6 +398,17 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &11405682
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 157432}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eddc1fbd4bd796345832996a9560b9bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &11406064
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -454,6 +469,39 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 'Sample:'
+--- !u!114 &11412284
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 178296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eddc1fbd4bd796345832996a9560b9bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &11413280
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 188318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eddc1fbd4bd796345832996a9560b9bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &11414580
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 116728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eddc1fbd4bd796345832996a9560b9bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &11420350
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -599,18 +647,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &11431618
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 168182}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1200242548, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ShowMaskGraphic: 1
 --- !u!114 &11433790
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -746,6 +782,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dropdown: {fileID: 11484246}
   fallbackLabel: {fileID: 11433790}
+--- !u!114 &11445594
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 143718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eddc1fbd4bd796345832996a9560b9bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &11450956
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1227,11 +1274,11 @@ RectTransform:
   - {fileID: 22429824}
   m_Father: {fileID: 22433634}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 28}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &22429824
 RectTransform:
   m_ObjectHideFlags: 1
@@ -1267,7 +1314,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 28}
+  m_SizeDelta: {x: 0, y: 32}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &22443508
 RectTransform:

@@ -355,12 +355,6 @@ namespace SoftMasking {
             _dirty = true;
         }
 
-        protected override void OnBeforeTransformParentChanged() {
-            base.OnBeforeTransformParentChanged();
-            _canvas = null;
-            _dirty = true;
-        }
-
 #if UNITY_EDITOR
         protected override void OnValidate() {
             base.OnValidate();
@@ -373,6 +367,14 @@ namespace SoftMasking {
         protected override void OnTransformParentChanged() {
             base.OnTransformParentChanged();
             DisableIfThereAreNestedMasks();
+            _canvas = null;
+            _dirty = true;
+        }
+
+        protected override void OnCanvasHierarchyChanged() {
+            base.OnCanvasHierarchyChanged();
+            _canvas = null;
+            _dirty = true;
         }
 
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
@@ -612,7 +614,7 @@ namespace SoftMasking {
         }
 
         Matrix4x4 WorldToMask() {
-            return maskTransform.worldToLocalMatrix * canvas.transform.localToWorldMatrix;
+            return maskTransform.worldToLocalMatrix * canvas.rootCanvas.transform.localToWorldMatrix;
         }
 
         Vector4 LocalMaskRect(Vector4 border) {
