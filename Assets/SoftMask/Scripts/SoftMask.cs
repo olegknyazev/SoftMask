@@ -355,6 +355,12 @@ namespace SoftMasking {
             _dirty = true;
         }
 
+        protected override void OnBeforeTransformParentChanged() {
+            base.OnBeforeTransformParentChanged();
+            _canvas = null;
+            _dirty = true;
+        }
+
 #if UNITY_EDITOR
         protected override void OnValidate() {
             base.OnValidate();
