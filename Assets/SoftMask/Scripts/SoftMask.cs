@@ -567,8 +567,6 @@ namespace SoftMasking {
 
         static Vector4 AdjustBorders(Vector4 border, Vector4 rect) {
             // Copied from Unity's Image.
-            // The only difference in calculation is that we subtract one from size[axis].
-            // It prevents from division by zero in __SoftMask_Inset() from SoftMask.cginc.
             var size = Mathr.Size(rect);
             for (int axis = 0; axis <= 1; axis++) {
                 // If the rect is smaller than the combined borders, then there's not room for
@@ -576,7 +574,7 @@ namespace SoftMasking {
                 // borders, we scale the borders down to fit.
                 float combinedBorders = border[axis] + border[axis + 2];
                 if (size[axis] < combinedBorders && combinedBorders != 0) {
-                    float borderScaleRatio = (size[axis] - 1) / combinedBorders;
+                    float borderScaleRatio = size[axis] / combinedBorders;
                     border[axis] *= borderScaleRatio;
                     border[axis + 2] *= borderScaleRatio;
                 }
