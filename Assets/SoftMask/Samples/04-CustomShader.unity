@@ -278,7 +278,6 @@ GameObject:
   - 224: {fileID: 492765641}
   - 222: {fileID: 492765644}
   - 114: {fileID: 492765643}
-  - 114: {fileID: 492765642}
   - 114: {fileID: 492765645}
   m_Layer: 5
   m_Name: RawImage
@@ -303,29 +302,8 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 640, y: 640}
+  m_SizeDelta: {x: 1024, y: 480}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &492765642
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 492765640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 68c5736a97637354b9bc9f25a0640d6e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  image: {fileID: 492765643}
-  textures:
-  - {fileID: 2800000, guid: cf1541205fbfbd24e9e1359ead79b521, type: 3}
-  - {fileID: 2800000, guid: 62355f6c85a5e3b4e8f2e0ce275abd49, type: 3}
-  - {fileID: 2800000, guid: d99d1ef2aeed173408a123ad87e5e460, type: 3}
-  - {fileID: 2800000, guid: a2433788424c33b4cb491d344be9571b, type: 3}
-  - {fileID: 2800000, guid: 5cfb0cb36fbfc2b429e0fd283b3bc52b, type: 3}
-  twistSpeed: 25
-  twistAngle: 10
-  delay: 2
 --- !u!114 &492765643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -345,7 +323,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Texture: {fileID: 2800000, guid: cf1541205fbfbd24e9e1359ead79b521, type: 3}
+  m_Texture: {fileID: 2800000, guid: b683dcf8f1cb34044a2a87fdd2a5a632, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: -0.5
@@ -511,8 +489,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
-  m_MinWidth: 260
-  m_MinHeight: 200
+  m_MinWidth: 300
+  m_MinHeight: 260
   m_PreferredWidth: -1
   m_PreferredHeight: -1
   m_FlexibleWidth: -1
