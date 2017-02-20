@@ -16,8 +16,8 @@ namespace SoftMasking {
 
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (_mask != null && _mask.isMaskingEnabled) {
-                // First get a new, then release the old. It allows us to reuse old material
-                // if it's still actual.
+                // First get a new material, then release the old one. It allows us to reuse 
+                // the old material if it's still actual.
                 var newMat = _mask.GetReplacement(baseMaterial);
                 replacement = newMat;
                 if (replacement) {
@@ -53,13 +53,14 @@ namespace SoftMasking {
         }
 
         protected virtual void Update() {
-            if (mask == null || graphic == null)
+            if (mask == null)
                 DestroyImmediate(this);
         }
 
         protected override void OnEnable() {
             base.OnEnable();
             FindMask();
+            NotifyChildrenChanged();
         }
 
         protected override void OnDisable() {
@@ -70,6 +71,15 @@ namespace SoftMasking {
         protected override void OnTransformParentChanged() {
             base.OnTransformParentChanged();
             FindMask();
+        }
+
+        void OnTransformChildrenChanged() {
+            NotifyChildrenChanged();
+        }
+
+        void NotifyChildrenChanged() {
+            if (mask != null)
+                mask.OnTransformChildrenChanged(transform);
         }
 
         Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
@@ -99,13 +109,13 @@ namespace SoftMasking {
 
         void FindMask() { mask = NearestEnabledMask(transform); }
 
-        static SoftMask NearestEnabledMask(Transform root) {
-            if (!root)
+        static SoftMask NearestEnabledMask(Transform transform) {
+            if (!transform)
                 return null;
-            var mask = root.GetComponent<SoftMask>();
+            var mask = transform.GetComponent<SoftMask>();
             if (mask && mask.isMaskingEnabled)
                 return mask;
-            return NearestEnabledMask(root.parent);
+            return NearestEnabledMask(transform.parent);
         }
 
         void SetShaderNotSupported(Material material) {

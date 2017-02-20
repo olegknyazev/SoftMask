@@ -72,6 +72,7 @@ namespace SoftMasking {
         MaterialReplacements _materials;
         MaterialParameters _parameters;
         Sprite _lastUsedSprite;
+        bool _maskingWasEnabled;
         bool _dirty;
 
         // Cached components
@@ -313,6 +314,7 @@ namespace SoftMasking {
             base.OnEnable();
             if (DisableIfThereAreNestedMasks())
                 return;
+            SpawnMaskablesInChildren(transform);
             FindGraphic();
             if (isMaskingEnabled)
                 UpdateMask();
@@ -330,19 +332,17 @@ namespace SoftMasking {
             DestroyMaterials();
         }
 
-        protected override void OnDestroy() {
-            base.OnDestroy();
-            DestroyMaskablesInChildren();
-        }
-
         protected virtual void LateUpdate() {
-            if (!isMaskingEnabled)
-                return;
-            SpawnMaskablesInChildren();
-            var prevGraphic = _graphic;
-            FindGraphic();
-            if (maskTransform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
-                UpdateMask();
+            var maskingEnabled = isMaskingEnabled;
+            if (maskingEnabled) {
+                if (_maskingWasEnabled != maskingEnabled)
+                    SpawnMaskablesInChildren(transform);
+                var prevGraphic = _graphic;
+                FindGraphic();
+                if (maskTransform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
+                    UpdateMask();
+            }
+            _maskingWasEnabled = maskingEnabled;
         }
 
         protected override void OnRectTransformDimensionsChange() {
@@ -375,6 +375,10 @@ namespace SoftMasking {
             base.OnCanvasHierarchyChanged();
             _canvas = null;
             _dirty = true;
+        }
+
+        void OnTransformChildrenChanged() {
+            SpawnMaskablesInChildren(transform);
         }
 
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
@@ -411,6 +415,10 @@ namespace SoftMasking {
             _materials.Release(replacement);
         }
 
+        void ISoftMask.OnTransformChildrenChanged(Transform transform) {
+            SpawnMaskablesInChildren(transform);
+        }
+
         void OnGraphicDirty() {
             if (isBasedOnGraphic)
                 _dirty = true;
@@ -442,28 +450,24 @@ namespace SoftMasking {
             _dirty = false;
         }
 
-        void SpawnMaskablesInChildren() {
-            transform.GetComponentsInChildren(_s_graphics);
-            foreach (var g in _s_graphics)
-                if (g.gameObject != gameObject)
-                    if (!g.GetComponent<SoftMaskable>())
-                        g.gameObject.AddComponent<SoftMaskable>();
-        }
-
-        void DestroyMaskablesInChildren() {
-            transform.GetComponentsInChildren(_s_maskables);
-            foreach (var m in _s_maskables)
-                DestroyImmediate(m);
+        void SpawnMaskablesInChildren(Transform root) {
+            for (int i = 0; i < root.childCount; ++i) {
+                var child = root.GetChild(i);
+                if (!child.GetComponent<SoftMaskable>())
+                    child.gameObject.AddComponent<SoftMaskable>();
+            }   
         }
 
         void InvalidateChildren(bool maskMightChange = false) {
             transform.GetComponentsInChildren(_s_maskables);
-            foreach (var maskable in _s_maskables)
+            for (int i = 0; i < _s_maskables.Count; ++i) {
+                var maskable = _s_maskables[i];
                 if (maskable) {
                     if (maskMightChange)
                         maskable.MaskMightChange();
                     maskable.Invalidate();
-                }   
+                }
+            }
         }
         
         void DestroyMaterials() {
@@ -691,7 +695,6 @@ namespace SoftMasking {
             return result;
         }
 
-        static readonly List<Graphic> _s_graphics = new List<Graphic>();
         static readonly List<SoftMask> _s_masks = new List<SoftMask>();
         static readonly List<SoftMaskable> _s_maskables = new List<SoftMaskable>();
 

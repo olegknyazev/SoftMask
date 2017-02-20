@@ -6,5 +6,6 @@ namespace SoftMasking {
         // May return null.
         Material GetReplacement(Material original);
         void ReleaseReplacement(Material replacement);
+        void OnTransformChildrenChanged(Transform transform);
     }
 }
