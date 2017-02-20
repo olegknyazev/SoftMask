@@ -2,10 +2,11 @@
 
 namespace SoftMasking {
     public interface ISoftMask {
+        bool isAlive { get; }
         bool isMaskingEnabled { get; }
         // May return null.
         Material GetReplacement(Material original);
         void ReleaseReplacement(Material replacement);
-        void OnTransformChildrenChanged(Transform transform);
+        void UpdateTransformChildren(Transform transform);
     }
 }

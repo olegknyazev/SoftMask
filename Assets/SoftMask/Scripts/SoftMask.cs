@@ -73,6 +73,7 @@ namespace SoftMasking {
         MaterialParameters _parameters;
         Sprite _lastUsedSprite;
         bool _maskingWasEnabled;
+        bool _destroyed;
         bool _dirty;
 
         // Cached components
@@ -318,7 +319,7 @@ namespace SoftMasking {
             FindGraphic();
             if (isMaskingEnabled)
                 UpdateMask();
-            InvalidateChildren(maskMightChange: true);
+            NotifyChildrenThatMaskMightChanged();
         }
 
         protected override void OnDisable() {
@@ -328,8 +329,14 @@ namespace SoftMasking {
                 _graphic.UnregisterDirtyMaterialCallback(OnGraphicDirty);
                 _graphic = null;
             }
-            InvalidateChildren(maskMightChange: true);
+            NotifyChildrenThatMaskMightChanged();
             DestroyMaterials();
+        }
+
+        protected override void OnDestroy() {
+            base.OnDestroy();
+            _destroyed = true;
+            NotifyChildrenThatMaskMightChanged();
         }
 
         protected virtual void LateUpdate() {
@@ -375,6 +382,7 @@ namespace SoftMasking {
             base.OnCanvasHierarchyChanged();
             _canvas = null;
             _dirty = true;
+            NotifyChildrenThatMaskMightChanged();
         }
 
         void OnTransformChildrenChanged() {
@@ -406,6 +414,8 @@ namespace SoftMasking {
             }
         }
 
+        bool ISoftMask.isAlive { get { return this && !_destroyed; } }
+
         Material ISoftMask.GetReplacement(Material original) {
             Assert.IsTrue(isActiveAndEnabled);
             return _materials.Get(original);
@@ -415,7 +425,7 @@ namespace SoftMasking {
             _materials.Release(replacement);
         }
 
-        void ISoftMask.OnTransformChildrenChanged(Transform transform) {
+        void ISoftMask.UpdateTransformChildren(Transform transform) {
             SpawnMaskablesInChildren(transform);
         }
 
@@ -458,18 +468,24 @@ namespace SoftMasking {
             }   
         }
 
-        void InvalidateChildren(bool maskMightChange = false) {
+        void InvalidateChildren() {
             transform.GetComponentsInChildren(_s_maskables);
             for (int i = 0; i < _s_maskables.Count; ++i) {
                 var maskable = _s_maskables[i];
-                if (maskable) {
-                    if (maskMightChange)
-                        maskable.MaskMightChange();
+                if (maskable)
                     maskable.Invalidate();
-                }
             }
         }
-        
+
+        void NotifyChildrenThatMaskMightChanged() {
+            transform.GetComponentsInChildren(_s_maskables);
+            for (int i = 0; i < _s_maskables.Count; ++i) {
+                var maskable = _s_maskables[i];
+                if (maskable)
+                    maskable.MaskMightChanged();
+            }
+        }
+
         void DestroyMaterials() {
             _materials.DestroyAllAndClear();
         }

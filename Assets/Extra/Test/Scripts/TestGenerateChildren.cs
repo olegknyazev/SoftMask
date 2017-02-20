@@ -9,7 +9,6 @@ namespace SoftMasking.Tests {
         Random random = new Random();
 
         public void Start() {
-            var random = new System.Random();
             var existingCount = root.childCount;
             for (int i = 0; i < childrenToGenerate; ++i) {
                 var prototype = root.GetChild(random.Next() % existingCount);
@@ -18,6 +17,7 @@ namespace SoftMasking.Tests {
                 instance.transform.localRotation = RandomRotation();
                 instance.transform.SetParent(root, false);
             }
+            print("Overall children count: " + CountChildren());
         }
 
         Vector3 RandomPosition() {
@@ -29,6 +29,19 @@ namespace SoftMasking.Tests {
 
         Quaternion RandomRotation() {
             return Quaternion.AngleAxis((float)(random.NextDouble() * 360), Vector3.forward);
+        }
+
+        int CountChildren() {
+            var result = 0;
+            CountChildren(root, ref result);
+            return result;
+        }
+
+        void CountChildren(Transform transform, ref int count) {
+            var childCount = transform.childCount;
+            count += childCount;
+            for (int i = 0; i < childCount; ++i)
+                CountChildren(transform.GetChild(i), ref count);
         }
     }
 }
