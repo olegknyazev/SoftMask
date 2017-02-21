@@ -46,11 +46,8 @@ namespace SoftMasking {
 
         // Called when active mask might changed, so, mask should be searched again.
         public void MaskMightChanged() {
-            var prevMask = mask;
-            var prevEnabled = isMaskingEnabled;
             if (FindMaskOrDie())
-                if (!ReferenceEquals(prevMask, mask) || prevEnabled != isMaskingEnabled)
-                    Invalidate();
+                Invalidate();
         }
 
         protected override void Awake() {
