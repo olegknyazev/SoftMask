@@ -36,7 +36,7 @@ namespace SoftMasking.Samples {
         bool IsSceneInBuild(string sceneName) {
             return 
                 EditorBuildSettings.scenes.Any(
-                    s => Path.GetFileNameWithoutExtension(s.path) == sceneName);
+                    s => Path.GetFileNameWithoutExtension(s.path) == sceneName && s.enabled);
         }
 #endif
     }
