@@ -113,9 +113,9 @@ namespace SoftMasking {
         bool FindMaskOrDie() {
             if (_destroyed)
                 return false;
-            mask = NearestMask(transform);
+            mask = NearestMask(transform.parent);
             if (mask == null)
-                mask = NearestMask(transform, enabledOnly: false);
+                mask = NearestMask(transform.parent, enabledOnly: false);
             if (mask == null) {
                 _destroyed = true;
                 DestroyImmediate(this);
