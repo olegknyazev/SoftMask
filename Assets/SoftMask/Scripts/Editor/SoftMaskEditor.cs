@@ -8,6 +8,7 @@ namespace SoftMasking.Editor {
     [CanEditMultipleObjects]
     public class SoftMaskEditor : UnityEditor.Editor {
         SerializedProperty _source;
+        SerializedProperty _separateMask;
         SerializedProperty _sprite;
         SerializedProperty _spriteBorderMode;
         SerializedProperty _texture;
@@ -28,8 +29,8 @@ namespace SoftMasking.Editor {
                 "Some of children's shaders aren't supported. Mask won't work on these elements. " +
                 "See the documentation for more details about how to add Soft Mask support to " +
                 "custom shaders.";
-            public static readonly string NestedMasks = 
-                "Mask is disabled because a SoftMask child or parent element exists. " +
+            public static readonly string NestedMasks =
+                "Mask is disabled because a child or a parent SoftMask exists. " +
                 "SoftMask doesn't support nesting. You can work around this limitation by nesting " +
                 "a SoftMask into a Unity standard Mask or RectMask2D or vice versa.";
             public static readonly string TightPackedSprite =
@@ -45,6 +46,7 @@ namespace SoftMasking.Editor {
 
         public void OnEnable() {
             _source = serializedObject.FindProperty("_source");
+            _separateMask = serializedObject.FindProperty("_separateMask");
             _sprite = serializedObject.FindProperty("_sprite");
             _spriteBorderMode = serializedObject.FindProperty("_spriteBorderMode");
             _texture = serializedObject.FindProperty("_texture");
@@ -52,6 +54,7 @@ namespace SoftMasking.Editor {
             _channelWeights = serializedObject.FindProperty("_channelWeights");
             _raycastThreshold = serializedObject.FindProperty("_raycastThreshold");
             Assert.IsNotNull(_source);
+            Assert.IsNotNull(_separateMask);
             Assert.IsNotNull(_sprite);
             Assert.IsNotNull(_spriteBorderMode);
             Assert.IsNotNull(_texture);
@@ -77,6 +80,7 @@ namespace SoftMasking.Editor {
                         break;
                 }
             });
+            EditorGUILayout.PropertyField(_separateMask);
             EditorGUILayout.Slider(_raycastThreshold, 0, 1);
             CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
             ShowErrorsIfAny();
@@ -114,8 +118,11 @@ namespace SoftMasking.Editor {
 
             public static void WithIndent(Action f) {
                 ++EditorGUI.indentLevel;
-                f();
-                --EditorGUI.indentLevel;
+                try {
+                    f();
+                } finally {
+                    --EditorGUI.indentLevel;
+                }
             }
 
             static readonly GUIStyle KnownChannelStyle = EditorStyles.popup;
@@ -176,9 +183,11 @@ namespace SoftMasking.Editor {
             static T WithZeroIndent<T>(Func<T> f) {
                 var prev = EditorGUI.indentLevel;
                 EditorGUI.indentLevel = 0;
-                var result = f();
-                EditorGUI.indentLevel = prev;
-                return result;
+                try {
+                    return f();
+                } finally {
+                    EditorGUI.indentLevel = prev;
+                }
             }
 
             static float HeightOf(GUIStyle style) { return style.CalcSize(GUIContent.none).y; }

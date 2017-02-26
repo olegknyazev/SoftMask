@@ -20,13 +20,16 @@ namespace SoftMasking.Samples {
 
         public void Generate() {
             DestroyChildren();
+            var startColor = Random.Range(0, colors.Length - 1);
             for (int i = 0; i < count; ++i) {
                 var item = Instantiate(itemPrefab);
                 item.transform.SetParent(target, false);
-                item.image.sprite = image;
-                item.image.color = colors[i % colors.Length];
-                item.title.text = string.Format("{0} {1:D2}", baseName, i);
-                item.description.text = string.Format("Full description of {0} {1:D2}", baseName, i);
+                item.Set(
+                    string.Format("{0} {1:D2}", baseName, i + 1), 
+                    image, 
+                    colors[(startColor + i) % colors.Length], 
+                    Random.Range(0.4f, 1), 
+                    Random.Range(0.4f, 1));
             }
         }
 

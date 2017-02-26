@@ -60,13 +60,15 @@
 
     // On changing logic of the following functions, don't forget to update
     // according functions in SoftMask.MaterialParameters (C#).
-    
+
     inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2, float2 repeat) {
-        return frac((a - a1) / (a2 - a1) * repeat) * (u2 - u1) + u1;
+        float2 w = (a2 - a1);
+        return lerp(u1, u2, frac(w != 0.0f ? (a - a1) / w * repeat : 0.0f));
     }
 
     inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2) {
-        return (a - a1) / (a2 - a1) * (u2 - u1) + u1;
+        float2 w = (a2 - a1);
+        return lerp(u1, u2, (w != 0.0f ? (a - a1) / w : 0.0f));
     }
 
     // Anti-aliased version of UnityGet2DClipping()
@@ -77,11 +79,6 @@
     }
 
 # ifdef __SOFTMASK_USE_BORDER
-#   if SOFTMASK_TILED
-#       define __SOFTMASK_REPEAT , _SoftMask_TileRepeat
-#   else
-#       define __SOFTMASK_REPEAT
-#   endif
     inline float2 __SoftMask_XY2UV(
             float2 a, 
             float2 a1, float2 a2, float2 a3, float2 a4, 
@@ -90,9 +87,19 @@
         float2 s2 = step(a3, a);
         float2 s1i = 1 - s1;
         float2 s2i = 1 - s2;
-        return __SoftMask_Inset(a, a1, a2, u1, u2)                   * s1i * s2i
-             + __SoftMask_Inset(a, a2, a3, u2, u3 __SOFTMASK_REPEAT) * s1  * s2i
-             + __SoftMask_Inset(a, a3, a4, u3, u4)                   * s1  * s2;
+        float2 s12 = s1 * s2;
+        float2 s12i = s1 * s2i;
+        float2 s1i2i = s1i * s2i;
+        float2 aa1 = a1 * s1i2i + a2 * s12i + a3 * s12;
+        float2 aa2 = a2 * s1i2i + a3 * s12i + a4 * s12;
+        float2 uu1 = u1 * s1i2i + u2 * s12i + u3 * s12;
+        float2 uu2 = u2 * s1i2i + u3 * s12i + u4 * s12;
+        return 
+            __SoftMask_Inset(a, aa1, aa2, uu1, uu2
+#   if SOFTMASK_TILED
+                , 1 + s12i * (_SoftMask_TileRepeat - 1)
+#   endif
+            );
     }
 
     inline float2 SoftMask_GetMaskUV(float2 maskPosition) {
