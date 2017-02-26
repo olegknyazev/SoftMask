@@ -142,7 +142,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
 --- !u!114 &183471340
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 183471336}
@@ -786,7 +786,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!224 &810066182
 RectTransform:
@@ -988,7 +988,7 @@ RectTransform:
   m_Pivot: {x: 0.5, y: 0.45}
 --- !u!114 &1400185694
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1400185692}
