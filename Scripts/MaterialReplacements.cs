@@ -5,13 +5,13 @@ using UnityEngine.Assertions;
 
 namespace SoftMasking {
     class MaterialReplacements {
-        Func<Material, Material> _replace;
-        Action<Material> _applyParameters;
+        readonly IMaterialReplacer _replacer;
+        readonly Action<Material> _applyParameters;
 
         readonly List<MaterialOverride> _overrides = new List<MaterialOverride>();
 
-        public MaterialReplacements(Func<Material, Material> replace, Action<Material> applyParameters) {
-            _replace = replace;
+        public MaterialReplacements(IMaterialReplacer replacer, Action<Material> applyParameters) {
+            _replacer = replacer;
             _applyParameters = applyParameters;
         }
 
@@ -27,7 +27,7 @@ namespace SoftMasking {
                     return existing;
                 }   
             }
-            var replacement = _replace(original);
+            var replacement = _replacer.Replace(original);
             if (replacement) {
                 replacement.hideFlags = HideFlags.HideAndDontSave;
                 _applyParameters(replacement);
