@@ -28,8 +28,19 @@ namespace SoftMasking {
         static IEnumerable<IMaterialReplacer> CollectGlobalReplacers() {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetExportedTypes())
-                .Where(t => t.IsSubclassOf(typeof(IMaterialReplacer)))
-                .Select(t => (IMaterialReplacer)Activator.CreateInstance(t));
+                .Where(t => !t.IsAbstract)
+                .Where(t => typeof(IMaterialReplacer).IsAssignableFrom(t))
+                .Select(t => TryCreateInstance(t))
+                .Where(t => t != null);
+        }
+
+        static IMaterialReplacer TryCreateInstance(Type t) {
+            try {
+                return (IMaterialReplacer)Activator.CreateInstance(t);
+            } catch (Exception ex) {
+                Debug.LogErrorFormat("Could not create instance of {0}: {1}", t.Name, ex);
+                return null;
+            }
         }
     }
 
@@ -46,6 +57,7 @@ namespace SoftMasking {
 
         public Material Replace(Material material) {
             for (int i = 0; i < _replacers.Count; ++i) {
+                Debug.Log("TRY " + i + " / " + _replacers.Count);
                 var result = _replacers[i].Replace(material);
                 if (result != null)
                     return result;
