@@ -4,6 +4,9 @@ using System.Linq;
 using UnityEngine;
 
 namespace SoftMasking {
+    [AttributeUsage(AttributeTargets.Class)]
+    public class RegisterMaterialReplacerAttribute : Attribute { }
+
     public interface IMaterialReplacer {
         // Determines order in which IMaterialReplacer will be called. Order of default
         // implementation is 0. If you want your function to be called before, return a
@@ -29,6 +32,7 @@ namespace SoftMasking {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetExportedTypes())
                 .Where(t => !t.IsAbstract)
+                .Where(t => t.GetCustomAttributes(typeof(RegisterMaterialReplacerAttribute), false).Length > 0)
                 .Where(t => typeof(IMaterialReplacer).IsAssignableFrom(t))
                 .Select(t => TryCreateInstance(t))
                 .Where(t => t != null);
@@ -57,7 +61,6 @@ namespace SoftMasking {
 
         public Material Replace(Material material) {
             for (int i = 0; i < _replacers.Count; ++i) {
-                Debug.Log("TRY " + i + " / " + _replacers.Count);
                 var result = _replacers[i].Replace(material);
                 if (result != null)
                     return result;
