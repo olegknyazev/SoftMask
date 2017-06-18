@@ -109,7 +109,6 @@
                 _SoftMask_Rect.xy, _SoftMask_BorderRect.xy, _SoftMask_BorderRect.zw, _SoftMask_Rect.zw,
                 _SoftMask_UVRect.xy, _SoftMask_UVBorderRect.xy, _SoftMask_UVBorderRect.zw, _SoftMask_UVRect.zw);
     }
-#   undef __SOFTMASK_REPEAT
 # else
     inline float2 SoftMask_GetMaskUV(float2 maskPosition) {
         return 
