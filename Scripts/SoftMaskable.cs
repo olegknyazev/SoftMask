@@ -50,6 +50,12 @@ namespace SoftMasking {
                 Invalidate();
         }
 
+        // Find an ISoftMask that masks or should mask the given transform.
+        public static ISoftMask FindMask(Transform transform) {
+            return NearestMask(transform)
+                ?? NearestMask(transform, enabledOnly: false);
+        }
+
         protected override void Awake() {
             base.Awake();
             hideFlags = HideFlags.HideInInspector;
@@ -58,7 +64,7 @@ namespace SoftMasking {
         protected override void OnEnable() {
             base.OnEnable();
             if (FindMaskOrDie())
-                NotifyChildrenChanged();
+                RequestChildTransformUpdate();
         }
 
         protected override void OnDisable() {
@@ -76,11 +82,17 @@ namespace SoftMasking {
             FindMaskOrDie();
         }
 
-        void OnTransformChildrenChanged() {
-            NotifyChildrenChanged();
+        protected override void OnCanvasHierarchyChanged() {
+            base.OnCanvasHierarchyChanged();
+            // Change of override sorting might changed the mask that should mask this element
+            FindMaskOrDie();
         }
 
-        void NotifyChildrenChanged() {
+        void OnTransformChildrenChanged() {
+            RequestChildTransformUpdate();
+        }
+
+        void RequestChildTransformUpdate() {
             if (mask != null)
                 mask.UpdateTransformChildren(transform);
         }
@@ -113,9 +125,7 @@ namespace SoftMasking {
         bool FindMaskOrDie() {
             if (_destroyed)
                 return false;
-            mask = NearestMask(transform.parent);
-            if (mask == null)
-                mask = NearestMask(transform.parent, enabledOnly: false);
+            mask = FindMask(transform.parent);
             if (mask == null) {
                 _destroyed = true;
                 DestroyImmediate(this);
@@ -130,6 +140,9 @@ namespace SoftMasking {
             var mask = transform.GetComponent<ISoftMask>();
             if (mask != null && mask.isAlive && (!enabledOnly || mask.isMaskingEnabled))
                 return mask;
+            var canvas = transform.GetComponent<Canvas>();
+            if (canvas && canvas.overrideSorting)
+                return null; // Do not go upper
             return NearestMask(transform.parent, enabledOnly);
         }
 

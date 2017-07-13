@@ -464,7 +464,8 @@ namespace SoftMasking {
             for (int i = 0; i < root.childCount; ++i) {
                 var child = root.GetChild(i);
                 if (!child.GetComponent<SoftMaskable>())
-                    child.gameObject.AddComponent<SoftMaskable>();
+                    if (SoftMaskable.FindMask(child) == this)
+                        child.gameObject.AddComponent<SoftMaskable>();
             }   
         }
 
