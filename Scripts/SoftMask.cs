@@ -281,8 +281,8 @@ namespace SoftMasking {
         /// </summary>
         public Errors PollErrors() {
             Errors result = Errors.NoError;
-            GetComponentsInChildren(_s_maskables);
-            if (_s_maskables.Any(m => m.shaderIsNotSupported))
+            GetComponentsInChildren(s_maskables);
+            if (s_maskables.Any(m => m.shaderIsNotSupported))
                 result |= Errors.UnsupportedShaders;
             if (ThereAreNestedMasks())
                 result |= Errors.NestedMasks;
@@ -469,18 +469,18 @@ namespace SoftMasking {
         }
 
         void InvalidateChildren() {
-            transform.GetComponentsInChildren(_s_maskables);
-            for (int i = 0; i < _s_maskables.Count; ++i) {
-                var maskable = _s_maskables[i];
+            transform.GetComponentsInChildren(s_maskables);
+            for (int i = 0; i < s_maskables.Count; ++i) {
+                var maskable = s_maskables[i];
                 if (maskable)
                     maskable.Invalidate();
             }
         }
 
         void NotifyChildrenThatMaskMightChanged() {
-            transform.GetComponentsInChildren(_s_maskables);
-            for (int i = 0; i < _s_maskables.Count; ++i) {
-                var maskable = _s_maskables[i];
+            transform.GetComponentsInChildren(s_maskables);
+            for (int i = 0; i < s_maskables.Count; ++i) {
+                var maskable = s_maskables[i];
                 if (maskable)
                     maskable.MaskMightChanged();
             }
@@ -670,10 +670,10 @@ namespace SoftMasking {
         bool ThereAreNestedMasks() {
             var result = false;
             Func<SoftMask, bool> maskEnabled = m => m != this && m.isMaskingEnabled;
-            GetComponentsInParent(false, _s_masks);
-            result |= _s_masks.Any(maskEnabled);
-            GetComponentsInChildren(false, _s_masks);
-            result |= _s_masks.Any(maskEnabled);
+            GetComponentsInParent(false, s_masks);
+            result |= s_masks.Any(maskEnabled);
+            GetComponentsInChildren(false, s_masks);
+            result |= s_masks.Any(maskEnabled);
             return result;
         }
 
@@ -711,8 +711,8 @@ namespace SoftMasking {
             return result;
         }
 
-        static readonly List<SoftMask> _s_masks = new List<SoftMask>();
-        static readonly List<SoftMaskable> _s_maskables = new List<SoftMaskable>();
+        static readonly List<SoftMask> s_masks = new List<SoftMask>();
+        static readonly List<SoftMaskable> s_maskables = new List<SoftMaskable>();
 
         // Various operations on a Rect represented as Vector4. 
         // In Vector4 Rect is stored as (xMin, yMin, xMax, yMax).
@@ -734,7 +734,6 @@ namespace SoftMasking {
 
             public static Vector2 Min(Vector4 r) { return new Vector2(r.x, r.y); }
             public static Vector2 Max(Vector4 r) { return new Vector2(r.z, r.w); }
-            public static Vector2 Center(Vector4 r) { return new Vector2((r.x + r.z) * 0.5f, (r.y + r.w) * 0.5f); }
 
             public static Vector2 Remap(Vector2 c, Vector4 r1, Vector4 r2) {
                 var r1size = Max(r1) - Min(r1);
