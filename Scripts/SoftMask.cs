@@ -275,14 +275,16 @@ namespace SoftMasking {
             get { return isActiveAndEnabled && canvas; }
         }
 
+        // TODO extract error detection code to editor namespace (but do it in not the bugfix branch!)
+
         /// <summary>
         /// Checks for errors and returns them as flags. It is used in the editor to determine
         /// which warnings should be displayed.
         /// </summary>
         public Errors PollErrors() {
-            Errors result = Errors.NoError;
+            var result = Errors.NoError;
             GetComponentsInChildren(s_maskables);
-            if (s_maskables.Any(m => m.shaderIsNotSupported))
+            if (s_maskables.Any(m => m.mask == this && m.shaderIsNotSupported))
                 result |= Errors.UnsupportedShaders;
             if (ThereAreNestedMasks())
                 result |= Errors.NestedMasks;
@@ -313,8 +315,6 @@ namespace SoftMasking {
 
         protected override void OnEnable() {
             base.OnEnable();
-            if (DisableIfThereAreNestedMasks())
-                return;
             SpawnMaskablesInChildren(transform);
             FindGraphic();
             if (isMaskingEnabled)
@@ -373,7 +373,6 @@ namespace SoftMasking {
 
         protected override void OnTransformParentChanged() {
             base.OnTransformParentChanged();
-            DisableIfThereAreNestedMasks();
             _canvas = null;
             _dirty = true;
         }
@@ -646,15 +645,6 @@ namespace SoftMasking {
             return Mathr.Div(Mathr.Size(centralPart) * GraphicToCanvas(sprite), Mathr.Size(textureCenter));
         }
 
-        bool DisableIfThereAreNestedMasks() {
-            if (ThereAreNestedMasks()) {
-                enabled = false;
-                Debug.LogError("SoftMask is disabled because there are nested masks, which is not supported", this);
-                return true;
-            }
-            return false;
-        }
-
         void WarnIfDefaultShaderIsNotSet() {
             if (!_defaultShader)
                 Debug.LogWarning("SoftMask may not work because its defaultShader is not set", this);
@@ -669,12 +659,18 @@ namespace SoftMasking {
 
         bool ThereAreNestedMasks() {
             var result = false;
-            Func<SoftMask, bool> maskEnabled = m => m != this && m.isMaskingEnabled;
             GetComponentsInParent(false, s_masks);
-            result |= s_masks.Any(maskEnabled);
+            result |= s_masks.Any(IsCompetingWith);
             GetComponentsInChildren(false, s_masks);
-            result |= s_masks.Any(maskEnabled);
+            result |= s_masks.Any(IsCompetingWith);
             return result;
+        }
+
+        bool IsCompetingWith(SoftMask other) {
+            return other != this 
+                && other.isMaskingEnabled
+                && other.canvas.rootCanvas == canvas.rootCanvas
+                && !Child(this, other).canvas.overrideSorting;
         }
 
         void Set<T>(ref T field, T value) {
@@ -709,6 +705,12 @@ namespace SoftMasking {
             if (sprite.associatedAlphaSplitTexture)
                 result |= Errors.AlphaSplitSprite;
             return result;
+        }
+
+        static T Child<T>(T first, T second) where T : Component {
+            Assert.IsNotNull(first);
+            Assert.IsNotNull(second);
+            return first.transform.IsChildOf(second.transform) ? first : second;
         }
 
         static readonly List<SoftMask> s_masks = new List<SoftMask>();

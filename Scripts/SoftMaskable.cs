@@ -25,6 +25,18 @@ namespace SoftMasking {
             }
         }
 
+        public ISoftMask mask {
+            get { return _mask; }
+            private set {
+                if (_mask != value) {
+                    if (_mask != null)
+                        replacement = null;
+                    _mask = (value != null && value.isAlive) ? value : null;
+                    Invalidate();
+                }
+            }
+        }
+
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (isMaskingEnabled) {
                 // First get a new material, then release the old one. It allows us to reuse 
@@ -113,18 +125,6 @@ namespace SoftMasking {
             }
         }
 
-        ISoftMask mask {
-            get { return _mask; }
-            set {
-                if (_mask != value) {
-                    if (_mask != null)
-                        replacement = null;
-                    _mask = (value != null && value.isAlive) ? value : null;
-                    Invalidate();
-                }
-            }
-        }
-        
         // Find an ISoftMask that masks or should mask the given transform.
         bool FindMaskOrDie() {
             if (_destroyed)
