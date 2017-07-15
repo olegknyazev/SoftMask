@@ -284,7 +284,7 @@ namespace SoftMasking {
         public Errors PollErrors() {
             var result = Errors.NoError;
             GetComponentsInChildren(s_maskables);
-            if (s_maskables.Any(m => m.mask == this && m.shaderIsNotSupported))
+            if (s_maskables.Any(m => ReferenceEquals(m.mask, this) && m.shaderIsNotSupported))
                 result |= Errors.UnsupportedShaders;
             if (ThereAreNestedMasks())
                 result |= Errors.NestedMasks;
