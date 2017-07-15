@@ -125,7 +125,6 @@ namespace SoftMasking {
             }
         }
 
-        // Find an ISoftMask that masks or should mask the given transform.
         bool FindMaskOrDie() {
             if (_destroyed)
                 return false;
