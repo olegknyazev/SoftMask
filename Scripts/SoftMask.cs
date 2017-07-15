@@ -468,20 +468,19 @@ namespace SoftMasking {
         }
 
         void InvalidateChildren() {
-            transform.GetComponentsInChildren(s_maskables);
-            for (int i = 0; i < s_maskables.Count; ++i) {
-                var maskable = s_maskables[i];
-                if (maskable)
-                    maskable.Invalidate();
-            }
+            ForeachChildMaskable(x => x.Invalidate());
         }
 
         void NotifyChildrenThatMaskMightChanged() {
+            ForeachChildMaskable(x => x.MaskMightChanged());
+        }
+
+        void ForeachChildMaskable(Action<SoftMaskable> f) {
             transform.GetComponentsInChildren(s_maskables);
             for (int i = 0; i < s_maskables.Count; ++i) {
                 var maskable = s_maskables[i];
-                if (maskable)
-                    maskable.MaskMightChanged();
+                if (maskable && maskable.gameObject != gameObject)
+                    f(maskable);
             }
         }
 

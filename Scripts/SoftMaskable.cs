@@ -145,7 +145,7 @@ namespace SoftMasking {
             while (true) {
                 if (!current)
                     return null;
-                if (current != transform) { // Masks do not mask themself
+                if (current != transform) { // Masks do not mask themselves
                     var mask = GetISoftMask(current, shouldBeEnabled: enabledOnly);
                     if (mask != null)
                         return mask;
