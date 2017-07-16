@@ -444,6 +444,7 @@ namespace SoftMasking {
         }
 
         Canvas NearestEnabledCanvas() {
+            // It's a rare operation, so I do not optimize it with static lists
             var canvases = GetComponentsInParent<Canvas>(false);
             for (int i = 0; i < canvases.Length; ++i)
                 if (canvases[i].isActiveAndEnabled)
@@ -666,7 +667,9 @@ namespace SoftMasking {
         }
 
         bool IsCompetingWith(SoftMask other) {
-            return other != this 
+            Assert.IsNotNull(other);
+            return isMaskingEnabled
+                && other != this
                 && other.isMaskingEnabled
                 && other.canvas.rootCanvas == canvas.rootCanvas
                 && !Child(this, other).canvas.overrideSorting;
