@@ -32,30 +32,31 @@ namespace SoftMasking {
         //
         // How it works:
         //
-        // SoftMask overrides Shader used by child elements. To do that, SoftMask spawns invisible 
+        // SoftMask overrides Shader used by child elements. To do it, SoftMask spawns invisible 
         // SoftMaskable components on them on the fly. SoftMaskable implements IMaterialOverride,
         // which allows it to override the shader that performs actual rendering. Use of
         // IMaterialOverride is transparent to the user: a material assigned to Graphic in the 
-        // inspector is left untouched.
+        // inspector is left untouched. And it also works well with other IMaterialOverrides
+        // (Outline Effect, for example).
         //
-        // Management of SoftMaskables is fully automated. SoftMaskables are kept on the children
-        // objects while there is any SoftMask parent. When something changes and SoftMask parent
+        // Management of SoftMaskables is fully automated. SoftMaskables are kept on the child
+        // objects while any SoftMask parent present. When something changes and SoftMask parent
         // no longer exists, SoftMaskable is destroyed automatically. So, a user of SoftMask
-        // doesn't have to worry about any Components changes in the hierarchy.
+        // doesn't have to worry about any component changes in the hierarchy.
         //
-        // The replacement shader should sample the mask texture and multiply the resulted color 
+        // The replacement shader samples the mask texture and multiply the resulted color 
         // accordingly. SoftMask has the predefined replacement for Unity's default UI shader 
-        // (and its ETC1-version in Unity 5.4). So, when SoftMask 'sees' a material using a known
-        // shader, it overrides shader by the predefined version. If SoftMask encounters an unknown 
-        // material, it can't do anything reasonable (because it doesn't know what that shader 
-        // should do). In such a case, SoftMask will not work and the according message will be 
-        // displayed in Console. If you want SoftMask to work with a custom Shader, you always can 
-        // add support for this Shader. For reference how to do it, see CustomWithSoftMask.shader
-        // from included samples.
+        // (and its ETC1-version in Unity 5.4+). So, when SoftMask 'sees' a material that uses a
+        // known shader, it overrides shader by the predefined one. If SoftMask encounters a
+        // material with unknown shader, it can't do anything reasonable (because it doesn't know
+        // what that shader should do). In such a case, SoftMask will not work and an according
+        // message will be displayed in Console. If you want SoftMask to work with a custom shader,
+        // you can manually add support to this Shader. For reference how to do it, see
+        // CustomWithSoftMask.shader from included samples.
         //
-        // All replacements are cached in the level of the SoftMask instance. By default, Unity
-        // draws UI with a very small amount of material instances (they are spawned only for
-        // masking/clipping layers), so, SoftMask creates a relatively small amount of overrides.
+        // All replacements are cached in SoftMask instances. By default Unity draws UI with a
+        // very small amount of material instances (they are spawned one per masking/clipping layer),
+        // so, SoftMask creates a relatively small amount of overrides.
         //
 
         [SerializeField] Shader _defaultShader = null;
