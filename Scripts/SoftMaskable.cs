@@ -112,7 +112,7 @@ namespace SoftMasking {
                 mask.UpdateTransformChildren(transform);
         }
 
-        Graphic graphic { get { return _graphic ?? (_graphic = GetComponent<Graphic>()); } }
+        Graphic graphic { get { return _graphic ? _graphic : (_graphic = GetComponent<Graphic>()); } }
 
         Material replacement {
             get { return _replacement; }

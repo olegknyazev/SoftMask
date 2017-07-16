@@ -391,11 +391,16 @@ namespace SoftMasking {
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
 
         RectTransform maskTransform {
-            get { return _maskTransform ?? (_maskTransform = _separateMask ? _separateMask : GetComponent<RectTransform>()); }
+            get {
+                return
+                    _maskTransform
+                        ? _maskTransform
+                        : (_maskTransform = _separateMask ? _separateMask : GetComponent<RectTransform>());
+            }
         }
 
         Canvas canvas {
-            get { return _canvas ?? (_canvas = NearestEnabledCanvas()); }
+            get { return _canvas ? _canvas : (_canvas = NearestEnabledCanvas()); }
         }
 
         bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
