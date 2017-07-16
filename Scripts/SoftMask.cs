@@ -275,23 +275,11 @@ namespace SoftMasking {
             get { return isActiveAndEnabled && canvas; }
         }
 
-        // TODO extract error detection code to editor namespace (but do it in not the bugfix branch!)
-
         /// <summary>
         /// Checks for errors and returns them as flags. It is used in the editor to determine
         /// which warnings should be displayed.
         /// </summary>
-        public Errors PollErrors() {
-            var result = Errors.NoError;
-            GetComponentsInChildren(s_maskables);
-            if (s_maskables.Any(m => ReferenceEquals(m.mask, this) && m.shaderIsNotSupported))
-                result |= Errors.UnsupportedShaders;
-            if (ThereAreNestedMasks())
-                result |= Errors.NestedMasks;
-            result |= CheckSprite(activeSprite);
-            result |= CheckImage();
-            return result;
-        }
+        public Errors PollErrors() { return new Diagnostics(this).PollErrors(); }
 
         // ICanvasRaycastFilter
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
@@ -404,19 +392,6 @@ namespace SoftMasking {
         }
 
         bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
-
-        Sprite activeSprite {
-            get {
-                switch (source) {
-                    case MaskSource.Sprite: return _sprite;
-                    case MaskSource.Graphic: {
-                            var image = _graphic as Image;
-                            return image ? image.sprite : null;
-                        }
-                    default: return null;
-                }
-            }
-        }
 
         bool ISoftMask.isAlive { get { return this && !_destroyed; } }
 
@@ -564,7 +539,7 @@ namespace SoftMasking {
         void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
             var lastSprite = _lastUsedSprite;
             _lastUsedSprite = sprite;
-            var spriteErrors = CheckSprite(sprite);
+            var spriteErrors = Diagnostics.CheckSprite(sprite);
             if (spriteErrors != Errors.NoError) {
                 if (lastSprite != sprite)
                     WarnSpriteErrors(spriteErrors);
@@ -663,24 +638,6 @@ namespace SoftMasking {
                 Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", this);
         }
 
-        bool ThereAreNestedMasks() {
-            var result = false;
-            GetComponentsInParent(false, s_masks);
-            result |= s_masks.Any(IsCompetingWith);
-            GetComponentsInChildren(false, s_masks);
-            result |= s_masks.Any(IsCompetingWith);
-            return result;
-        }
-
-        bool IsCompetingWith(SoftMask other) {
-            Assert.IsNotNull(other);
-            return isMaskingEnabled
-                && other != this
-                && other.isMaskingEnabled
-                && other.canvas.rootCanvas == canvas.rootCanvas
-                && !Child(this, other).canvas.overrideSorting;
-        }
-
         void Set<T>(ref T field, T value) {
             field = value;
             _dirty = true;
@@ -694,31 +651,6 @@ namespace SoftMasking {
                 DestroyMaterials();
                 InvalidateChildren();
             }
-        }
-
-        Errors CheckImage() {
-            var result = Errors.NoError;
-            if (!isBasedOnGraphic) return result;
-            var image = _graphic as Image;
-            if (image && image.type == Image.Type.Filled)
-                result |= Errors.UnsupportedImageType;
-            return result;
-        }
-
-        static Errors CheckSprite(Sprite sprite) {
-            var result = Errors.NoError;
-            if (!sprite) return result;
-            if (sprite.packed && sprite.packingMode == SpritePackingMode.Tight)
-                result |= Errors.TightPackedSprite;
-            if (sprite.associatedAlphaSplitTexture)
-                result |= Errors.AlphaSplitSprite;
-            return result;
-        }
-
-        static T Child<T>(T first, T second) where T : Component {
-            Assert.IsNotNull(first);
-            Assert.IsNotNull(second);
-            return first.transform.IsChildOf(second.transform) ? first : second;
         }
 
         static readonly List<SoftMask> s_masks = new List<SoftMask>();
@@ -861,6 +793,82 @@ namespace SoftMasking {
                 public static readonly int SoftMask_BorderRect = Shader.PropertyToID("_SoftMask_BorderRect");
                 public static readonly int SoftMask_UVBorderRect = Shader.PropertyToID("_SoftMask_UVBorderRect");
                 public static readonly int SoftMask_TileRepeat = Shader.PropertyToID("_SoftMask_TileRepeat");
+            }
+        }
+
+        struct Diagnostics {
+            SoftMask _softMask;
+
+            public Diagnostics(SoftMask softMask) { _softMask = softMask; }
+            
+            public Errors PollErrors() {
+                var softMask = _softMask; // for use in lambda
+                var result = Errors.NoError;
+                softMask.GetComponentsInChildren(s_maskables);
+                if (s_maskables.Any(m => ReferenceEquals(m.mask, softMask) && m.shaderIsNotSupported))
+                    result |= Errors.UnsupportedShaders;
+                if (ThereAreNestedMasks())
+                    result |= Errors.NestedMasks;
+                result |= CheckSprite(sprite);
+                result |= CheckImage();
+                return result;
+            }
+
+            public static Errors CheckSprite(Sprite sprite) {
+                var result = Errors.NoError;
+                if (!sprite) return result;
+                if (sprite.packed && sprite.packingMode == SpritePackingMode.Tight)
+                    result |= Errors.TightPackedSprite;
+                if (sprite.associatedAlphaSplitTexture)
+                    result |= Errors.AlphaSplitSprite;
+                return result;
+            }
+
+            Image image {
+                get { return _softMask._graphic as Image; }
+            }
+
+            Sprite sprite {
+                get {
+                    switch (_softMask.source) {
+                        case MaskSource.Sprite: return _softMask._sprite;
+                        case MaskSource.Graphic: return this.image ? this.image.sprite : null;
+                        default: return null;
+                    }
+                }
+            }
+
+            bool ThereAreNestedMasks() {
+                var softMask = _softMask; // for use in lambda
+                var result = false;
+                softMask.GetComponentsInParent(false, s_masks);
+                result |= s_masks.Any(x => AreCompeting(softMask, x));
+                softMask.GetComponentsInChildren(false, s_masks);
+                result |= s_masks.Any(x => AreCompeting(softMask, x));
+                return result;
+            }
+
+            Errors CheckImage() {
+                var result = Errors.NoError;
+                if (!_softMask.isBasedOnGraphic) return result;
+                if (image && image.type == Image.Type.Filled)
+                    result |= Errors.UnsupportedImageType;
+                return result;
+            }
+
+            static bool AreCompeting(SoftMask softMask, SoftMask other) {
+                Assert.IsNotNull(other);
+                return softMask.isMaskingEnabled
+                    && softMask != other
+                    && other.isMaskingEnabled
+                    && softMask.canvas.rootCanvas == other.canvas.rootCanvas
+                    && !Child(softMask, other).canvas.overrideSorting;
+            }
+
+            static T Child<T>(T first, T second) where T : Component {
+                Assert.IsNotNull(first);
+                Assert.IsNotNull(second);
+                return first.transform.IsChildOf(second.transform) ? first : second;
             }
         }
     }
