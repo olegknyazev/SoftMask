@@ -11,10 +11,31 @@ namespace SoftMasking {
         ISoftMask _mask;
         Graphic _graphic;
         Material _replacement;
+        bool _affectedByMask;
         bool _destroyed;
 
         public bool shaderIsNotSupported { get; private set; }
-        public bool isMaskingEnabled { get { return mask != null && mask.isAlive && mask.isMaskingEnabled; } }
+
+        public bool isMaskingEnabled {
+            get {
+                return mask != null 
+                    && mask.isAlive 
+                    && mask.isMaskingEnabled 
+                    && _affectedByMask;
+            }
+        }
+
+        public ISoftMask mask {
+            get { return _mask; }
+            private set {
+                if (_mask != value) {
+                    if (_mask != null)
+                        replacement = null;
+                    _mask = (value != null && value.isAlive) ? value : null;
+                    Invalidate();
+                }
+            }
+        }
 
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (isMaskingEnabled) {
@@ -58,7 +79,7 @@ namespace SoftMasking {
         protected override void OnEnable() {
             base.OnEnable();
             if (FindMaskOrDie())
-                NotifyChildrenChanged();
+                RequestChildTransformUpdate();
         }
 
         protected override void OnDisable() {
@@ -76,11 +97,17 @@ namespace SoftMasking {
             FindMaskOrDie();
         }
 
-        void OnTransformChildrenChanged() {
-            NotifyChildrenChanged();
+        protected override void OnCanvasHierarchyChanged() {
+            base.OnCanvasHierarchyChanged();
+            // Change of override sorting might changed the mask instance we masked by
+            FindMaskOrDie();
         }
 
-        void NotifyChildrenChanged() {
+        void OnTransformChildrenChanged() {
+            RequestChildTransformUpdate();
+        }
+
+        void RequestChildTransformUpdate() {
             if (mask != null)
                 mask.UpdateTransformChildren(transform);
         }
@@ -98,24 +125,11 @@ namespace SoftMasking {
             }
         }
 
-        ISoftMask mask {
-            get { return _mask; }
-            set {
-                if (_mask != value) {
-                    if (_mask != null)
-                        replacement = null;
-                    _mask = (value != null && value.isAlive) ? value : null;
-                    Invalidate();
-                }
-            }
-        }
-
         bool FindMaskOrDie() {
             if (_destroyed)
                 return false;
-            mask = NearestMask(transform.parent);
-            if (mask == null)
-                mask = NearestMask(transform.parent, enabledOnly: false);
+            mask = NearestMask(transform, out _affectedByMask)
+                ?? NearestMask(transform, out _affectedByMask, enabledOnly: false);
             if (mask == null) {
                 _destroyed = true;
                 DestroyImmediate(this);
@@ -124,13 +138,35 @@ namespace SoftMasking {
             return true;
         }
 
-        static ISoftMask NearestMask(Transform transform, bool enabledOnly = true) {
-            if (!transform)
-                return null;
-            var mask = transform.GetComponent<ISoftMask>();
-            if (mask != null && mask.isAlive && (!enabledOnly || mask.isMaskingEnabled))
+        static ISoftMask NearestMask(Transform transform, out bool processedByThisMask, bool enabledOnly = true) {
+            processedByThisMask = true;
+            var current = transform;
+            while (true) {
+                if (!current)
+                    return null;
+                if (current != transform) { // Masks do not mask themselves
+                    var mask = GetISoftMask(current, shouldBeEnabled: enabledOnly);
+                    if (mask != null)
+                        return mask;
+                }
+                if (IsOverridingSortingCanvas(current))
+                    processedByThisMask = false;
+                current = current.parent;
+            }
+        }
+
+        static ISoftMask GetISoftMask(Transform current, bool shouldBeEnabled = true) {
+            var mask = current.GetComponent<ISoftMask>();
+            if (mask != null && mask.isAlive && (!shouldBeEnabled || mask.isMaskingEnabled))
                 return mask;
-            return NearestMask(transform.parent, enabledOnly);
+            return null;
+        }
+
+        static bool IsOverridingSortingCanvas(Transform transform) {
+            var canvas = transform.GetComponent<Canvas>();
+            if (canvas && canvas.overrideSorting)
+                return true;
+            return false;
         }
 
         void SetShaderNotSupported(Material material) {
