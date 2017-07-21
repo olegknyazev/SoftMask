@@ -23,10 +23,8 @@
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip("Use Alpha Clip", Float) = 0
 
         // Soft Mask support
-        // Soft Mask determines that shader supports soft masking by presence of this
-        // property. All other properties listed in SoftMask.shader aren't required
-        // to include here. 
-        _SoftMask("Mask", 2D) = "white" {}
+        // Soft Mask determines that shader supports soft masking by presence of this property.
+        [PerRendererData] _SoftMask("Mask", 2D) = "white" {}
     }
 
     SubShader
