@@ -67,3 +67,5 @@
         }
     }
 }
+
+// UNITY_SHADER_NO_UPGRADE

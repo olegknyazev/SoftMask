@@ -29,7 +29,7 @@
     inline float4 SoftMask_GetMaskTexture(float2 maskPosition)
         Returns a color of the mask texture for a given pixel. maskPosition is the same
         as in SoftMask_GetMask(). This function returns the original pixel of the mask,
-        which may be useful for debugging.                 
+        which may be useful for debugging.
 */
 
 #if defined(SOFTMASK_SIMPLE) || defined(SOFTMASK_SLICED) || defined(SOFTMASK_TILED)
@@ -80,8 +80,8 @@
 
 # ifdef __SOFTMASK_USE_BORDER
     inline float2 __SoftMask_XY2UV(
-            float2 a, 
-            float2 a1, float2 a2, float2 a3, float2 a4, 
+            float2 a,
+            float2 a1, float2 a2, float2 a3, float2 a4,
             float2 u1, float2 u2, float2 u3, float2 u4) {
         float2 s1 = step(a2, a);
         float2 s2 = step(a3, a);
@@ -94,7 +94,7 @@
         float2 aa2 = a2 * s1i2i + a3 * s12i + a4 * s12;
         float2 uu1 = u1 * s1i2i + u2 * s12i + u3 * s12;
         float2 uu2 = u2 * s1i2i + u3 * s12i + u4 * s12;
-        return 
+        return
             __SoftMask_Inset(a, aa1, aa2, uu1, uu2
 #   if SOFTMASK_TILED
                 , 1 + s12i * (_SoftMask_TileRepeat - 1)
@@ -111,9 +111,9 @@
     }
 # else
     inline float2 SoftMask_GetMaskUV(float2 maskPosition) {
-        return 
+        return
             __SoftMask_Inset(
-                maskPosition, 
+                maskPosition,
                 _SoftMask_Rect.xy, _SoftMask_Rect.zw, _SoftMask_UVRect.xy, _SoftMask_UVRect.zw);
     }
 # endif
@@ -128,8 +128,8 @@
     }
 #else // __SOFTMASK_ENABLED
 
-# define SOFTMASK_COORDS(idx)                  
-# define SOFTMASK_CALCULATE_COORDS(OUT, pos)   
+# define SOFTMASK_COORDS(idx)
+# define SOFTMASK_CALCULATE_COORDS(OUT, pos)
 # define SOFTMASK_GET_MASK(IN)                 (1.0f)
 
     inline float4 SoftMask_GetMaskTexture(float2 maskPosition) { return 1.0f; }
@@ -137,3 +137,5 @@
 #endif
 
 #endif
+
+// UNITY_SHADER_NO_UPGRADE

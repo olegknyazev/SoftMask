@@ -40,9 +40,9 @@
 #endif
         OUT.worldPosition = IN.vertex;
 #if UNITY_VERSION >= 540
-        OUT.vertex = UnityObjectToClipPos(OUT.worldPosition);
+        OUT.vertex = UnityObjectToClipPos(IN.vertex);
 #else
-        OUT.vertex = mul(UNITY_MATRIX_MVP, OUT.worldPosition);
+        OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
 #endif
 
         OUT.texcoord = IN.texcoord;
@@ -70,13 +70,15 @@
 #else
         half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 #endif
-    
+
         color.a *= SOFTMASK_GET_MASK(IN);
         color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
-    
+
 #ifdef UNITY_UI_ALPHACLIP
         clip(color.a - 0.001);
 #endif
 
         return color;
     }
+
+// UNITY_SHADER_NO_UPGRADE

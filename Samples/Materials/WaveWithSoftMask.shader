@@ -66,7 +66,7 @@
 
             // Soft Mask Support
             // You also can use full path (Assets/...)
-            #include "../../Shaders/SoftMask.cginc" 
+            #include "../../Shaders/SoftMask.cginc"
 
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
 
@@ -114,7 +114,11 @@
             {
                 v2f OUT;
                 OUT.worldPosition = IN.vertex;
+            #if UNITY_VERSION >= 540
+                OUT.vertex = UnityObjectToClipPos(IN.vertex);
+            #else
                 OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
+            #endif
 
                 OUT.texcoord = IN.texcoord;
 
@@ -150,3 +154,5 @@
         }
     }
 }
+
+// UNITY_SHADER_NO_UPGRADE
