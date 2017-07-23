@@ -36,8 +36,7 @@ namespace SoftMasking {
         // SoftMaskable components on them on the fly. SoftMaskable implements IMaterialOverride,
         // which allows it to override the shader that performs actual rendering. Use of
         // IMaterialOverride is transparent to the user: a material assigned to Graphic in the 
-        // inspector is left untouched. And it also works well with other IMaterialOverrides
-        // (Outline Effect, for example).
+        // inspector is left untouched.
         //
         // Management of SoftMaskables is fully automated. SoftMaskables are kept on the child
         // objects while any SoftMask parent present. When something changes and SoftMask parent
@@ -48,11 +47,11 @@ namespace SoftMasking {
         // accordingly. SoftMask has the predefined replacement for Unity's default UI shader 
         // (and its ETC1-version in Unity 5.4+). So, when SoftMask 'sees' a material that uses a
         // known shader, it overrides shader by the predefined one. If SoftMask encounters a
-        // material with unknown shader, it can't do anything reasonable (because it doesn't know
-        // what that shader should do). In such a case, SoftMask will not work and an according
-        // message will be displayed in Console. If you want SoftMask to work with a custom shader,
-        // you can manually add support to this Shader. For reference how to do it, see
-        // CustomWithSoftMask.shader from included samples.
+        // material with an unknown shader, it can't do anything reasonable (because it doesn't know
+        // what that shader should do). In such a case, SoftMask will not work and a warning will
+		// be displayed in Console. If you want SoftMask to work with a custom shader, you can
+		// manually add support to this shader. For reference how to do it, see
+		// CustomWithSoftMask.shader from included samples.
         //
         // All replacements are cached in SoftMask instances. By default Unity draws UI with a
         // very small amount of material instances (they are spawned one per masking/clipping layer),
@@ -450,14 +449,14 @@ namespace SoftMasking {
         }
 
         void InvalidateChildren() {
-            ForeachChildMaskable(x => x.Invalidate());
+            ForEachChildMaskable(x => x.Invalidate());
         }
 
         void NotifyChildrenThatMaskMightChanged() {
-            ForeachChildMaskable(x => x.MaskMightChanged());
+            ForEachChildMaskable(x => x.MaskMightChanged());
         }
 
-        void ForeachChildMaskable(Action<SoftMaskable> f) {
+        void ForEachChildMaskable(Action<SoftMaskable> f) {
             transform.GetComponentsInChildren(s_maskables);
             for (int i = 0; i < s_maskables.Count; ++i) {
                 var maskable = s_maskables[i];
