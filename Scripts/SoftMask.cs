@@ -28,7 +28,7 @@ namespace SoftMasking {
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
     [HelpURL("https://docs.google.com/document/d/1w8ENeeE_wi_DSpCyU34voUJIOk9o3J8gDDAyOja_9yE")]
-    public class SoftMask : UIBehaviour, ICanvasRaycastFilter, ISoftMask {
+    public class SoftMask : UIBehaviour, ISoftMask, ICanvasRaycastFilter {
         //
         // How it works:
         //
@@ -82,7 +82,11 @@ namespace SoftMasking {
         Canvas _canvas;
 
         public SoftMask() {
-            _materials = new MaterialReplacements(Replace, m => _parameters.Apply(m));
+            var materialReplacer = 
+                new MaterialReplacerChain(
+                    SoftMasking.MaterialReplacer.globalReplacers,
+                    new MaterialReplacer(this));
+            _materials = new MaterialReplacements(materialReplacer, m => _parameters.Apply(m));
         }
 
         /// <summary>
@@ -469,26 +473,6 @@ namespace SoftMasking {
             _materials.DestroyAllAndClear();
         }
 
-        Material Replace(Material original) {
-            if (original == null || original.HasDefaultUIShader())
-                return Replace(original, _defaultShader);
-#if UNITY_5_4_OR_NEWER
-            else if (original.HasDefaultETC1UIShader())
-                return Replace(original, _defaultETC1Shader);
-#endif
-            else if (original.SupportsSoftMask())
-                return new Material(original);
-            else
-                return null;
-        }
-
-        static Material Replace(Material original, Shader defaultReplacementShader) {
-            var replacement = defaultReplacementShader ? new Material(defaultReplacementShader) : null;
-            if (replacement && original)
-                replacement.CopyPropertiesFromMaterial(original);
-            return replacement;
-        }
-
         void CalculateMaskParameters() {
             switch (_source) {
                 case MaskSource.Graphic:
@@ -655,6 +639,41 @@ namespace SoftMasking {
 
         static readonly List<SoftMask> s_masks = new List<SoftMask>();
         static readonly List<SoftMaskable> s_maskables = new List<SoftMaskable>();
+
+        class MaterialReplacer : IMaterialReplacer {
+            readonly SoftMask _owner;
+
+            public MaterialReplacer(SoftMask owner) {
+                // Pass whole owner instead of just shaders because they can be changed dynamically.
+                _owner = owner;
+            }
+
+            public int order {
+                get { return 0; }
+            }
+
+            public Material Replace(Material original) {
+                if (original == null || original.HasDefaultUIShader())
+                    return Replace(original, _owner._defaultShader);
+#if UNITY_5_4_OR_NEWER
+            else if (original.HasDefaultETC1UIShader())
+                return Replace(original, _owner._defaultETC1Shader);
+#endif
+                else if (original.SupportsSoftMask())
+                    return new Material(original);
+                else
+                    return null;
+            }
+
+            static Material Replace(Material original, Shader defaultReplacementShader) {
+                var replacement = defaultReplacementShader
+                    ? new Material(defaultReplacementShader)
+                    : null;
+                if (replacement && original)
+                    replacement.CopyPropertiesFromMaterial(original);
+                return replacement;
+            }
+        }
 
         // Various operations on a Rect represented as Vector4. 
         // In Vector4 Rect is stored as (xMin, yMin, xMax, yMax).
