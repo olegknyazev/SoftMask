@@ -8,7 +8,7 @@ namespace SoftMasking.Samples {
         public string baseName;
         public Item itemPrefab;
 
-        static Color[] colors = new[] {
+        static readonly Color[] colors = new[] {
             Color.red,
             Color.green,
             Color.blue,
