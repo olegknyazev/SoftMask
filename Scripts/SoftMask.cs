@@ -84,8 +84,8 @@ namespace SoftMasking {
         public SoftMask() {
             var materialReplacer = 
                 new MaterialReplacerChain(
-                    SoftMasking.MaterialReplacer.globalReplacers,
-                    new MaterialReplacer(this));
+                    MaterialReplacer.globalReplacers,
+                    new MaterialReplacerImpl(this));
             _materials = new MaterialReplacements(materialReplacer, m => _parameters.Apply(m));
         }
 
@@ -640,24 +640,22 @@ namespace SoftMasking {
         static readonly List<SoftMask> s_masks = new List<SoftMask>();
         static readonly List<SoftMaskable> s_maskables = new List<SoftMaskable>();
 
-        class MaterialReplacer : IMaterialReplacer {
+        class MaterialReplacerImpl : IMaterialReplacer {
             readonly SoftMask _owner;
 
-            public MaterialReplacer(SoftMask owner) {
+            public MaterialReplacerImpl(SoftMask owner) {
                 // Pass whole owner instead of just shaders because they can be changed dynamically.
                 _owner = owner;
             }
 
-            public int order {
-                get { return 0; }
-            }
+            public int order { get { return 0; } }
 
             public Material Replace(Material original) {
                 if (original == null || original.HasDefaultUIShader())
                     return Replace(original, _owner._defaultShader);
 #if UNITY_5_4_OR_NEWER
-            else if (original.HasDefaultETC1UIShader())
-                return Replace(original, _owner._defaultETC1Shader);
+                else if (original.HasDefaultETC1UIShader())
+                    return Replace(original, _owner._defaultETC1Shader);
 #endif
                 else if (original.SupportsSoftMask())
                     return new Material(original);

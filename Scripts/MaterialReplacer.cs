@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SoftMasking {
     [AttributeUsage(AttributeTargets.Class)]
-    public class RegisterMaterialReplacerAttribute : Attribute { }
+    public class GlobalMaterialReplacerAttribute : Attribute { }
 
     public interface IMaterialReplacer {
         // Determines order in which IMaterialReplacer will be called. Order of default
@@ -18,13 +18,13 @@ namespace SoftMasking {
     }
 
     public static class MaterialReplacer {
-        static List<IMaterialReplacer> s_globalReplacers;
+        static List<IMaterialReplacer> _globalReplacers;
 
         public static IEnumerable<IMaterialReplacer> globalReplacers {
             get {
-                if (s_globalReplacers == null)
-                    s_globalReplacers = CollectGlobalReplacers().ToList();
-                return s_globalReplacers;
+                if (_globalReplacers == null)
+                    _globalReplacers = CollectGlobalReplacers().ToList();
+                return _globalReplacers;
             }
         }
 
@@ -32,7 +32,7 @@ namespace SoftMasking {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetExportedTypes())
                 .Where(t => !t.IsAbstract)
-                .Where(t => t.GetCustomAttributes(typeof(RegisterMaterialReplacerAttribute), false).Length > 0)
+                .Where(t => t.GetCustomAttributes(typeof(GlobalMaterialReplacerAttribute), false).Length > 0)
                 .Where(t => typeof(IMaterialReplacer).IsAssignableFrom(t))
                 .Select(t => TryCreateInstance(t))
                 .Where(t => t != null);
