@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace SoftMasking {
     /// <summary>
-    /// Mark an implementation of IMaterialReplacer interface with this attribute to
-    /// register it in the global material replacer chain. These replacers will be used
-    /// automatically by all SoftMasks.
+    /// Mark an implementation of the IMaterialReplacer interface with this attribute to
+    /// register it in the global material replacer chain. The global replacers will be
+    /// used automatically by all SoftMasks.
     ///
-    /// Globally registered replacers are called in order of ascending their `order`
-    /// value. The traversal is stopped on the first IMaterialReplacer which returns
-    /// non-null value and its returned value is used as a replacement.
+    /// Globally registered replacers are called in order of ascending of their `order`
+    /// value. The traversal is stopped on the first IMaterialReplacer which returns a
+    /// non-null value and this returned value is then used as a replacement.
     ///
     /// Implementation of IMaterialReplacer marked by this attribute should have a
     /// default constructor.
@@ -22,15 +22,15 @@ namespace SoftMasking {
     public class GlobalMaterialReplacerAttribute : Attribute { }
 
     /// <summary>
-    /// Used by SoftMask to automatically replace materials which don't support Soft Mask
-    /// by those that do.
+    /// Used by SoftMask to automatically replace materials which don't support
+    /// Soft Mask by those that do.
     /// </summary>
     /// <seealso cref="GlobalMaterialReplacerAttribute"/>
     public interface IMaterialReplacer {
         /// <summary>
-        /// Determines mutual order in which IMaterialReplacers will be called. The
-        /// lesser the return value, the earlier it will be called, that is,
-        /// IMaterialReplacers are sorted by ascending of the order.
+        /// Determines the mutual order in which IMaterialReplacers will be called.
+        /// The lesser the return value, the earlier it will be called, that is,
+        /// replacers are sorted by ascending of the `order` value.
         /// The order of default implementation is 0. If you want your function to be
         /// called before, return a value lesser than 0.
         /// </summary>
