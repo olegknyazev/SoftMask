@@ -310,7 +310,7 @@ namespace SoftMasking {
             SpawnMaskablesInChildren(transform);
             FindGraphic();
             if (isMaskingEnabled)
-                UpdateMask();
+                UpdateMaskParameters();
             NotifyChildrenThatMaskMightChanged();
         }
 
@@ -339,8 +339,9 @@ namespace SoftMasking {
                 var prevGraphic = _graphic;
                 FindGraphic();
                 if (maskTransform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
-                    UpdateMask();
+                    UpdateMaskParameters();
             }
+            _materials.ApplyAll();
             _maskingWasEnabled = maskingEnabled;
         }
 
@@ -436,10 +437,9 @@ namespace SoftMasking {
             return null;
         }
 
-        void UpdateMask() {
+        void UpdateMaskParameters() {
             Assert.IsTrue(isMaskingEnabled);
             CalculateMaskParameters();
-            _materials.ApplyAll();
             maskTransform.hasChanged = false;
             _dirty = false;
         }
