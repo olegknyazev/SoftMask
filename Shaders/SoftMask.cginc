@@ -70,7 +70,9 @@
 
     inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2, float2 repeat) {
         float2 w = (a2 - a1);
-        return lerp(u1, u2, frac(w != 0.0f ? (a - a1) / w * repeat : 0.0f));
+        float2 d = (a - a1) / w;
+        // use repeat only when both w and repeat are not zeroes
+        return lerp(u1, u2, (w * repeat != 0.0f ? frac(d * repeat) : d));
     }
 
     inline float2 __SoftMask_Inset(float2 a, float2 a1, float2 a2, float2 u1, float2 u2) {
@@ -97,7 +99,7 @@
         return
             __SoftMask_Inset(a, aa1, aa2, uu1, uu2
 #   if SOFTMASK_TILED
-                , 1 + s12i * (_SoftMask_TileRepeat - 1)
+                , s12i * _SoftMask_TileRepeat
 #   endif
             );
     }
