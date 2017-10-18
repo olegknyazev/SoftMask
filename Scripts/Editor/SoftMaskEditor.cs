@@ -30,7 +30,7 @@ namespace SoftMasking.Editor {
                 "See the documentation for more details about how to add Soft Mask support to " +
                 "custom shaders.";
             public static readonly string NestedMasks =
-                "Mask may work not as expected because a child or a parent SoftMask exists. " +
+                "Mask may work not as expected because a child or parent SoftMask exists. " +
                 "SoftMask doesn't support nesting. You can work around this limitation by nesting " +
                 "a SoftMask into a Unity standard Mask or RectMask2D or vice versa.";
             public static readonly string TightPackedSprite =
