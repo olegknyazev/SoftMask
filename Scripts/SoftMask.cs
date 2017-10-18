@@ -341,7 +341,6 @@ namespace SoftMasking {
                 if (maskTransform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
                     UpdateMaskParameters();
             }
-            _materials.ApplyAll();
             _maskingWasEnabled = maskingEnabled;
         }
 
@@ -442,6 +441,7 @@ namespace SoftMasking {
             CalculateMaskParameters();
             maskTransform.hasChanged = false;
             _dirty = false;
+            _materials.ApplyAll();
         }
 
         void SpawnMaskablesInChildren(Transform root) {
