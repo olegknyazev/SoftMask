@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace SoftMasking {
@@ -61,6 +62,7 @@ namespace SoftMasking {
         static IEnumerable<IMaterialReplacer> CollectGlobalReplacers() {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypesSafe())
+                .Where(t => !(t is TypeBuilder))
                 .Where(t => !t.IsAbstract)
                 .Where(t => t.IsDefined(typeof(GlobalMaterialReplacerAttribute), false))
                 .Where(t => typeof(IMaterialReplacer).IsAssignableFrom(t))
