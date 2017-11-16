@@ -72,9 +72,12 @@
 #endif
 
         color.a *= SOFTMASK_GET_MASK(IN);
-        color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
 
-#ifdef UNITY_UI_ALPHACLIP
+#if defined(UNITY_UI_CLIP_RECT) || UNITY_VERSION < 201720
+        color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
+#endif
+
+#if defined(UNITY_UI_ALPHACLIP)
         clip(color.a - 0.001);
 #endif
 
