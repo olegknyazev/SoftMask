@@ -62,12 +62,16 @@ namespace SoftMasking {
         static IEnumerable<IMaterialReplacer> CollectGlobalReplacers() {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypesSafe())
-                .Where(t => !(t is TypeBuilder))
-                .Where(t => !t.IsAbstract)
-                .Where(t => t.IsDefined(typeof(GlobalMaterialReplacerAttribute), false))
-                .Where(t => typeof(IMaterialReplacer).IsAssignableFrom(t))
+                .Where(t => IsMaterialReplacerType(t))
                 .Select(t => TryCreateInstance(t))
                 .Where(t => t != null);
+        }
+
+        static bool IsMaterialReplacerType(Type t) {
+            return !(t is TypeBuilder)
+                && !t.IsAbstract
+                && t.IsDefined(typeof(GlobalMaterialReplacerAttribute), false)
+                && typeof(IMaterialReplacer).IsAssignableFrom(t);
         }
 
         static IMaterialReplacer TryCreateInstance(Type t) {
