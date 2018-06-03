@@ -307,6 +307,7 @@ namespace SoftMasking {
 
         protected override void OnEnable() {
             base.OnEnable();
+            SubscribeOnWillRenderCanvases();
             SpawnMaskablesInChildren(transform);
             FindGraphic();
             if (isMaskingEnabled)
@@ -316,6 +317,7 @@ namespace SoftMasking {
 
         protected override void OnDisable() {
             base.OnDisable();
+            UnsubscribeFromWillRenderCanvases();
             if (_graphic) {
                 _graphic.UnregisterDirtyVerticesCallback(OnGraphicDirty);
                 _graphic.UnregisterDirtyMaterialCallback(OnGraphicDirty);
@@ -324,13 +326,13 @@ namespace SoftMasking {
             NotifyChildrenThatMaskMightChanged();
             DestroyMaterials();
         }
-
+       
         protected override void OnDestroy() {
             base.OnDestroy();
             _destroyed = true;
             NotifyChildrenThatMaskMightChanged();
         }
-
+        
         protected virtual void LateUpdate() {
             var maskingEnabled = isMaskingEnabled;
             if (maskingEnabled) {
@@ -338,8 +340,8 @@ namespace SoftMasking {
                     SpawnMaskablesInChildren(transform);
                 var prevGraphic = _graphic;
                 FindGraphic();
-                if (maskTransform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
-                    UpdateMaskParameters();
+                if (maskTransform.hasChanged || !ReferenceEquals(_graphic, prevGraphic))
+                    _dirty = true;
             }
             _maskingWasEnabled = maskingEnabled;
         }
@@ -379,6 +381,28 @@ namespace SoftMasking {
         void OnTransformChildrenChanged() {
             SpawnMaskablesInChildren(transform);
         }
+         
+        void SubscribeOnWillRenderCanvases() {
+            // To get called when layout and graphics update is finished we should
+            // subscribe after CanvasUpdateRegistry. CanvasUpdateRegistry subscribes
+            // in his constructor, so we force its execution.
+            Touch(CanvasUpdateRegistry.instance);
+            Canvas.willRenderCanvases += OnWillRenderCanvases;
+        }
+
+        void UnsubscribeFromWillRenderCanvases() {
+            Canvas.willRenderCanvases -= OnWillRenderCanvases;
+        }
+
+        void OnWillRenderCanvases() {
+            // To be sure that mask will match the state of another drawn UI elements,
+            // we update material parameters when layout and graphic update is done,
+            // just before actual rendering.
+            if (_dirty)
+                UpdateMaskParameters();
+        }
+        
+        static T Touch<T>(T obj) { return obj; }
 
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
 
