@@ -19,7 +19,7 @@
     {
         float4 vertex : SV_POSITION;
         fixed4 color : COLOR;
-        half2 texcoord : TEXCOORD0;
+        float2 texcoord : TEXCOORD0;
         float4 worldPosition : TEXCOORD1;
 #if UNITY_VERSION >= 550
         UNITY_VERTEX_OUTPUT_STEREO
@@ -30,6 +30,14 @@
     fixed4 _Color;
     fixed4 _TextureSampleAdd;
     float4 _ClipRect;
+
+    sampler2D _MainTex;
+#ifdef SOFTMASK_ETC1
+    sampler2D _AlphaTex;
+#endif
+#if UNITY_VERSION >= 201800
+    float4 _MainTex_ST;
+#endif
 
     v2f vert(appdata_t IN)
     {
@@ -45,7 +53,11 @@
         OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
 #endif
 
+#if UNITY_VERSION >= 201800
+        OUT.texcoord = TRANSFORM_TEX(IN.texcoord, _MainTex);
+#else
         OUT.texcoord = IN.texcoord;
+#endif
 
 #if UNITY_VERSION < 550
 #  ifdef UNITY_HALF_TEXEL_OFFSET
@@ -57,11 +69,6 @@
         SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex)
         return OUT;
     }
-
-    sampler2D _MainTex;
-#ifdef SOFTMASK_ETC1
-    sampler2D _AlphaTex;
-#endif
 
     fixed4 frag(v2f IN) : SV_Target
     {
