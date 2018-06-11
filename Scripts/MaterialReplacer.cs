@@ -113,8 +113,8 @@ namespace SoftMasking {
         }
 
         void Initialize() {
-            order = _replacers.Min(x => x.order);
             _replacers.Sort((a, b) => a.order.CompareTo(b.order));
+            order = _replacers[0].order;
         }
     }
 }

@@ -148,7 +148,7 @@ namespace SoftMasking.Editor {
                 }
                 if (EditorGUI.EndChangeCheck())
                     weightsProp.colorValue = weights;
-                if (Event.current.type != EventType.layout)
+                if (Event.current.type != EventType.Layout)
                     customWeightsExpanded = knownChannel == KnownMaskChannel.Custom;
                 EditorGUI.EndProperty();
             }

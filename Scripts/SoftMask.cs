@@ -27,7 +27,7 @@ namespace SoftMasking {
     [DisallowMultipleComponent]
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
-    [HelpURL("https://docs.google.com/document/d/1SkD4yjjD-F6OVMoUtTYTiINHLBpasdfcSQS6XDFq8EQ")]
+    [HelpURL("https://docs.google.com/document/d/11G0q8J0x7GTis7YaLL8YuZRpA_20IoZKE4YDJtFi1eU")]
     public class SoftMask : UIBehaviour, ISoftMask, ICanvasRaycastFilter {
         //
         // How it works:
@@ -307,6 +307,7 @@ namespace SoftMasking {
 
         protected override void OnEnable() {
             base.OnEnable();
+            SubscribeOnWillRenderCanvases();
             SpawnMaskablesInChildren(transform);
             FindGraphic();
             if (isMaskingEnabled)
@@ -316,6 +317,7 @@ namespace SoftMasking {
 
         protected override void OnDisable() {
             base.OnDisable();
+            UnsubscribeFromWillRenderCanvases();
             if (_graphic) {
                 _graphic.UnregisterDirtyVerticesCallback(OnGraphicDirty);
                 _graphic.UnregisterDirtyMaterialCallback(OnGraphicDirty);
@@ -324,13 +326,13 @@ namespace SoftMasking {
             NotifyChildrenThatMaskMightChanged();
             DestroyMaterials();
         }
-
+       
         protected override void OnDestroy() {
             base.OnDestroy();
             _destroyed = true;
             NotifyChildrenThatMaskMightChanged();
         }
-
+        
         protected virtual void LateUpdate() {
             var maskingEnabled = isMaskingEnabled;
             if (maskingEnabled) {
@@ -338,8 +340,8 @@ namespace SoftMasking {
                     SpawnMaskablesInChildren(transform);
                 var prevGraphic = _graphic;
                 FindGraphic();
-                if (maskTransform.hasChanged || _dirty || !ReferenceEquals(_graphic, prevGraphic))
-                    UpdateMaskParameters();
+                if (maskTransform.hasChanged || !ReferenceEquals(_graphic, prevGraphic))
+                    _dirty = true;
             }
             _maskingWasEnabled = maskingEnabled;
         }
@@ -379,6 +381,28 @@ namespace SoftMasking {
         void OnTransformChildrenChanged() {
             SpawnMaskablesInChildren(transform);
         }
+         
+        void SubscribeOnWillRenderCanvases() {
+            // To get called when layout and graphics update is finished we should
+            // subscribe after CanvasUpdateRegistry. CanvasUpdateRegistry subscribes
+            // in his constructor, so we force its execution.
+            Touch(CanvasUpdateRegistry.instance);
+            Canvas.willRenderCanvases += OnWillRenderCanvases;
+        }
+
+        void UnsubscribeFromWillRenderCanvases() {
+            Canvas.willRenderCanvases -= OnWillRenderCanvases;
+        }
+
+        void OnWillRenderCanvases() {
+            // To be sure that mask will match the state of another drawn UI elements,
+            // we update material parameters when layout and graphic update is done,
+            // just before actual rendering.
+            if (_dirty)
+                UpdateMaskParameters();
+        }
+        
+        static T Touch<T>(T obj) { return obj; }
 
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
 
@@ -445,11 +469,14 @@ namespace SoftMasking {
         }
 
         void SpawnMaskablesInChildren(Transform root) {
-            for (int i = 0; i < root.childCount; ++i) {
-                var child = root.GetChild(i);
-                if (!child.GetComponent<SoftMaskable>())
-                    child.gameObject.AddComponent<SoftMaskable>();
-            }   
+            using (new ClearAtExit<SoftMaskable>(s_maskables))
+                for (int i = 0; i < root.childCount; ++i) {
+                    var child = root.GetChild(i);
+                    child.GetComponents(s_maskables);
+                    Assert.IsTrue(s_maskables.Count <= 1);
+                    if (s_maskables.Count == 0)
+                        child.gameObject.AddComponent<SoftMaskable>();
+                }
         }
 
         void InvalidateChildren() {
@@ -462,11 +489,12 @@ namespace SoftMasking {
 
         void ForEachChildMaskable(Action<SoftMaskable> f) {
             transform.GetComponentsInChildren(s_maskables);
-            for (int i = 0; i < s_maskables.Count; ++i) {
-                var maskable = s_maskables[i];
-                if (maskable && maskable.gameObject != gameObject)
-                    f(maskable);
-            }
+            using (new ClearAtExit<SoftMaskable>(s_maskables))
+                for (int i = 0; i < s_maskables.Count; ++i) {
+                    var maskable = s_maskables[i];
+                    if (maskable && maskable.gameObject != gameObject)
+                        f(maskable);
+                }
         }
 
         void DestroyMaterials() {
@@ -639,6 +667,12 @@ namespace SoftMasking {
 
         static readonly List<SoftMask> s_masks = new List<SoftMask>();
         static readonly List<SoftMaskable> s_maskables = new List<SoftMaskable>();
+
+        struct ClearAtExit<T> : IDisposable {
+            List<T> _list;
+            public ClearAtExit(List<T> list) { _list = list; }
+            public void Dispose() { _list.Clear(); }
+        }
 
         class MaterialReplacerImpl : IMaterialReplacer {
             readonly SoftMask _owner;
@@ -822,8 +856,9 @@ namespace SoftMasking {
                 var softMask = _softMask; // for use in lambda
                 var result = Errors.NoError;
                 softMask.GetComponentsInChildren(s_maskables);
-                if (s_maskables.Any(m => ReferenceEquals(m.mask, softMask) && m.shaderIsNotSupported))
-                    result |= Errors.UnsupportedShaders;
+                using (new ClearAtExit<SoftMaskable>(s_maskables))
+                    if (s_maskables.Any(m => ReferenceEquals(m.mask, softMask) && m.shaderIsNotSupported))
+                        result |= Errors.UnsupportedShaders;
                 if (ThereAreNestedMasks())
                     result |= Errors.NestedMasks;
                 result |= CheckSprite(sprite);
@@ -858,10 +893,12 @@ namespace SoftMasking {
             bool ThereAreNestedMasks() {
                 var softMask = _softMask; // for use in lambda
                 var result = false;
-                softMask.GetComponentsInParent(false, s_masks);
-                result |= s_masks.Any(x => AreCompeting(softMask, x));
-                softMask.GetComponentsInChildren(false, s_masks);
-                result |= s_masks.Any(x => AreCompeting(softMask, x));
+                using (new ClearAtExit<SoftMask>(s_masks)) {
+                    softMask.GetComponentsInParent(false, s_masks);
+                    result |= s_masks.Any(x => AreCompeting(softMask, x));
+                    softMask.GetComponentsInChildren(false, s_masks);
+                    result |= s_masks.Any(x => AreCompeting(softMask, x));
+                }
                 return result;
             }
 
