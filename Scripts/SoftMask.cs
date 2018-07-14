@@ -27,7 +27,7 @@ namespace SoftMasking {
     [DisallowMultipleComponent]
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
-    [HelpURL("https://docs.google.com/document/d/11G0q8J0x7GTis7YaLL8YuZRpA_20IoZKE4YDJtFi1eU")]
+    [HelpURL("https://docs.google.com/document/d/1PTC-y9VgXHN3l1UWyNq4By0g9hkKAQxq1wtXFqwNVL8")]
     public class SoftMask : UIBehaviour, ISoftMask, ICanvasRaycastFilter {
         //
         // How it works:
@@ -72,6 +72,7 @@ namespace SoftMasking {
         MaterialReplacements _materials;
         MaterialParameters _parameters;
         Sprite _lastUsedSprite;
+        Rect _lastMaskRect;
         bool _maskingWasEnabled;
         bool _destroyed;
         bool _dirty;
@@ -340,7 +341,9 @@ namespace SoftMasking {
                     SpawnMaskablesInChildren(transform);
                 var prevGraphic = _graphic;
                 FindGraphic();
-                if (maskTransform.hasChanged || !ReferenceEquals(_graphic, prevGraphic))
+                if (maskTransform.hasChanged 
+                        || _lastMaskRect != maskTransform.rect 
+                        || !ReferenceEquals(_graphic, prevGraphic))
                     _dirty = true;
             }
             _maskingWasEnabled = maskingEnabled;
@@ -464,6 +467,7 @@ namespace SoftMasking {
             Assert.IsTrue(isMaskingEnabled);
             CalculateMaskParameters();
             maskTransform.hasChanged = false;
+            _lastMaskRect = maskTransform.rect;
             _dirty = false;
             _materials.ApplyAll();
         }
