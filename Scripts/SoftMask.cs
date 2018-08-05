@@ -445,7 +445,7 @@ namespace SoftMasking {
         }
 
         void FindGraphic() {
-            if (!_graphic) {
+            if (!_graphic && isBasedOnGraphic) {
                 _graphic = maskTransform.GetComponent<Graphic>();
                 if (_graphic) {
                     _graphic.RegisterDirtyVerticesCallback(OnGraphicDirty);
