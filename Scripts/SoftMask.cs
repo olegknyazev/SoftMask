@@ -401,7 +401,7 @@ namespace SoftMasking {
             // To be sure that mask will match the state of another drawn UI elements,
             // we update material parameters when layout and graphic update is done,
             // just before actual rendering.
-            if (_dirty)
+            if (_dirty && isMaskingEnabled)
                 UpdateMaskParameters();
         }
         
