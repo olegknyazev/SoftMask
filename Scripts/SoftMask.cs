@@ -401,7 +401,7 @@ namespace SoftMasking {
             // To be sure that mask will match the state of another drawn UI elements,
             // we update material parameters when layout and graphic update is done,
             // just before actual rendering.
-            if (_dirty && isMaskingEnabled)
+            if (isMaskingEnabled)
                 UpdateMaskParameters();
         }
         
@@ -465,10 +465,12 @@ namespace SoftMasking {
 
         void UpdateMaskParameters() {
             Assert.IsTrue(isMaskingEnabled);
-            CalculateMaskParameters();
-            maskTransform.hasChanged = false;
-            _lastMaskRect = maskTransform.rect;
-            _dirty = false;
+            if (_dirty) {
+                CalculateMaskParameters();
+                maskTransform.hasChanged = false;
+                _lastMaskRect = maskTransform.rect;
+                _dirty = false;
+            }
             _materials.ApplyAll();
         }
 
