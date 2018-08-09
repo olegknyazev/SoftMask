@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
@@ -12,7 +11,7 @@ namespace SoftMasking.Editor {
         public static string packagePath {
             get {
                 if (string.IsNullOrEmpty(_packagePath)) {
-                    _packagePath = SearchForAssetPath();
+                    _packagePath = SearchForPackageRootPath();
                     if (string.IsNullOrEmpty(_packagePath))
                         Debug.LogError(
                             "Unable to locate Soft Mask root folder. " +
@@ -30,17 +29,15 @@ namespace SoftMasking.Editor {
             }
         }
 
-        const string PackageRelativePath = "/SoftMask/";
+        const string SoftMaskCsGUID = "0bac33ade27cf4542bd53b1b13d90941";
 
-        static string SearchForAssetPath() {
-            foreach (var assetPath in AssetDatabase.GetAllAssetPaths())
-                if (assetPath.Contains(PackageRelativePath)) {
-                    var relativePathEnd =
-                        assetPath.LastIndexOf(PackageRelativePath, StringComparison.InvariantCulture)
-                        + PackageRelativePath.Length;
-                    return assetPath.Substring(0, relativePathEnd);
-                }
-            return "";
+        static string SearchForPackageRootPath() {
+            var softMaskCsPath = AssetDatabase.GUIDToAssetPath(SoftMaskCsGUID);
+            if (string.IsNullOrEmpty(softMaskCsPath))
+                return "";
+            var scriptsDir = Path.GetDirectoryName(softMaskCsPath);
+            var packageDir = Path.GetDirectoryName(scriptsDir);
+            return packageDir;
         }
 
         static string CombinePath(params string[] paths) {
