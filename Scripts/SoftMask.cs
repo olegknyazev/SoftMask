@@ -27,7 +27,7 @@ namespace SoftMasking {
     [DisallowMultipleComponent]
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
-    [HelpURL("https://docs.google.com/document/d/1PTC-y9VgXHN3l1UWyNq4By0g9hkKAQxq1wtXFqwNVL8")]
+    [HelpURL("https://docs.google.com/document/d/1MavdgKorCTqP4yMPeGMXSUY7BOXknwlGaFCxXXW0QvU")]
     public class SoftMask : UIBehaviour, ISoftMask, ICanvasRaycastFilter {
         //
         // How it works:
@@ -401,7 +401,7 @@ namespace SoftMasking {
             // To be sure that mask will match the state of another drawn UI elements,
             // we update material parameters when layout and graphic update is done,
             // just before actual rendering.
-            if (_dirty)
+            if (isMaskingEnabled)
                 UpdateMaskParameters();
         }
         
@@ -445,7 +445,7 @@ namespace SoftMasking {
         }
 
         void FindGraphic() {
-            if (!_graphic) {
+            if (!_graphic && isBasedOnGraphic) {
                 _graphic = maskTransform.GetComponent<Graphic>();
                 if (_graphic) {
                     _graphic.RegisterDirtyVerticesCallback(OnGraphicDirty);
@@ -465,10 +465,12 @@ namespace SoftMasking {
 
         void UpdateMaskParameters() {
             Assert.IsTrue(isMaskingEnabled);
-            CalculateMaskParameters();
-            maskTransform.hasChanged = false;
-            _lastMaskRect = maskTransform.rect;
-            _dirty = false;
+            if (_dirty) {
+                CalculateMaskParameters();
+                maskTransform.hasChanged = false;
+                _lastMaskRect = maskTransform.rect;
+                _dirty = false;
+            }
             _materials.ApplyAll();
         }
 
