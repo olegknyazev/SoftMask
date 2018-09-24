@@ -341,8 +341,7 @@ namespace SoftMasking {
                     SpawnMaskablesInChildren(transform);
                 var prevGraphic = _graphic;
                 FindGraphic();
-                if (maskTransform.hasChanged 
-                        || _lastMaskRect != maskTransform.rect 
+                if (_lastMaskRect != maskTransform.rect
                         || !ReferenceEquals(_graphic, prevGraphic))
                     _dirty = true;
             }
@@ -465,7 +464,7 @@ namespace SoftMasking {
 
         void UpdateMaskParameters() {
             Assert.IsTrue(isMaskingEnabled);
-            if (_dirty) {
+            if (_dirty || maskTransform.hasChanged) {
                 CalculateMaskParameters();
                 maskTransform.hasChanged = false;
                 _lastMaskRect = maskTransform.rect;
