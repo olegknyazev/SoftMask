@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using SoftMasking.Extensions;
 
 namespace SoftMasking {
@@ -361,14 +364,14 @@ namespace SoftMasking {
             _dirty = true;
         }
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
         protected override void OnValidate() {
             base.OnValidate();
             _dirty = true;
             _maskTransform = null;
             _graphic = null;
         }
-#endif
+    #endif
 
         protected override void OnTransformParentChanged() {
             base.OnTransformParentChanged();
@@ -526,7 +529,7 @@ namespace SoftMasking {
                     CalculateTextureBased(_texture, _textureUVRect);
                     break;
                 default:
-                    Debug.LogErrorFormat("Unknown MaskSource: {0}", _source);
+                    Debug.LogErrorFormat(this, "Unknown MaskSource: {0}", _source);
                     CalculateSolidFill();
                     break;
             }
@@ -695,10 +698,10 @@ namespace SoftMasking {
             public Material Replace(Material original) {
                 if (original == null || original.HasDefaultUIShader())
                     return Replace(original, _owner._defaultShader);
-#if UNITY_5_4_OR_NEWER
+            #if UNITY_5_4_OR_NEWER
                 else if (original.HasDefaultETC1UIShader())
                     return Replace(original, _owner._defaultETC1Shader);
-#endif
+            #endif
                 else if (original.SupportsSoftMask())
                     return new Material(original);
                 else
@@ -736,10 +739,10 @@ namespace SoftMasking {
             public static Vector2 Min(Vector4 r) { return new Vector2(r.x, r.y); }
             public static Vector2 Max(Vector4 r) { return new Vector2(r.z, r.w); }
 
-            public static Vector2 Remap(Vector2 c, Vector4 r1, Vector4 r2) {
-                var r1size = Max(r1) - Min(r1);
-                var r2size = Max(r2) - Min(r2);
-                return Vector2.Scale(Div((c - Min(r1)), r1size), r2size) + Min(r2);
+            public static Vector2 Remap(Vector2 c, Vector4 from, Vector4 to) {
+                var fromSize = Max(from) - Min(from);
+                var toSize = Max(to) - Min(to);
+                return Vector2.Scale(Div((c - Min(from)), fromSize), toSize) + Min(to);
             }
 
             public static bool Inside(Vector2 v, Vector4 r) {
@@ -788,7 +791,7 @@ namespace SoftMasking {
                 }
             }
 
-            // Next functions performs the same logic as functions from SoftMask.cginc. 
+            // The following functions performs the same logic as functions from SoftMask.cginc. 
             // They implemented it a bit different way, because there is no such convenient
             // vector operations in Unity/C# and conditions are much cheaper here.
 
@@ -891,8 +894,8 @@ namespace SoftMasking {
             Sprite sprite {
                 get {
                     switch (_softMask.source) {
-                        case MaskSource.Sprite: return _softMask._sprite;
-                        case MaskSource.Graphic: return this.image ? this.image.sprite : null;
+                        case MaskSource.Sprite: return _softMask.sprite;
+                        case MaskSource.Graphic: return image ? image.sprite : null;
                         default: return null;
                     }
                 }
@@ -924,10 +927,10 @@ namespace SoftMasking {
                     && softMask != other
                     && other.isMaskingEnabled
                     && softMask.canvas.rootCanvas == other.canvas.rootCanvas
-                    && !Child(softMask, other).canvas.overrideSorting;
+                    && !SelectChild(softMask, other).canvas.overrideSorting;
             }
 
-            static T Child<T>(T first, T second) where T : Component {
+            static T SelectChild<T>(T first, T second) where T : Component {
                 Assert.IsNotNull(first);
                 Assert.IsNotNull(second);
                 return first.transform.IsChildOf(second.transform) ? first : second;
