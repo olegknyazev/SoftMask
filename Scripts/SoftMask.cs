@@ -295,7 +295,10 @@ namespace SoftMasking {
             if (_raycastThreshold <= 0.0f) return true;
             float mask;
             if (!_parameters.SampleMask(localPos, out mask)) {
-                Debug.LogError("raycastThreshold greater than 0 can't be used on SoftMask whose texture cannot be read.", this);
+                Debug.LogErrorFormat(this,
+                    "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
+                    + "it's not readable. You can make the texture readable in the Texture Import Settings.",
+                    _parameters.activeTexture.name);
                 return true;
             }   
             return mask >= _raycastThreshold;
