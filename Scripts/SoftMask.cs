@@ -512,27 +512,41 @@ namespace SoftMasking {
             _materials.DestroyAllAndClear();
         }
 
-        void CalculateMaskParameters() {
+        struct SourceParameters {
+            public Image image;
+            public Sprite sprite;
+            public BorderMode spriteBorderMode;
+            public Texture2D texture;
+            public Rect textureUVRect;
+        }
+
+        SourceParameters DeduceSourceParameters() {
+            var result = new SourceParameters();
             switch (_source) {
                 case MaskSource.Graphic:
-                    if (_graphic is Image)
-                        CalculateImageBased((Image)_graphic);
-                    else if (_graphic is RawImage)
-                        CalculateRawImageBased((RawImage)_graphic);
-                    else
-                        CalculateSolidFill();
+                    if (_graphic is Image) {
+                        result.image = (Image)_graphic;
+                        result.sprite = result.image.sprite;
+                        result.spriteBorderMode = ToBorderMode(result.image.type);
+                    } else if (_graphic is RawImage) {
+                        var rawImage = (RawImage)_graphic;
+                        result.texture = rawImage.texture as Texture2D;
+                        result.textureUVRect = rawImage.uvRect;
+                    }
                     break;
                 case MaskSource.Sprite:
-                    CalculateSpriteBased(_sprite, _spriteBorderMode);
+                    result.sprite = _sprite;
+                    result.spriteBorderMode = _spriteBorderMode;
                     break;
                 case MaskSource.Texture:
-                    CalculateTextureBased(_texture, _textureUVRect);
+                    result.texture = _texture;
+                    result.textureUVRect = _textureUVRect;
                     break;
                 default:
                     Debug.LogErrorFormat(this, "Unknown MaskSource: {0}", _source);
-                    CalculateSolidFill();
                     break;
             }
+            return result;
         }
 
         BorderMode ToBorderMode(Image.Type imageType) {
@@ -549,14 +563,14 @@ namespace SoftMasking {
             }
         }
 
-        void CalculateImageBased(Image image) {
-            Assert.IsNotNull(image);
-            CalculateSpriteBased(image.sprite, ToBorderMode(image.type));
-        }
-
-        void CalculateRawImageBased(RawImage image) {
-            Assert.IsNotNull(image);
-            CalculateTextureBased(image.texture as Texture2D, image.uvRect);
+        void CalculateMaskParameters() {
+            var sourceParams = DeduceSourceParameters();
+            if (sourceParams.sprite)
+                CalculateSpriteBased(sourceParams.sprite, sourceParams.spriteBorderMode);
+            else if (sourceParams.texture)
+                CalculateTextureBased(sourceParams.texture, sourceParams.textureUVRect);
+            else
+                CalculateSolidFill();
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
@@ -887,19 +901,9 @@ namespace SoftMasking {
                 return result;
             }
 
-            Image image {
-                get { return _softMask._graphic as Image; }
-            }
-
-            Sprite sprite {
-                get {
-                    switch (_softMask.source) {
-                        case MaskSource.Sprite: return _softMask.sprite;
-                        case MaskSource.Graphic: return image ? image.sprite : null;
-                        default: return null;
-                    }
-                }
-            }
+            Image image { get { return _softMask.DeduceSourceParameters().image; } }
+            Sprite sprite { get { return _softMask.DeduceSourceParameters().sprite; } }
+            Texture2D texture { get { return _softMask.DeduceSourceParameters().texture; } }
 
             bool ThereAreNestedMasks() {
                 var softMask = _softMask; // for use in lambda
@@ -916,7 +920,7 @@ namespace SoftMasking {
             Errors CheckImage() {
                 var result = Errors.NoError;
                 if (!_softMask.isBasedOnGraphic) return result;
-                if (image && image.type == Image.Type.Filled)
+                if (image && image.type == Image.Type.Filled) // TODO check what is supported, not what is NOT supported
                     result |= Errors.UnsupportedImageType;
                 return result;
             }
