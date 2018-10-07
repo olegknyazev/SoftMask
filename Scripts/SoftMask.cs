@@ -932,7 +932,7 @@ namespace SoftMasking {
             Errors CheckImage() {
                 var result = Errors.NoError;
                 if (!_softMask.isBasedOnGraphic) return result;
-                if (image && image.type == Image.Type.Filled) // TODO check what is supported, not what is NOT supported
+                if (image && !IsSupportedImageType(image.type))
                     result |= Errors.UnsupportedImageType;
                 return result;
             }
@@ -967,6 +967,12 @@ namespace SoftMasking {
                 } catch (UnityException) {
                     return false;
                 }
+            }
+
+            static bool IsSupportedImageType(Image.Type type) {
+                return type == Image.Type.Simple
+                    || type == Image.Type.Sliced
+                    || type == Image.Type.Tiled;
             }
         }
     }
