@@ -42,6 +42,9 @@ namespace SoftMasking.Editor {
             public static readonly string UnsupportedImageType =
                 "SoftMask doesn't support this image type. Supported image types are Simple, Sliced " +
                 "and Tiled.";
+            public static readonly string UnreadableTexture =
+                "SoftMask with Raycast Threshold greater than zero can't be used with an unreadable texture. " +
+                "You can make the texture readable in the Texture Import Settings.";
         }
 
         public void OnEnable() {
@@ -89,6 +92,7 @@ namespace SoftMasking.Editor {
 
         void ShowErrorsIfAny() {
             var errors = CollectErrors();
+            // TODO extract a method for the repeated code
             if ((errors & SoftMask.Errors.UnsupportedShaders) != 0)
                 EditorGUILayout.HelpBox(Labels.UnsupportedShaders, MessageType.Warning);
             if ((errors & SoftMask.Errors.NestedMasks) != 0)
@@ -99,10 +103,12 @@ namespace SoftMasking.Editor {
                 EditorGUILayout.HelpBox(Labels.AlphaSplitSprite, MessageType.Error);
             if ((errors & SoftMask.Errors.UnsupportedImageType) != 0)
                 EditorGUILayout.HelpBox(Labels.UnsupportedImageType, MessageType.Error);
+            if ((errors & SoftMask.Errors.UnreadableTexture) != 0)
+                EditorGUILayout.HelpBox(Labels.UnreadableTexture, MessageType.Error);
         }
 
         SoftMask.Errors CollectErrors() {
-            SoftMask.Errors result = SoftMask.Errors.NoError;
+            var result = SoftMask.Errors.NoError;
             foreach (var t in targets)
                 result |= ((SoftMask)t).PollErrors();
             return result;

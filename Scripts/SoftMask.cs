@@ -156,7 +156,8 @@ namespace SoftMasking {
             NestedMasks             = 1 << 1,
             TightPackedSprite       = 1 << 2,
             AlphaSplitSprite        = 1 << 3,
-            UnsupportedImageType    = 1 << 4
+            UnsupportedImageType    = 1 << 4,
+            UnreadableTexture       = 1 << 5
         }
 
         /// <summary>
@@ -528,6 +529,7 @@ namespace SoftMasking {
                         result.image = (Image)_graphic;
                         result.sprite = result.image.sprite;
                         result.spriteBorderMode = ToBorderMode(result.image.type);
+                        result.texture = result.sprite ? result.sprite.texture : null;
                     } else if (_graphic is RawImage) {
                         var rawImage = (RawImage)_graphic;
                         result.texture = rawImage.texture as Texture2D;
@@ -537,6 +539,7 @@ namespace SoftMasking {
                 case MaskSource.Sprite:
                     result.sprite = _sprite;
                     result.spriteBorderMode = _spriteBorderMode;
+                    result.texture = result.sprite ? result.sprite.texture : null; // TODO make SourceParameters immutable and expose specific ctors?
                     break;
                 case MaskSource.Texture:
                     result.texture = _texture;
@@ -888,6 +891,7 @@ namespace SoftMasking {
                     result |= Errors.NestedMasks;
                 result |= CheckSprite(sprite);
                 result |= CheckImage();
+                result |= CheckTexture();
                 return result;
             }
 
@@ -925,6 +929,15 @@ namespace SoftMasking {
                 return result;
             }
 
+            Errors CheckTexture() {
+                var result = Errors.NoError;
+                if (_softMask.raycastThreshold > 0f && texture) // TODO .usingRaycastFiltering?
+                    if (!IsReadable(texture))
+                        result |= Errors.UnreadableTexture;
+                // TODO check where Diagnostics result is used (does the new error break something?)
+                return result;
+            }
+
             static bool AreCompeting(SoftMask softMask, SoftMask other) {
                 Assert.IsNotNull(other);
                 return softMask.isMaskingEnabled
@@ -938,6 +951,15 @@ namespace SoftMasking {
                 Assert.IsNotNull(first);
                 Assert.IsNotNull(second);
                 return first.transform.IsChildOf(second.transform) ? first : second;
+            }
+
+            static bool IsReadable(Texture2D texture) {
+                try {
+                    texture.GetPixel(0, 0);
+                    return true;
+                } catch (UnityException) {
+                    return false;
+                }
             }
         }
     }
