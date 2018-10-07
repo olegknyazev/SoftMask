@@ -30,7 +30,7 @@ namespace SoftMasking.Editor {
                 "See the documentation for more details about how to add Soft Mask support to " +
                 "custom shaders.";
             public static readonly string NestedMasks =
-                "Mask may work not as expected because a child or parent SoftMask exists. " +
+                "The mask may work not as expected because a child or parent SoftMask exists. " +
                 "SoftMask doesn't support nesting. You can work around this limitation by nesting " +
                 "a SoftMask into a Unity standard Mask or RectMask2D or vice versa.";
             public static readonly string TightPackedSprite =
@@ -40,7 +40,7 @@ namespace SoftMasking.Editor {
                 "SoftMask doesn't support sprites with an alpha split texture. Disable compression of " +
                 "the sprite texture or use another compression type.";
             public static readonly string UnsupportedImageType =
-                "SoftMask doesn't support this image type. Supported image types are Simple, Sliced " +
+                "SoftMask doesn't support this image type. The supported image types are Simple, Sliced " +
                 "and Tiled.";
             public static readonly string UnreadableTexture =
                 "SoftMask with Raycast Threshold greater than zero can't be used with an unreadable texture. " +
