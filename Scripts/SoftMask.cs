@@ -5,9 +5,6 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using SoftMasking.Extensions;
 
 namespace SoftMasking {
