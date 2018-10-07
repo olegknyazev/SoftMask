@@ -92,19 +92,12 @@ namespace SoftMasking.Editor {
 
         void ShowErrorsIfAny() {
             var errors = CollectErrors();
-            // TODO extract a method for the repeated code
-            if ((errors & SoftMask.Errors.UnsupportedShaders) != 0)
-                EditorGUILayout.HelpBox(Labels.UnsupportedShaders, MessageType.Warning);
-            if ((errors & SoftMask.Errors.NestedMasks) != 0)
-                EditorGUILayout.HelpBox(Labels.NestedMasks, MessageType.Warning);
-            if ((errors & SoftMask.Errors.TightPackedSprite) != 0)
-                EditorGUILayout.HelpBox(Labels.TightPackedSprite, MessageType.Error);
-            if ((errors & SoftMask.Errors.AlphaSplitSprite) != 0)
-                EditorGUILayout.HelpBox(Labels.AlphaSplitSprite, MessageType.Error);
-            if ((errors & SoftMask.Errors.UnsupportedImageType) != 0)
-                EditorGUILayout.HelpBox(Labels.UnsupportedImageType, MessageType.Error);
-            if ((errors & SoftMask.Errors.UnreadableTexture) != 0)
-                EditorGUILayout.HelpBox(Labels.UnreadableTexture, MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.UnsupportedShaders,   Labels.UnsupportedShaders,   MessageType.Warning);
+            ShowErrorIfPresent(errors, SoftMask.Errors.NestedMasks,          Labels.NestedMasks,          MessageType.Warning);
+            ShowErrorIfPresent(errors, SoftMask.Errors.TightPackedSprite,    Labels.TightPackedSprite,    MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.AlphaSplitSprite,     Labels.AlphaSplitSprite,     MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.UnsupportedImageType, Labels.UnsupportedImageType, MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.UnreadableTexture,    Labels.UnreadableTexture,    MessageType.Error);
         }
 
         SoftMask.Errors CollectErrors() {
@@ -112,6 +105,15 @@ namespace SoftMasking.Editor {
             foreach (var t in targets)
                 result |= ((SoftMask)t).PollErrors();
             return result;
+        }
+
+        static void ShowErrorIfPresent(
+                SoftMask.Errors actualErrors,
+                SoftMask.Errors expectedError,
+                string errorMessage,
+                MessageType errorMessageType) {
+            if ((actualErrors & expectedError) != 0)
+                EditorGUILayout.HelpBox(errorMessage, errorMessageType);
         }
 
         public static class CustomEditors {
