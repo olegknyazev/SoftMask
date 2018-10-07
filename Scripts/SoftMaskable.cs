@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using SoftMasking.Extensions;
@@ -155,18 +156,28 @@ namespace SoftMasking {
             }
         }
 
+        static List<ISoftMask> s_softMasks = new List<ISoftMask>();
+        static List<Canvas> s_canvases = new List<Canvas>();
+
         static ISoftMask GetISoftMask(Transform current, bool shouldBeEnabled = true) {
-            var mask = current.GetComponent<ISoftMask>();
+            var mask = GetComponent(current, s_softMasks);
             if (mask != null && mask.isAlive && (!shouldBeEnabled || mask.isMaskingEnabled))
                 return mask;
             return null;
         }
 
         static bool IsOverridingSortingCanvas(Transform transform) {
-            var canvas = transform.GetComponent<Canvas>();
+            var canvas = GetComponent(transform, s_canvases);
             if (canvas && canvas.overrideSorting)
                 return true;
             return false;
+        }
+        
+        static T GetComponent<T>(Component component, List<T> cachedList) where T : class {
+            component.GetComponents(cachedList);
+            var result = cachedList.Count > 0 ? cachedList[0] : null;
+            cachedList.Clear();
+            return result;
         }
 
         void SetShaderNotSupported(Material material) {
