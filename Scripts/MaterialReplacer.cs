@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+#if !NET_STANDARD_2_0
 using System.Reflection.Emit;
+#endif
 using UnityEngine;
 
 namespace SoftMasking {
@@ -68,7 +70,12 @@ namespace SoftMasking {
         }
 
         static bool IsMaterialReplacerType(Type t) {
-            return !(t is TypeBuilder)
+        #if NET_STANDARD_2_0
+            var isTypeBuilder = false;
+        #else
+            var isTypeBuilder = t is TypeBuilder;
+        #endif
+            return !isTypeBuilder
                 && !t.IsAbstract
                 && t.IsDefined(typeof(GlobalMaterialReplacerAttribute), false)
                 && typeof(IMaterialReplacer).IsAssignableFrom(t);
