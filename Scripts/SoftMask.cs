@@ -278,6 +278,14 @@ namespace SoftMasking {
         }
 
         /// <summary>
+        /// Returns true if Soft Mask does raycast filtering, that is if the masked areas are
+        /// transparent to input.
+        /// </summary>
+        public bool isUsingRaycastFiltering {
+            get { return _raycastThreshold > 0f; }
+        }
+
+        /// <summary>
         /// Returns true if masking is currently active.
         /// </summary>
         public bool isMaskingEnabled {
@@ -296,7 +304,7 @@ namespace SoftMasking {
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(maskTransform, sp, cam, out localPos)) return false;
             if (!Mathr.Inside(localPos, LocalMaskRect(Vector4.zero))) return false;
             if (!_parameters.texture) return true;
-            if (_raycastThreshold <= 0.0f) return true;
+            if (!isUsingRaycastFiltering) return true;
             float mask;
             if (!_parameters.SampleMask(localPos, out mask)) {
                 Debug.LogErrorFormat(this,
@@ -931,10 +939,9 @@ namespace SoftMasking {
 
             Errors CheckTexture() {
                 var result = Errors.NoError;
-                if (_softMask.raycastThreshold > 0f && texture) // TODO .usingRaycastFiltering?
+                if (_softMask.isUsingRaycastFiltering && texture)
                     if (!IsReadable(texture))
                         result |= Errors.UnreadableTexture;
-                // TODO check where Diagnostics result is used (does the new error break something?)
                 return result;
             }
 
