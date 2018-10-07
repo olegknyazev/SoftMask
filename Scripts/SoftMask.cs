@@ -489,7 +489,7 @@ namespace SoftMasking {
         }
 
         void SpawnMaskablesInChildren(Transform root) {
-            using (new ClearAtExit<SoftMaskable>(s_maskables))
+            using (new ClearListAtExit<SoftMaskable>(s_maskables))
                 for (int i = 0; i < root.childCount; ++i) {
                     var child = root.GetChild(i);
                     child.GetComponents(s_maskables);
@@ -509,7 +509,7 @@ namespace SoftMasking {
 
         void ForEachChildMaskable(Action<SoftMaskable> f) {
             transform.GetComponentsInChildren(s_maskables);
-            using (new ClearAtExit<SoftMaskable>(s_maskables))
+            using (new ClearListAtExit<SoftMaskable>(s_maskables))
                 for (int i = 0; i < s_maskables.Count; ++i) {
                     var maskable = s_maskables[i];
                     if (maskable && maskable.gameObject != gameObject)
@@ -704,12 +704,6 @@ namespace SoftMasking {
         static readonly List<SoftMask> s_masks = new List<SoftMask>();
         static readonly List<SoftMaskable> s_maskables = new List<SoftMaskable>();
 
-        struct ClearAtExit<T> : IDisposable {
-            List<T> _list;
-            public ClearAtExit(List<T> list) { _list = list; }
-            public void Dispose() { _list.Clear(); }
-        }
-
         class MaterialReplacerImpl : IMaterialReplacer {
             readonly SoftMask _owner;
 
@@ -892,7 +886,7 @@ namespace SoftMasking {
                 var softMask = _softMask; // for use in lambda
                 var result = Errors.NoError;
                 softMask.GetComponentsInChildren(s_maskables);
-                using (new ClearAtExit<SoftMaskable>(s_maskables))
+                using (new ClearListAtExit<SoftMaskable>(s_maskables))
                     if (s_maskables.Any(m => ReferenceEquals(m.mask, softMask) && m.shaderIsNotSupported))
                         result |= Errors.UnsupportedShaders;
                 if (ThereAreNestedMasks())
@@ -920,7 +914,7 @@ namespace SoftMasking {
             bool ThereAreNestedMasks() {
                 var softMask = _softMask; // for use in lambda
                 var result = false;
-                using (new ClearAtExit<SoftMask>(s_masks)) {
+                using (new ClearListAtExit<SoftMask>(s_masks)) {
                     softMask.GetComponentsInParent(false, s_masks);
                     result |= s_masks.Any(x => AreCompeting(softMask, x));
                     softMask.GetComponentsInChildren(false, s_masks);

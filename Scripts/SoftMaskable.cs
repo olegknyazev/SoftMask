@@ -175,9 +175,8 @@ namespace SoftMasking {
         
         static T GetComponent<T>(Component component, List<T> cachedList) where T : class {
             component.GetComponents(cachedList);
-            var result = cachedList.Count > 0 ? cachedList[0] : null;
-            cachedList.Clear();
-            return result;
+            using (new ClearListAtExit<T>(cachedList))
+                return cachedList.Count > 0 ? cachedList[0] : null;
         }
 
         void SetShaderNotSupported(Material material) {
