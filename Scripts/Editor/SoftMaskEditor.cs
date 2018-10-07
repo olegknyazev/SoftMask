@@ -163,10 +163,10 @@ namespace SoftMasking.Editor {
 
             static Color ColorField(Rect rect, GUIContent label, Color color) {
                 rect = EditorGUI.PrefixLabel(rect, label);
-                color.r = ColorComponentField(Part(rect, 0, 4, 2), Labels.R, color.r);
-                color.g = ColorComponentField(Part(rect, 1, 4, 2), Labels.G, color.g);
-                color.b = ColorComponentField(Part(rect, 2, 4, 2), Labels.B, color.b);
-                color.a = ColorComponentField(Part(rect, 3, 4, 2), Labels.A, color.a);
+                color.r = ColorComponentField(HorizontalSlice(rect, 0, 4, 2), Labels.R, color.r);
+                color.g = ColorComponentField(HorizontalSlice(rect, 1, 4, 2), Labels.G, color.g);
+                color.b = ColorComponentField(HorizontalSlice(rect, 2, 4, 2), Labels.B, color.b);
+                color.a = ColorComponentField(HorizontalSlice(rect, 3, 4, 2), Labels.A, color.a);
                 return color;
             }
 
@@ -180,7 +180,7 @@ namespace SoftMasking.Editor {
                 });
             }
 
-            static Rect Part(Rect whole, int part, int partCount, int spacing) {
+            static Rect HorizontalSlice(Rect whole, int part, int partCount, int spacing) {
                 var result = new Rect(whole);
                 result.width -= (partCount - 1) * spacing;
                 result.width /= partCount;
