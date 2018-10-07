@@ -40,7 +40,7 @@ namespace SoftMasking {
 
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (isMaskingEnabled) {
-                // First get a new material, then release the old one. It allows us to reuse 
+                // First, get a new material then release the old one. It allows us to reuse 
                 // the old material if it's still actual.
                 var newMat = mask.GetReplacement(baseMaterial);
                 replacement = newMat;
@@ -60,13 +60,13 @@ namespace SoftMasking {
             return baseMaterial;
         }
         
-        // Called when replacement material might changed, so, material should be reevaluated.
+        // Called when replacement material might be changed, so, the material should be refreshed.
         public void Invalidate() {
             if (graphic)
                 graphic.SetMaterialDirty();
         }
 
-        // Called when active mask might changed, so, mask should be searched again.
+        // Called when an active mask might be changed, so, the mask should be searched again.
         public void MaskMightChanged() {
             if (FindMaskOrDie())
                 Invalidate();
@@ -100,7 +100,7 @@ namespace SoftMasking {
 
         protected override void OnCanvasHierarchyChanged() {
             base.OnCanvasHierarchyChanged();
-            // Change of override sorting might changed the mask instance we masked by
+            // A change of override sorting might change the mask instance that's masking us
             FindMaskOrDie();
         }
 
