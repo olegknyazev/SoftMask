@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Sprites;
 using SoftMasking.Extensions;
 
 namespace SoftMasking {
@@ -596,21 +597,16 @@ namespace SoftMasking {
                 return;
             }
             FillCommonParameters();
-            var spriteRect = Mathr.Move(Mathr.ToVector(sprite.rect), sprite.textureRect.position - sprite.rect.position - sprite.textureRectOffset);
-            var textureRect = Mathr.ToVector(sprite.textureRect);
-            var textureBorder = Mathr.BorderOf(spriteRect, textureRect);
-            var textureSize = new Vector2(sprite.texture.width, sprite.texture.height);
+            var inner = DataUtility.GetInnerUV(sprite);
+            var outer = DataUtility.GetOuterUV(sprite);
+            var padding = DataUtility.GetPadding(sprite);
             var fullMaskRect = LocalMaskRect(Vector4.zero);
-            _parameters.maskRectUV = Mathr.Div(textureRect, textureSize);
-            if (borderMode == BorderMode.Simple) {
-                var textureRectInFullRect = Mathr.Div(textureBorder, Mathr.Size(spriteRect));
-                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(textureRectInFullRect, Mathr.Size(fullMaskRect)));
-            } else {
-                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, textureBorder * GraphicToCanvasScale(sprite));
-                var fullMaskRectUV = Mathr.Div(spriteRect, textureSize);
+            _parameters.maskRectUV = outer;
+            _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, padding * GraphicToCanvasScale(sprite));
+            if (borderMode != BorderMode.Simple) {
                 var adjustedBorder = AdjustBorders(sprite.border * GraphicToCanvasScale(sprite), fullMaskRect);
                 _parameters.maskBorder = LocalMaskRect(adjustedBorder);
-                _parameters.maskBorderUV = Mathr.ApplyBorder(fullMaskRectUV, Mathr.Div(sprite.border, textureSize));
+                _parameters.maskBorderUV = inner;
             }
             _parameters.texture = sprite.texture;
             _parameters.borderMode = borderMode;
