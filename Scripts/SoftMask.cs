@@ -600,11 +600,14 @@ namespace SoftMasking {
             var inner = DataUtility.GetInnerUV(sprite);
             var outer = DataUtility.GetOuterUV(sprite);
             var padding = DataUtility.GetPadding(sprite);
-            var fullMaskRect = LocalMaskRect(Vector4.zero);
+            var fullMaskRect = LocalMaskRect(Vector4.zero);            
             _parameters.maskRectUV = outer;
-            _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, padding * GraphicToCanvasScale(sprite));
-            if (borderMode != BorderMode.Simple) {
-                var adjustedBorder = AdjustBorders(sprite.border * GraphicToCanvasScale(sprite), fullMaskRect);
+            if (borderMode == BorderMode.Simple) {
+                var normalizedPadding = Mathr.Div(padding, sprite.rect.size);
+                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(normalizedPadding, Mathr.Size(fullMaskRect)));
+            } else {
+                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, padding * SpriteToCanvasScale(sprite));
+                var adjustedBorder = AdjustBorders(sprite.border * SpriteToCanvasScale(sprite), fullMaskRect);
                 _parameters.maskBorder = LocalMaskRect(adjustedBorder);
                 _parameters.maskBorderUV = inner;
             }
@@ -648,7 +651,7 @@ namespace SoftMasking {
             _parameters.maskChannelWeights = _channelWeights;
         }
 
-        float GraphicToCanvasScale(Sprite sprite) {
+        float SpriteToCanvasScale(Sprite sprite) {
             var canvasPPU = canvas ? canvas.referencePixelsPerUnit : 100;
             var maskPPU = sprite ? sprite.pixelsPerUnit : 100;
             return canvasPPU / maskPPU;
@@ -664,7 +667,7 @@ namespace SoftMasking {
 
         Vector2 MaskRepeat(Sprite sprite, Vector4 centralPart) {
             var textureCenter = Mathr.ApplyBorder(Mathr.ToVector(sprite.textureRect), sprite.border);
-            return Mathr.Div(Mathr.Size(centralPart) * GraphicToCanvasScale(sprite), Mathr.Size(textureCenter));
+            return Mathr.Div(Mathr.Size(centralPart) * SpriteToCanvasScale(sprite), Mathr.Size(textureCenter));
         }
 
         void WarnIfDefaultShaderIsNotSet() {
