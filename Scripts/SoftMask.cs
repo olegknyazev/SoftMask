@@ -69,6 +69,8 @@ namespace SoftMasking {
         [SerializeField] Rect _textureUVRect = DefaultUVRect;
         [SerializeField] Color _channelWeights = MaskChannel.alpha;
         [SerializeField] float _raycastThreshold = 0.0f;
+        [SerializeField] bool _invertMask = false;
+        [SerializeField] bool _invertOutsides = false;
 
         MaterialReplacements _materials;
         MaterialParameters _parameters;
@@ -273,6 +275,18 @@ namespace SoftMasking {
         public float raycastThreshold {
             get { return _raycastThreshold; }
             set { _raycastThreshold = value; }
+        }
+
+        // TODO !!! WRITE DOC !!!
+        public bool invertMask {
+            get { return _invertMask; }
+            set { if (_invertMask != value) Set(ref _invertMask, value); }
+        }
+        
+        // TODO !!! WRITE DOC !!!
+        public bool invertOutsides {
+            get { return _invertOutsides; }
+            set { if (_invertOutsides != value) Set(ref _invertOutsides, value); }
         }
 
         /// <summary>
@@ -649,6 +663,8 @@ namespace SoftMasking {
         void FillCommonParameters() {
             _parameters.worldToMask = WorldToMask();
             _parameters.maskChannelWeights = _channelWeights;
+            _parameters.invertMask = _invertMask;
+            _parameters.invertOutsides = _invertOutsides;
         }
 
         float SpriteToCanvasScale(Sprite sprite) {
@@ -775,6 +791,8 @@ namespace SoftMasking {
             public Matrix4x4 worldToMask;
             public Texture2D texture;
             public BorderMode borderMode;
+            public bool invertMask;
+            public bool invertOutsides;
 
             public Texture2D activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
 
@@ -795,6 +813,8 @@ namespace SoftMasking {
                 mat.SetVector(Ids.SoftMask_UVRect, maskRectUV);
                 mat.SetColor(Ids.SoftMask_ChannelWeights, maskChannelWeights);
                 mat.SetMatrix(Ids.SoftMask_WorldToMask, worldToMask);
+                mat.SetFloat(Ids.SoftMask_InvertMask, invertMask ? 1 : 0);
+                mat.SetFloat(Ids.SoftMask_InvertOutsides, invertOutsides ? 1 : 0);
                 mat.EnableKeyword("SOFTMASK_SIMPLE", borderMode == BorderMode.Simple);
                 mat.EnableKeyword("SOFTMASK_SLICED", borderMode == BorderMode.Sliced);
                 mat.EnableKeyword("SOFTMASK_TILED", borderMode == BorderMode.Tiled);
@@ -870,6 +890,8 @@ namespace SoftMasking {
                 public static readonly int SoftMask_BorderRect = Shader.PropertyToID("_SoftMask_BorderRect");
                 public static readonly int SoftMask_UVBorderRect = Shader.PropertyToID("_SoftMask_UVBorderRect");
                 public static readonly int SoftMask_TileRepeat = Shader.PropertyToID("_SoftMask_TileRepeat");
+                public static readonly int SoftMask_InvertMask = Shader.PropertyToID("_SoftMask_InvertMask");
+                public static readonly int SoftMask_InvertOutsides = Shader.PropertyToID("_SoftMask_InvertOutsides");
             }
         }
 
