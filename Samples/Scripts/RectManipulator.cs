@@ -31,33 +31,43 @@ namespace SoftMasking.Samples {
         public void OnDrag(PointerEventData eventData) {
             if (targetTransform == null)
                 return;
+            Func<ManipulationType, bool> Is = ActiveManipulationIs;
             var prevLocalPoint = ToLocal(eventData.position - eventData.delta, eventData.pressEventCamera);
             var curLocalPoint = ToLocal(eventData.position, eventData.pressEventCamera);
-            var localDelta = curLocalPoint - prevLocalPoint;
-            if (ActiveManipulationIs(ManipulationType.Move))
+            if (Is(ManipulationType.Move))
                 targetTransform.anchoredPosition += eventData.delta;
-            if (ActiveManipulationIs(ManipulationType.Rotate)) {
-                // TODO reduce copypaste
-                var prevAngle = Mathf.Atan2(prevLocalPoint.y, prevLocalPoint.x) * Mathf.Rad2Deg;
-                var curAngle = Mathf.Atan2(curLocalPoint.y, curLocalPoint.x) * Mathf.Rad2Deg;
-                targetTransform.localRotation *= Quaternion.AngleAxis(Mathf.DeltaAngle(prevAngle, curAngle), Vector3.forward);
-            }
-            if (ActiveManipulationIs(ManipulationType.ResizeLeft))
-                DirectedResize(HorizontalProjection(localDelta), -1f);
-            if (ActiveManipulationIs(ManipulationType.ResizeUp))
-                DirectedResize(VerticalProjection(localDelta), +1f);
-            if (ActiveManipulationIs(ManipulationType.ResizeRight))
-                DirectedResize(HorizontalProjection(localDelta), +1f);
-            if (ActiveManipulationIs(ManipulationType.ResizeDown))
-                DirectedResize(VerticalProjection(localDelta), -1f);
+            if (Is(ManipulationType.Rotate))
+                targetTransform.localRotation *= Quaternion.AngleAxis(DeltaRotation(prevLocalPoint, curLocalPoint), Vector3.forward);
+            var localDelta = curLocalPoint - prevLocalPoint;
+            if (Is(ManipulationType.ResizeLeft))
+                ResizeDirected(HorizontalProjection(localDelta), -1f);
+            if (Is(ManipulationType.ResizeUp))
+                ResizeDirected(VerticalProjection(localDelta), +1f);
+            if (Is(ManipulationType.ResizeRight))
+                ResizeDirected(HorizontalProjection(localDelta), +1f);
+            if (Is(ManipulationType.ResizeDown))
+                ResizeDirected(VerticalProjection(localDelta), -1f);
         }
 
         bool ActiveManipulationIs(ManipulationType manipulation) {
             return (_activeManipulation & manipulation) == manipulation;
         }
 
-        void DirectedResize(Vector2 localResizeDelta, float direction) { // TODO it's unclear what `direction` is
-            targetTransform.sizeDelta += localResizeDelta * direction;
+        Vector2 ToLocal(Vector2 position, Camera eventCamera) {
+            Vector2 localPosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                targetTransform, position, eventCamera, out localPosition);
+            return localPosition;
+        }
+
+        float DeltaRotation(Vector2 prevLocalPoint, Vector2 curLocalPoint) {
+            var prevAngle = Mathf.Atan2(prevLocalPoint.y, prevLocalPoint.x) * Mathf.Rad2Deg;
+            var curAngle = Mathf.Atan2(curLocalPoint.y, curLocalPoint.x) * Mathf.Rad2Deg;
+            return Mathf.DeltaAngle(prevAngle, curAngle);
+        }
+
+        void ResizeDirected(Vector2 localResizeDelta, float sizeSign) {
+            targetTransform.sizeDelta += localResizeDelta * sizeSign;
             targetTransform.position += targetTransform.TransformVector(localResizeDelta) / 2;
         }
 
@@ -66,13 +76,6 @@ namespace SoftMasking.Samples {
 
         public void OnEndDrag(PointerEventData eventData) {
             _activeManipulation = ManipulationType.None;
-        }
-
-        Vector2 ToLocal(Vector2 position, Camera eventCamera) {
-            Vector2 localPosition;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                targetTransform, position, eventCamera, out localPosition);
-            return localPosition;
         }
     }
 }
