@@ -5,7 +5,13 @@ using UnityEngine.UI;
 
 namespace SoftMasking.Samples {
     [RequireComponent(typeof(RectTransform))]
-    public class RectManipulator : UIBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler {
+    public class RectManipulator : UIBehaviour,
+            IPointerEnterHandler,
+            IPointerExitHandler,
+            IBeginDragHandler,
+            IDragHandler,
+            IEndDragHandler {
+
         [Flags] public enum ManipulationType {
             None = 0,
             Move = 1 << 0,
@@ -20,61 +26,52 @@ namespace SoftMasking.Samples {
             Rotate = 1 << 5
         }
 
-        ManipulationType _activeManipulation;
-
         public RectTransform targetTransform;
         public ManipulationType manipulation;
-        public Graphic displayGraphic;
+        
+        [Header("Display")]
+        public Graphic icon;
+        public float normalAlpha = 0.2f;
+        public float selectedAlpha = 1f;
+        public float transitionDuration = 0.2f;
+
+        bool _isManipulatedNow;
         
         public void OnPointerEnter(PointerEventData eventData) {
-            DisplayHighlight(true);
+            HighlightIcon(true);
         }
 
         public void OnPointerExit(PointerEventData eventData) {
-            if (_activeManipulation != manipulation)
-                DisplayHighlight(false);
+            if (!_isManipulatedNow)
+                HighlightIcon(false);
         }
 
-        void DisplayHighlight(bool highlight, bool instant = false) {
-            if (displayGraphic) {
-                var targetAlpha = highlight ? 1f : 0.2f;
-                var duration = instant ? 0f : 0.2f;
-                displayGraphic.CrossFadeAlpha(targetAlpha, duration, true);
+        void HighlightIcon(bool highlight, bool instant = false) {
+            if (icon) {
+                var targetAlpha = highlight ? selectedAlpha : normalAlpha;
+                var duration = instant ? 0f : transitionDuration;
+                icon.CrossFadeAlpha(targetAlpha, duration, true);
             }
         }
 
         protected override void Start() {
             base.Start();
-            DisplayHighlight(false, instant: true);
+            HighlightIcon(false, instant: true);
         }
 
         public void OnBeginDrag(PointerEventData eventData) {
-            _activeManipulation = manipulation;
+            _isManipulatedNow = true;
         }
         
         public void OnDrag(PointerEventData eventData) {
-            if (targetTransform == null)
+            if (targetTransform == null || !_isManipulatedNow)
                 return;
-            Func<ManipulationType, bool> Is = ActiveManipulationIs;
             var prevLocalPoint = ToLocal(eventData.position - eventData.delta, eventData.pressEventCamera);
             var curLocalPoint = ToLocal(eventData.position, eventData.pressEventCamera);
-            if (Is(ManipulationType.Move))
-                targetTransform.anchoredPosition += eventData.delta;
-            if (Is(ManipulationType.Rotate))
-                targetTransform.localRotation *= Quaternion.AngleAxis(DeltaRotation(prevLocalPoint, curLocalPoint), Vector3.forward);
+            DoMove(eventData);
+            DoRotate(prevLocalPoint, curLocalPoint);
             var localDelta = curLocalPoint - prevLocalPoint;
-            if (Is(ManipulationType.ResizeLeft))
-                ResizeDirected(HorizontalProjection(localDelta), -1f);
-            if (Is(ManipulationType.ResizeUp))
-                ResizeDirected(VerticalProjection(localDelta), +1f);
-            if (Is(ManipulationType.ResizeRight))
-                ResizeDirected(HorizontalProjection(localDelta), +1f);
-            if (Is(ManipulationType.ResizeDown))
-                ResizeDirected(VerticalProjection(localDelta), -1f);
-        }
-
-        bool ActiveManipulationIs(ManipulationType manipulation) {
-            return (_activeManipulation & manipulation) == manipulation;
+            DoResize(localDelta);
         }
 
         Vector2 ToLocal(Vector2 position, Camera eventCamera) {
@@ -84,10 +81,38 @@ namespace SoftMasking.Samples {
             return localPosition;
         }
 
+        void DoMove(PointerEventData eventData) {
+            if (Is(ManipulationType.Move))
+                targetTransform.anchoredPosition += eventData.delta;
+        }
+
+        bool Is(ManipulationType expected) {
+            return (manipulation & expected) == expected;
+        }
+
+        void DoRotate(Vector2 prevLocalPoint, Vector2 curLocalPoint) {
+            if (Is(ManipulationType.Rotate))
+                targetTransform.localRotation *= Quaternion.AngleAxis(DeltaRotation(prevLocalPoint, curLocalPoint), Vector3.forward);
+        }
+
         float DeltaRotation(Vector2 prevLocalPoint, Vector2 curLocalPoint) {
             var prevAngle = Mathf.Atan2(prevLocalPoint.y, prevLocalPoint.x) * Mathf.Rad2Deg;
             var curAngle = Mathf.Atan2(curLocalPoint.y, curLocalPoint.x) * Mathf.Rad2Deg;
             return Mathf.DeltaAngle(prevAngle, curAngle);
+        }
+
+        void DoResize(Vector2 localDelta) {
+            var horizontalDelta = HorizontalProjection(localDelta);
+            if (Is(ManipulationType.ResizeLeft))
+                ResizeDirected(horizontalDelta, -1f);
+            else if (Is(ManipulationType.ResizeRight))
+                ResizeDirected(horizontalDelta, +1f);
+
+            var verticalDelta = VerticalProjection(localDelta);
+            if (Is(ManipulationType.ResizeUp))
+                ResizeDirected(verticalDelta, +1f);
+            else if (Is(ManipulationType.ResizeDown))
+                ResizeDirected(verticalDelta, -1f);
         }
 
         void ResizeDirected(Vector2 localResizeDelta, float sizeSign) {
@@ -99,9 +124,9 @@ namespace SoftMasking.Samples {
         Vector2 VerticalProjection(Vector2 vec) { return new Vector2(0f, vec.y); }
 
         public void OnEndDrag(PointerEventData eventData) {
-            _activeManipulation = ManipulationType.None;
+            _isManipulatedNow = false;
             if (!eventData.hovered.Contains(gameObject))
-                DisplayHighlight(false);
+                HighlightIcon(false);
         }
     }
 }

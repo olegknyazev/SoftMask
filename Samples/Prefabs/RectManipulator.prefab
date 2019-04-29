@@ -40,7 +40,7 @@ GameObject:
   - 222: {fileID: 222000014210929644}
   - 114: {fileID: 114000012379663656}
   m_Layer: 5
-  m_Name: Display
+  m_Name: Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -113,7 +113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTransform: {fileID: 0}
   manipulation: 0
-  displayGraphic: {fileID: 114000012379663656}
+  icon: {fileID: 114000012379663656}
 --- !u!222 &222000011188698158
 CanvasRenderer:
   m_ObjectHideFlags: 1
