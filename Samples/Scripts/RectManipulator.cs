@@ -24,7 +24,7 @@ namespace SoftMasking.Samples {
 
         public RectTransform targetTransform;
         public ManipulationType manipulation;
-        public Graphic[] displayGraphics;
+        public Graphic displayGraphic;
         
         public void OnPointerEnter(PointerEventData eventData) {
             DisplayHighlight(true);
@@ -36,10 +36,11 @@ namespace SoftMasking.Samples {
         }
 
         void DisplayHighlight(bool highlight, bool instant = false) {
-            var targetAlpha = highlight ? 1f : 0f;
-            var duration = instant ? 0f : 0.2f;
-            foreach (var graphic in displayGraphics)
-                graphic.CrossFadeAlpha(targetAlpha, duration, true);
+            if (displayGraphic) {
+                var targetAlpha = highlight ? 1f : 0.2f;
+                var duration = instant ? 0f : 0.2f;
+                displayGraphic.CrossFadeAlpha(targetAlpha, duration, true);
+            }
         }
 
         protected override void Start() {
