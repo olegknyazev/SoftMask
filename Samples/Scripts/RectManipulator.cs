@@ -1,10 +1,11 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace SoftMasking.Samples {
     [RequireComponent(typeof(RectTransform))]
-    public class RectManipulator : UIBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
+    public class RectManipulator : UIBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler {
         [Flags] public enum ManipulationType {
             None = 0,
             Move = 1 << 0,
@@ -23,7 +24,29 @@ namespace SoftMasking.Samples {
 
         public RectTransform targetTransform;
         public ManipulationType manipulation;
+        public Graphic[] displayGraphics;
         
+        public void OnPointerEnter(PointerEventData eventData) {
+            DisplayHighlight(true);
+        }
+
+        public void OnPointerExit(PointerEventData eventData) {
+            if (_activeManipulation != manipulation)
+                DisplayHighlight(false);
+        }
+
+        void DisplayHighlight(bool highlight, bool instant = false) {
+            var targetAlpha = highlight ? 1f : 0f;
+            var duration = instant ? 0f : 0.2f;
+            foreach (var graphic in displayGraphics)
+                graphic.CrossFadeAlpha(targetAlpha, duration, true);
+        }
+
+        protected override void Start() {
+            base.Start();
+            DisplayHighlight(false, instant: true);
+        }
+
         public void OnBeginDrag(PointerEventData eventData) {
             _activeManipulation = manipulation;
         }
@@ -76,6 +99,7 @@ namespace SoftMasking.Samples {
 
         public void OnEndDrag(PointerEventData eventData) {
             _activeManipulation = ManipulationType.None;
+            DisplayHighlight(false);
         }
     }
 }
