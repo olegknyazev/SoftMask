@@ -99,7 +99,8 @@ namespace SoftMasking.Samples {
 
         public void OnEndDrag(PointerEventData eventData) {
             _activeManipulation = ManipulationType.None;
-            DisplayHighlight(false);
+            if (!eventData.hovered.Contains(gameObject))
+                DisplayHighlight(false);
         }
     }
 }
