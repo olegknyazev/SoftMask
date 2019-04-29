@@ -114,6 +114,9 @@ MonoBehaviour:
   targetTransform: {fileID: 0}
   manipulation: 0
   icon: {fileID: 114000012379663656}
+  normalAlpha: 0.3
+  selectedAlpha: 1
+  transitionDuration: 0.2
 --- !u!222 &222000011188698158
 CanvasRenderer:
   m_ObjectHideFlags: 1
