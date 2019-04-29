@@ -28,6 +28,7 @@ namespace SoftMasking.Samples {
 
         public RectTransform targetTransform;
         public ManipulationType manipulation;
+        public ShowOnHover showOnHover;
         
         [Header("Display")]
         public Graphic icon;
@@ -52,6 +53,8 @@ namespace SoftMasking.Samples {
                 var duration = instant ? 0f : transitionDuration;
                 icon.CrossFadeAlpha(targetAlpha, duration, true);
             }
+            if (showOnHover)
+                showOnHover.forcedVisible = highlight;
         }
 
         protected override void Start() {
