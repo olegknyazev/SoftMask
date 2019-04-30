@@ -277,13 +277,29 @@ namespace SoftMasking {
             set { _raycastThreshold = value; }
         }
 
-        // TODO !!! WRITE DOC !!!
+        
+        /// <summary>
+        /// If set, mask values inside the mask rectangle will be inverted. In this case mask's
+        /// zero value (taking <see cref="channelWeights"/> into account) will be treated as one
+        /// and vice versa. The mask rectangle is the RectTransform of the GameObject which this
+        /// component is attached to or the RectTransform specified by <see cref="separateMask"/>.
+        /// The default value is false.
+        /// </summary>
+        /// <seealso cref="invertOutsides"/>
         public bool invertMask {
             get { return _invertMask; }
             set { if (_invertMask != value) Set(ref _invertMask, value); }
         }
         
-        // TODO !!! WRITE DOC !!!
+        /// <summary>
+        /// If set, mask values outside the mask rectangle will be inverted. By default, everything
+        /// outside the mask rectangle has zero mask value. When this property is set, mask outsides
+        /// will have value one which means that everything outside the mask will be visible.
+        /// The mask rectangle is the RectTransform of the GameObject which this component
+        /// is attached to or the RectTransform specified by <see cref="separateMask"/>.
+        /// The default value is false.
+        /// </summary>
+        /// <seealso cref="invertMask"/>
         public bool invertOutsides {
             get { return _invertOutsides; }
             set { if (_invertOutsides != value) Set(ref _invertOutsides, value); }
