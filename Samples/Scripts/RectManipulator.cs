@@ -40,6 +40,9 @@ namespace SoftMasking.Samples {
         public float transitionDuration = 0.2f;
 
         bool _isManipulatedNow;
+        Vector2 _startAnchoredPosition;
+        Vector2 _startSizeDelta;
+        float _startRotation;
         
         public void OnPointerEnter(PointerEventData eventData) {
             HighlightIcon(true);
@@ -67,85 +70,100 @@ namespace SoftMasking.Samples {
 
         public void OnBeginDrag(PointerEventData eventData) {
             _isManipulatedNow = true;
-        }
-        
-        public void OnDrag(PointerEventData eventData) {
-            if (targetTransform == null || !_isManipulatedNow)
-                return;
-            var prevLocalPoint = ToLocal(eventData.position - eventData.delta, eventData.pressEventCamera);
-            var curLocalPoint = ToLocal(eventData.position, eventData.pressEventCamera);
-            DoMove(eventData);
-            DoRotate(prevLocalPoint, curLocalPoint);
-            var localDelta = curLocalPoint - prevLocalPoint;
-            DoResize(localDelta);
+            RememberStartTransform();
         }
 
-        Vector2 ToLocal(Vector2 position, Camera eventCamera) {
+        void RememberStartTransform() {
+            if (targetTransform) {
+                _startAnchoredPosition = targetTransform.anchoredPosition;
+                _startSizeDelta = targetTransform.sizeDelta;
+                _startRotation = targetTransform.localRotation.eulerAngles.z;
+            }
+        }
+
+        public void OnDrag(PointerEventData eventData) {
+            if (targetTransform == null || parentTransform == null || !_isManipulatedNow)
+                return;
+            var startPoint = ToParentSpace(eventData.pressPosition, eventData.pressEventCamera);
+            var curPoint = ToParentSpace(eventData.position, eventData.pressEventCamera);
+            DoRotate(startPoint, curPoint);
+            var parentSpaceMovement = curPoint - startPoint;
+            DoMove(parentSpaceMovement);
+            DoResize(parentSpaceMovement);
+        }
+
+        Vector2 ToParentSpace(Vector2 position, Camera eventCamera) {
             Vector2 localPosition;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                targetTransform, position, eventCamera, out localPosition);
+                parentTransform, position, eventCamera, out localPosition);
             return localPosition;
         }
-
-        void DoMove(PointerEventData eventData) {
-            if (Is(ManipulationType.Move))
-                Move(eventData.delta);
+        
+        RectTransform parentTransform {
+            get { return targetTransform.parent as RectTransform; }
         }
 
-        void Move(Vector2 delta) {
-            targetTransform.anchoredPosition = ClampPosition(targetTransform.anchoredPosition + delta);
+        void DoMove(Vector2 parentSpaceMovement) {
+            if (Is(ManipulationType.Move))
+                MoveTo(_startAnchoredPosition + parentSpaceMovement);
         }
 
         bool Is(ManipulationType expected) {
             return (manipulation & expected) == expected;
         }
 
+        void MoveTo(Vector2 desiredAnchoredPosition) {
+            targetTransform.anchoredPosition = ClampPosition(desiredAnchoredPosition);
+        }
+
         Vector2 ClampPosition(Vector2 position) {
-            if (targetTransform && targetTransform.parent is RectTransform) {
-                var parentRect = ((RectTransform)targetTransform.parent).rect;
-                return new Vector2(
-                    Mathf.Clamp(position.x, 0f, parentRect.width),
-                    Mathf.Clamp(position.y, -parentRect.height, 0f));
+            var parentSize = parentTransform.rect.size;
+            return new Vector2(
+                Mathf.Clamp(position.x, 0f, parentSize.x),
+                Mathf.Clamp(position.y, -parentSize.y, 0f));
+        }
+
+        void DoRotate(Vector2 startParentPoint, Vector2 targetParentPoint) {
+            if (Is(ManipulationType.Rotate)) {
+                var additionalRotation = DeltaRotation(startParentPoint, targetParentPoint);
+                targetTransform.localRotation = Quaternion.AngleAxis(_startRotation + additionalRotation, Vector3.forward);
             }
-            return position;
         }
 
-        void DoRotate(Vector2 prevLocalPoint, Vector2 curLocalPoint) {
-            if (Is(ManipulationType.Rotate))
-                targetTransform.localRotation *= Quaternion.AngleAxis(DeltaRotation(prevLocalPoint, curLocalPoint), Vector3.forward);
+        float DeltaRotation(Vector2 startLever, Vector2 endLever) {
+            var startAngle = Mathf.Atan2(startLever.y, startLever.x) * Mathf.Rad2Deg;
+            var endAngle = Mathf.Atan2(endLever.y, endLever.x) * Mathf.Rad2Deg;
+            return Mathf.DeltaAngle(startAngle, endAngle);
         }
 
-        float DeltaRotation(Vector2 prevLocalPoint, Vector2 curLocalPoint) {
-            var prevAngle = Mathf.Atan2(prevLocalPoint.y, prevLocalPoint.x) * Mathf.Rad2Deg;
-            var curAngle = Mathf.Atan2(curLocalPoint.y, curLocalPoint.x) * Mathf.Rad2Deg;
-            return Mathf.DeltaAngle(prevAngle, curAngle);
+        void DoResize(Vector2 parentSpaceMovement) {
+            var localSpaceMovement = Quaternion.Inverse(targetTransform.rotation) * parentSpaceMovement;
+            var projectedOffset = ProjectResizeOffset(localSpaceMovement);
+            if (projectedOffset.sqrMagnitude > 0f)
+                SetSizeDirected(projectedOffset, ResizeSign());
         }
 
-        void DoResize(Vector2 localDelta) {
-            var horizontalDelta = HorizontalProjection(localDelta);
-            if (Is(ManipulationType.ResizeLeft))
-                ResizeDirected(horizontalDelta, -1f);
-            else if (Is(ManipulationType.ResizeRight))
-                ResizeDirected(horizontalDelta, +1f);
-
-            var verticalDelta = VerticalProjection(localDelta);
-            if (Is(ManipulationType.ResizeUp))
-                ResizeDirected(verticalDelta, +1f);
-            else if (Is(ManipulationType.ResizeDown))
-                ResizeDirected(verticalDelta, -1f);
+        Vector2 ProjectResizeOffset(Vector2 localOffset) {
+            var isHorizontal = Is(ManipulationType.ResizeLeft) || Is(ManipulationType.ResizeRight);
+            var isVertical = Is(ManipulationType.ResizeUp) || Is(ManipulationType.ResizeDown);
+            return new Vector2(
+                isHorizontal ? localOffset.x : 0f,
+                isVertical ? localOffset.y : 0f);
         }
 
-        void ResizeDirected(Vector2 localResizeDelta, float sizeSign) {
-            var curSize = targetTransform.sizeDelta;
-            var newSize = ClampSize(curSize + localResizeDelta * sizeSign);
+        Vector2 ResizeSign() {
+            return new Vector2(
+                Is(ManipulationType.ResizeLeft) ? -1f : 1f,
+                Is(ManipulationType.ResizeDown) ? -1f : 1f);
+        }
+        
+        void SetSizeDirected(Vector2 localOffset, Vector2 sizeSign) {
+            var newSize = ClampSize(_startSizeDelta + Vector2.Scale(localOffset, sizeSign));
             targetTransform.sizeDelta = newSize;
-            var actualSizeDelta = newSize - curSize;
-            var moveDelta = actualSizeDelta * sizeSign / 2;
-            Move(targetTransform.TransformVector(moveDelta));
+            var actualSizeOffset = newSize - _startSizeDelta;
+            var localMoveOffset = Vector2.Scale(actualSizeOffset / 2, sizeSign);
+            MoveTo(_startAnchoredPosition + (Vector2)targetTransform.TransformVector(localMoveOffset));
         }
-
-        Vector2 HorizontalProjection(Vector2 vec) { return new Vector2(vec.x, 0f); }
-        Vector2 VerticalProjection(Vector2 vec) { return new Vector2(0f, vec.y); }
 
         Vector2 ClampSize(Vector2 size) {
             return new Vector2(
