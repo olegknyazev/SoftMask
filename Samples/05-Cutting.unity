@@ -2169,6 +2169,7 @@ MonoBehaviour:
   targetTransform: {fileID: 333248681}
   manipulation: 1
   showOnHover: {fileID: 902910885}
+  minSize: {x: 0, y: 0}
   icon: {fileID: 1015233280}
   normalAlpha: 0
   selectedAlpha: 0.1

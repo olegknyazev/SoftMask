@@ -30,6 +30,9 @@ namespace SoftMasking.Samples {
         public ManipulationType manipulation;
         public ShowOnHover showOnHover;
         
+        [Header("Limits")]
+        public Vector2 minSize;
+
         [Header("Display")]
         public Graphic icon;
         public float normalAlpha = 0.2f;
@@ -86,11 +89,25 @@ namespace SoftMasking.Samples {
 
         void DoMove(PointerEventData eventData) {
             if (Is(ManipulationType.Move))
-                targetTransform.anchoredPosition += eventData.delta;
+                Move(eventData.delta);
+        }
+
+        void Move(Vector2 delta) {
+            targetTransform.anchoredPosition = ClampPosition(targetTransform.anchoredPosition + delta);
         }
 
         bool Is(ManipulationType expected) {
             return (manipulation & expected) == expected;
+        }
+
+        Vector2 ClampPosition(Vector2 position) {
+            if (targetTransform && targetTransform.parent is RectTransform) {
+                var parentRect = ((RectTransform)targetTransform.parent).rect;
+                return new Vector2(
+                    Mathf.Clamp(position.x, 0f, parentRect.width),
+                    Mathf.Clamp(position.y, -parentRect.height, 0f));
+            }
+            return position;
         }
 
         void DoRotate(Vector2 prevLocalPoint, Vector2 curLocalPoint) {
@@ -119,12 +136,22 @@ namespace SoftMasking.Samples {
         }
 
         void ResizeDirected(Vector2 localResizeDelta, float sizeSign) {
-            targetTransform.sizeDelta += localResizeDelta * sizeSign;
-            targetTransform.position += targetTransform.TransformVector(localResizeDelta) / 2;
+            var curSize = targetTransform.sizeDelta;
+            var newSize = ClampSize(curSize + localResizeDelta * sizeSign);
+            targetTransform.sizeDelta = newSize;
+            var actualSizeDelta = newSize - curSize;
+            var moveDelta = actualSizeDelta * sizeSign / 2;
+            Move(targetTransform.TransformVector(moveDelta));
         }
 
         Vector2 HorizontalProjection(Vector2 vec) { return new Vector2(vec.x, 0f); }
         Vector2 VerticalProjection(Vector2 vec) { return new Vector2(0f, vec.y); }
+
+        Vector2 ClampSize(Vector2 size) {
+            return new Vector2(
+                Mathf.Max(size.x, minSize.x),
+                Mathf.Max(size.y, minSize.y));
+        }
 
         public void OnEndDrag(PointerEventData eventData) {
             _isManipulatedNow = false;

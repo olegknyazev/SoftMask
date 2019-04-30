@@ -172,6 +172,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTransform: {fileID: 0}
   manipulation: 0
+  showOnHover: {fileID: 0}
+  minSize: {x: 128, y: 128}
   icon: {fileID: 114000011594302930}
   normalAlpha: 0.2
   selectedAlpha: 1
