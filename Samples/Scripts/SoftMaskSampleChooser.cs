@@ -31,7 +31,6 @@ namespace SoftMasking.Samples {
             SceneManager.LoadScene(sceneName);
         }
 
-        
 #if UNITY_EDITOR
         bool IsSceneInBuild(string sceneName) {
             return 
