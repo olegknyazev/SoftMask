@@ -125,7 +125,9 @@ namespace SoftMasking.Samples {
 
         void DoRotate(Vector2 startParentPoint, Vector2 targetParentPoint) {
             if (Is(ManipulationType.Rotate)) {
-                var additionalRotation = DeltaRotation(startParentPoint, targetParentPoint);
+                var startLever = startParentPoint - (Vector2)targetTransform.localPosition;
+                var targetLever = targetParentPoint - (Vector2)targetTransform.localPosition;
+                var additionalRotation = DeltaRotation(startLever, targetLever);
                 targetTransform.localRotation = Quaternion.AngleAxis(_startRotation + additionalRotation, Vector3.forward);
             }
         }
