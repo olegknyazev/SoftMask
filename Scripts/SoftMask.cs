@@ -698,7 +698,7 @@ namespace SoftMasking {
         }
 
         Vector2 MaskRepeat(Sprite sprite, Vector4 centralPart) {
-            var textureCenter = Mathr.ApplyBorder(Mathr.ToVector(sprite.textureRect), sprite.border);
+            var textureCenter = Mathr.ApplyBorder(Mathr.ToVector(sprite.rect), sprite.border);
             return Mathr.Div(Mathr.Size(centralPart) * SpriteToCanvasScale(sprite), Mathr.Size(textureCenter));
         }
 
