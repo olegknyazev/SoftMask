@@ -341,7 +341,7 @@ namespace SoftMasking {
                     _parameters.activeTexture.name);
                 return true;
             }   
-            return mask >= _raycastThreshold;
+            return _invertMask ? mask < _raycastThreshold : mask >= _raycastThreshold;
         }
 
         protected override void Start() {
