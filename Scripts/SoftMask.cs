@@ -330,7 +330,7 @@ namespace SoftMasking {
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
             Vector2 localPos;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(maskTransform, sp, cam, out localPos)) return false;
-            if (!Mathr.Inside(localPos, LocalMaskRect(Vector4.zero))) return false;
+            if (!Mathr.Inside(localPos, LocalMaskRect(Vector4.zero))) return _invertOutsides;
             if (!_parameters.texture) return true;
             if (!isUsingRaycastFiltering) return true;
             float mask;
@@ -340,8 +340,10 @@ namespace SoftMasking {
                     + "it's not readable. You can make the texture readable in the Texture Import Settings.",
                     _parameters.activeTexture.name);
                 return true;
-            }   
-            return _invertMask ? mask < _raycastThreshold : mask >= _raycastThreshold;
+            }
+            if (_invertMask)
+                mask = 1 - mask;
+            return mask >= _raycastThreshold;
         }
 
         protected override void Start() {
