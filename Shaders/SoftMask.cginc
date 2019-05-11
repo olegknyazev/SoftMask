@@ -64,6 +64,8 @@
 # ifdef SOFTMASK_TILED
     float2 _SoftMask_TileRepeat;
 # endif
+	bool _SoftMask_InvertMask;
+	bool _SoftMask_InvertOutsides;
 
     // On changing logic of the following functions, don't forget to update
     // according functions in SoftMask.MaterialParameters (C#).
@@ -125,8 +127,12 @@
 
     inline float SoftMask_GetMask(float2 maskPosition) {
         float2 uv = SoftMask_GetMaskUV(maskPosition);
-        float4 mask = tex2D(_SoftMask, uv) * _SoftMask_ChannelWeights;
-        return dot(mask, 1) * UnityGet2DClipping(maskPosition, _SoftMask_Rect);
+        float4 sampledMask = tex2D(_SoftMask, uv);
+        float weightedMask = dot(sampledMask * _SoftMask_ChannelWeights, 1);
+        float maskInsideRect = _SoftMask_InvertMask ? 1 - weightedMask : weightedMask;
+        float maskOutsideRect = _SoftMask_InvertOutsides;
+        float isInsideRect = UnityGet2DClipping(maskPosition, _SoftMask_Rect);
+        return lerp(maskOutsideRect, maskInsideRect, isInsideRect);
     }
 #else // __SOFTMASK_ENABLED
 
@@ -135,7 +141,7 @@
 # define SOFTMASK_GET_MASK(IN)                 (1.0f)
 
     inline float4 SoftMask_GetMaskTexture(float2 maskPosition) { return 1.0f; }
-    inline float SoftMask_GetMask(float2 maskPosition) { return 1.0f;  }
+    inline float SoftMask_GetMask(float2 maskPosition) { return 1.0f; }
 #endif
 
 #endif

@@ -15,6 +15,8 @@ namespace SoftMasking.Editor {
         SerializedProperty _textureUVRect;
         SerializedProperty _channelWeights;
         SerializedProperty _raycastThreshold;
+        SerializedProperty _invertMask;
+        SerializedProperty _invertOutsides;
 
         bool _customWeightsExpanded;
         
@@ -25,6 +27,9 @@ namespace SoftMasking.Editor {
             public static readonly GUIContent G = new GUIContent("G");
             public static readonly GUIContent B = new GUIContent("B");
             public static readonly GUIContent A = new GUIContent("A");
+            public static readonly GUIContent Invert = new GUIContent("Invert");
+            public static readonly GUIContent InvertMask = new GUIContent("Mask");
+            public static readonly GUIContent InvertOutsides = new GUIContent("Outsides");
             public static readonly string UnsupportedShaders = 
                 "Some of children's shaders aren't supported. Mask won't work on these elements. " +
                 "See the documentation for more details about how to add Soft Mask support to " +
@@ -56,6 +61,8 @@ namespace SoftMasking.Editor {
             _textureUVRect = serializedObject.FindProperty("_textureUVRect");
             _channelWeights = serializedObject.FindProperty("_channelWeights");
             _raycastThreshold = serializedObject.FindProperty("_raycastThreshold");
+            _invertMask = serializedObject.FindProperty("_invertMask");
+            _invertOutsides = serializedObject.FindProperty("_invertOutsides");
             Assert.IsNotNull(_source);
             Assert.IsNotNull(_separateMask);
             Assert.IsNotNull(_sprite);
@@ -64,6 +71,8 @@ namespace SoftMasking.Editor {
             Assert.IsNotNull(_textureUVRect);
             Assert.IsNotNull(_channelWeights);
             Assert.IsNotNull(_raycastThreshold);
+            Assert.IsNotNull(_invertMask);
+            Assert.IsNotNull(_invertOutsides);
         }
 
         public override void OnInspectorGUI() {
@@ -85,6 +94,14 @@ namespace SoftMasking.Editor {
             });
             EditorGUILayout.PropertyField(_separateMask);
             EditorGUILayout.Slider(_raycastThreshold, 0, 1);
+            using (new EditorGUILayout.HorizontalScope()) {
+                EditorGUILayout.PrefixLabel(Labels.Invert);
+                using (new EditorGUILayout.VerticalScope()) {
+                    // TODO !!! prefab overrides !!!
+                    _invertMask.boolValue = EditorGUILayout.ToggleLeft(Labels.InvertMask, _invertMask.boolValue);
+                    _invertOutsides.boolValue = EditorGUILayout.ToggleLeft(Labels.InvertOutsides, _invertOutsides.boolValue);
+                }
+            }
             CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
             ShowErrorsIfAny();
             serializedObject.ApplyModifiedProperties();

@@ -69,6 +69,8 @@ namespace SoftMasking {
         [SerializeField] Rect _textureUVRect = DefaultUVRect;
         [SerializeField] Color _channelWeights = MaskChannel.alpha;
         [SerializeField] float _raycastThreshold = 0.0f;
+        [SerializeField] bool _invertMask = false;
+        [SerializeField] bool _invertOutsides = false;
 
         MaterialReplacements _materials;
         MaterialParameters _parameters;
@@ -275,6 +277,34 @@ namespace SoftMasking {
             set { _raycastThreshold = value; }
         }
 
+        
+        /// <summary>
+        /// If set, mask values inside the mask rectangle will be inverted. In this case mask's
+        /// zero value (taking <see cref="channelWeights"/> into account) will be treated as one
+        /// and vice versa. The mask rectangle is the RectTransform of the GameObject which this
+        /// component is attached to or the RectTransform specified by <see cref="separateMask"/>.
+        /// The default value is false.
+        /// </summary>
+        /// <seealso cref="invertOutsides"/>
+        public bool invertMask {
+            get { return _invertMask; }
+            set { if (_invertMask != value) Set(ref _invertMask, value); }
+        }
+        
+        /// <summary>
+        /// If set, mask values outside the mask rectangle will be inverted. By default, everything
+        /// outside the mask rectangle has zero mask value. When this property is set, mask outsides
+        /// will have value one which means that everything outside the mask will be visible.
+        /// The mask rectangle is the RectTransform of the GameObject which this component
+        /// is attached to or the RectTransform specified by <see cref="separateMask"/>.
+        /// The default value is false.
+        /// </summary>
+        /// <seealso cref="invertMask"/>
+        public bool invertOutsides {
+            get { return _invertOutsides; }
+            set { if (_invertOutsides != value) Set(ref _invertOutsides, value); }
+        }
+
         /// <summary>
         /// Returns true if Soft Mask does raycast filtering, that is if the masked areas are
         /// transparent to input.
@@ -300,7 +330,7 @@ namespace SoftMasking {
         public bool IsRaycastLocationValid(Vector2 sp, Camera cam) {
             Vector2 localPos;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(maskTransform, sp, cam, out localPos)) return false;
-            if (!Mathr.Inside(localPos, LocalMaskRect(Vector4.zero))) return false;
+            if (!Mathr.Inside(localPos, LocalMaskRect(Vector4.zero))) return _invertOutsides;
             if (!_parameters.texture) return true;
             if (!isUsingRaycastFiltering) return true;
             float mask;
@@ -310,7 +340,9 @@ namespace SoftMasking {
                     + "it's not readable. You can make the texture readable in the Texture Import Settings.",
                     _parameters.activeTexture.name);
                 return true;
-            }   
+            }
+            if (_invertMask)
+                mask = 1 - mask;
             return mask >= _raycastThreshold;
         }
 
@@ -649,6 +681,8 @@ namespace SoftMasking {
         void FillCommonParameters() {
             _parameters.worldToMask = WorldToMask();
             _parameters.maskChannelWeights = _channelWeights;
+            _parameters.invertMask = _invertMask;
+            _parameters.invertOutsides = _invertOutsides;
         }
 
         float SpriteToCanvasScale(Sprite sprite) {
@@ -775,6 +809,8 @@ namespace SoftMasking {
             public Matrix4x4 worldToMask;
             public Texture2D texture;
             public BorderMode borderMode;
+            public bool invertMask;
+            public bool invertOutsides;
 
             public Texture2D activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
 
@@ -795,6 +831,8 @@ namespace SoftMasking {
                 mat.SetVector(Ids.SoftMask_UVRect, maskRectUV);
                 mat.SetColor(Ids.SoftMask_ChannelWeights, maskChannelWeights);
                 mat.SetMatrix(Ids.SoftMask_WorldToMask, worldToMask);
+                mat.SetFloat(Ids.SoftMask_InvertMask, invertMask ? 1 : 0);
+                mat.SetFloat(Ids.SoftMask_InvertOutsides, invertOutsides ? 1 : 0);
                 mat.EnableKeyword("SOFTMASK_SIMPLE", borderMode == BorderMode.Simple);
                 mat.EnableKeyword("SOFTMASK_SLICED", borderMode == BorderMode.Sliced);
                 mat.EnableKeyword("SOFTMASK_TILED", borderMode == BorderMode.Tiled);
@@ -870,6 +908,8 @@ namespace SoftMasking {
                 public static readonly int SoftMask_BorderRect = Shader.PropertyToID("_SoftMask_BorderRect");
                 public static readonly int SoftMask_UVBorderRect = Shader.PropertyToID("_SoftMask_UVBorderRect");
                 public static readonly int SoftMask_TileRepeat = Shader.PropertyToID("_SoftMask_TileRepeat");
+                public static readonly int SoftMask_InvertMask = Shader.PropertyToID("_SoftMask_InvertMask");
+                public static readonly int SoftMask_InvertOutsides = Shader.PropertyToID("_SoftMask_InvertOutsides");
             }
         }
 
