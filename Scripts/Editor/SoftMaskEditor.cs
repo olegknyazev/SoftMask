@@ -21,6 +21,26 @@ namespace SoftMasking.Editor {
         bool _customWeightsExpanded;
         
         static class Labels {
+            public static readonly GUIContent Source = new GUIContent("Source",
+                "From where the mask should get its image?");
+            public static readonly GUIContent Sprite = new GUIContent("Sprite",
+                "Sprite that should be used as the mask image.");
+            public static readonly GUIContent SpriteBorderMode = new GUIContent("Sprite Border Mode",
+                "Determines how sprite borders should be processed. Corresponds to Unity UI Image " +
+                "types. The Sliced and Tiled modes are available only for sprites having borders.");
+            public static readonly GUIContent Texture = new GUIContent("Texture",
+                "Texture that should be used as the mask image.");
+            public static readonly GUIContent TextureUVRect = new GUIContent("Texture UV Rect",
+                "Specifies a normalized UV-space rectangle rectangle defining an image part that " + 
+                "should be used as the mask image.");
+            public static readonly GUIContent SeparateMask = new GUIContent("Separate Mask",
+                "A Rect Transform that defines the bounds of mask in scene. If not set bounds of " + 
+                "this Object's Rect Transform is used. Use of a separate Rect Transform allows " +
+                "to move or resize mask bounds not affecting children.");
+            public static readonly GUIContent RaycastThreshold = new GUIContent("Raycast Threshold",
+                "Specifies the minimum value that mask should have at any given point to " +
+                "pass an input event to children. 0 makes the entire mask rectangle pass events. " +
+                "1 passes events only in points where masked objects are fully opaque.");
             public static readonly GUIContent MaskChannel = new GUIContent("Mask Channel");
             public static readonly GUIContent ChannelWeights = new GUIContent("Channel Weights");
             public static readonly GUIContent R = new GUIContent("R");
@@ -77,23 +97,23 @@ namespace SoftMasking.Editor {
 
         public override void OnInspectorGUI() {
             serializedObject.Update();
-            EditorGUILayout.PropertyField(_source);
+            EditorGUILayout.PropertyField(_source, Labels.Source);
             CustomEditors.WithIndent(() => {
                 switch ((SoftMask.MaskSource)_source.enumValueIndex) {
                     case SoftMask.MaskSource.Graphic:
                         break;
                     case SoftMask.MaskSource.Sprite:
-                        EditorGUILayout.PropertyField(_sprite);
-                        EditorGUILayout.PropertyField(_spriteBorderMode);
+                        EditorGUILayout.PropertyField(_sprite, Labels.Sprite);
+                        EditorGUILayout.PropertyField(_spriteBorderMode, Labels.SpriteBorderMode);
                         break;
                     case SoftMask.MaskSource.Texture:
-                        EditorGUILayout.PropertyField(_texture);
-                        EditorGUILayout.PropertyField(_textureUVRect);
+                        EditorGUILayout.PropertyField(_texture, Labels.Texture);
+                        EditorGUILayout.PropertyField(_textureUVRect, Labels.TextureUVRect);
                         break;
                 }
             });
-            EditorGUILayout.PropertyField(_separateMask);
-            EditorGUILayout.Slider(_raycastThreshold, 0, 1);
+            EditorGUILayout.PropertyField(_separateMask, Labels.SeparateMask);
+            EditorGUILayout.Slider(_raycastThreshold, 0, 1, Labels.RaycastThreshold);
             using (new EditorGUILayout.HorizontalScope()) {
                 EditorGUILayout.PrefixLabel(Labels.Invert);
                 using (new EditorGUILayout.VerticalScope()) {

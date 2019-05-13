@@ -60,13 +60,13 @@ namespace SoftMasking {
             return baseMaterial;
         }
         
-        // Called when replacement material might be changed, so, the material should be refreshed.
+        // Called when replacement material might be changed, so the material should be refreshed.
         public void Invalidate() {
             if (graphic)
                 graphic.SetMaterialDirty();
         }
 
-        // Called when an active mask might be changed, so, the mask should be searched again.
+        // Called when an active mask might be changed, so the mask should be searched again.
         public void MaskMightChanged() {
             if (FindMaskOrDie())
                 Invalidate();

@@ -189,9 +189,9 @@ namespace SoftMasking {
         }
 
         /// <summary>
-        /// Specifies a RectTransform that should be used as a mask. It allows to separate 
-        /// a mask from a masking hierarchy root, which simplifies creation of moving or 
-        /// sliding masks. When null, the RectTransform of the current object will be used.
+        /// Specifies a RectTransform that defines the bounds of the mask. Use of a separate
+        /// RectTransform allows to move or resize mask bounds not affecting children.
+        /// When null, the RectTransform of the current object is used.
         /// Default value is null.
         /// </summary>
         public RectTransform separateMask {
@@ -234,7 +234,7 @@ namespace SoftMasking {
         }
 
         /// <summary>
-        /// Specifies an UV rectangle defining the image part, that should be used as 
+        /// Specifies a normalized UV-space rectangle defining the image part that should be used as
         /// the mask image. This property takes effect only when the source is MaskSource.Texture.
         /// A value is set in normalized coordinates. The default value is (0, 0, 1, 1), which means
         /// that the whole texture is used.
