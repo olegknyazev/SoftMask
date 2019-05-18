@@ -22,34 +22,42 @@ namespace SoftMasking.Editor {
         
         static class Labels {
             public static readonly GUIContent Source = new GUIContent("Source",
-                "From where the mask should get its image?");
+                "Specifies from where the mask gets its image.");
             public static readonly GUIContent Sprite = new GUIContent("Sprite",
                 "Sprite that should be used as the mask image.");
             public static readonly GUIContent SpriteBorderMode = new GUIContent("Sprite Border Mode",
-                "Determines how sprite borders should be processed. Corresponds to Unity UI Image " +
+                "Specifies how sprite borders should be processed. Corresponds to Unity UI Image " +
                 "types. The Sliced and Tiled modes are available only for sprites having borders.");
             public static readonly GUIContent Texture = new GUIContent("Texture",
                 "Texture that should be used as the mask image.");
             public static readonly GUIContent TextureUVRect = new GUIContent("Texture UV Rect",
-                "Specifies a normalized UV-space rectangle rectangle defining an image part that " + 
+                "Specifies a normalized rectangle in UV-space defining an image part that " + 
                 "should be used as the mask image.");
             public static readonly GUIContent SeparateMask = new GUIContent("Separate Mask",
-                "A Rect Transform that defines the bounds of mask in scene. If not set bounds of " + 
-                "this Object's Rect Transform is used. Use of a separate Rect Transform allows " +
-                "to move or resize mask bounds not affecting children.");
+                "A Rect Transform that defines the bounds of the mask in the scene. If not set " +
+                "bounds of Rect Transform attached to this object is used. Use of a separate Rect " +
+                "Transform allows to move or resize mask without affecting children.");
             public static readonly GUIContent RaycastThreshold = new GUIContent("Raycast Threshold",
-                "Specifies the minimum value that mask should have at any given point to " +
-                "pass an input event to children. 0 makes the entire mask rectangle pass events. " +
-                "1 passes events only in points where masked objects are fully opaque.");
-            public static readonly GUIContent MaskChannel = new GUIContent("Mask Channel");
-            public static readonly GUIContent ChannelWeights = new GUIContent("Channel Weights");
+                "Specifies the minimum value that the mask should have at any given point to " +
+                "pass a pointer input event to children. 0 makes the entire mask rectangle pass " +
+                "events. 1 passes events only in points where masked objects are fully opaque.");
+            public static readonly GUIContent MaskChannel = new GUIContent("Mask Channel",
+                "Specifies which image channel(s) should be used as the mask source.");
+            public static readonly GUIContent ChannelWeights = new GUIContent("Channel Weights",
+                "Specifies how much value each of image channels adds to the resulted mask value. " + 
+                "The resulted mask value is calculated as the sum of products of image channel " + 
+                "values and the corresponding fields");
             public static readonly GUIContent R = new GUIContent("R");
             public static readonly GUIContent G = new GUIContent("G");
             public static readonly GUIContent B = new GUIContent("B");
             public static readonly GUIContent A = new GUIContent("A");
             public static readonly GUIContent Invert = new GUIContent("Invert");
-            public static readonly GUIContent InvertMask = new GUIContent("Mask");
-            public static readonly GUIContent InvertOutsides = new GUIContent("Outsides");
+            public static readonly GUIContent InvertMask = new GUIContent("Mask",
+                "If set, the mask inside the mask rectangle will be inverted.");
+            public static readonly GUIContent InvertOutsides = new GUIContent("Outsides",
+                "If set, the mask outside the mask rectangle will be inverted. By default everything " +
+                "outside the mask is transparent, so when this flag is set, the outsides of the mask " +
+                "are opaque.");
             public static readonly string UnsupportedShaders = 
                 "Some of children's shaders aren't supported. Mask won't work on these elements. " +
                 "See the documentation for more details about how to add Soft Mask support to " +
@@ -68,8 +76,8 @@ namespace SoftMasking.Editor {
                 "SoftMask doesn't support this image type. The supported image types are Simple, Sliced " +
                 "and Tiled.";
             public static readonly string UnreadableTexture =
-                "SoftMask with Raycast Threshold greater than zero can't be used with an unreadable texture. " +
-                "You can make the texture readable in the Texture Import Settings.";
+                "SoftMask with Raycast Threshold greater than zero can't be used with a CPU-unreadable " +
+                "texture. You can make the texture readable in the Texture Import Settings.";
         }
 
         public void OnEnable() {
