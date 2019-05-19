@@ -51,10 +51,9 @@ namespace SoftMasking.Editor {
             public static readonly GUIContent G = new GUIContent("G");
             public static readonly GUIContent B = new GUIContent("B");
             public static readonly GUIContent A = new GUIContent("A");
-            public static readonly GUIContent Invert = new GUIContent("Invert");
-            public static readonly GUIContent InvertMask = new GUIContent("Mask",
+            public static readonly GUIContent InvertMask = new GUIContent("Invert Mask",
                 "If set, the mask inside the mask rectangle will be inverted.");
-            public static readonly GUIContent InvertOutsides = new GUIContent("Outsides",
+            public static readonly GUIContent InvertOutsides = new GUIContent("Invert Outsides",
                 "If set, the mask outside the mask rectangle will be inverted. By default everything " +
                 "outside the mask is transparent, so when this flag is set, the outsides of the mask " +
                 "are opaque.");
@@ -122,14 +121,8 @@ namespace SoftMasking.Editor {
             });
             EditorGUILayout.PropertyField(_separateMask, Labels.SeparateMask);
             EditorGUILayout.Slider(_raycastThreshold, 0, 1, Labels.RaycastThreshold);
-            using (new EditorGUILayout.HorizontalScope()) {
-                EditorGUILayout.PrefixLabel(Labels.Invert);
-                using (new EditorGUILayout.VerticalScope()) {
-                    // TODO !!! prefab overrides !!!
-                    _invertMask.boolValue = EditorGUILayout.ToggleLeft(Labels.InvertMask, _invertMask.boolValue);
-                    _invertOutsides.boolValue = EditorGUILayout.ToggleLeft(Labels.InvertOutsides, _invertOutsides.boolValue);
-                }
-            }
+            EditorGUILayout.PropertyField(_invertMask, Labels.InvertMask);
+            EditorGUILayout.PropertyField(_invertOutsides, Labels.InvertOutsides);
             CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
             ShowErrorsIfAny();
             serializedObject.ApplyModifiedProperties();
