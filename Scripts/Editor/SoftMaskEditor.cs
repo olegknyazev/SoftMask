@@ -186,17 +186,12 @@ namespace SoftMasking.Editor {
                         : KnownChannel(weightsProp.colorValue);
                 label = EditorGUI.BeginProperty(rect, label, weightsProp);
                 EditorGUI.BeginChangeCheck();
-                if (customWeightsExpanded)
-                    rect.height = HeightOf(KnownChannelStyle);
-                knownChannel = (KnownMaskChannel)EditorGUI.EnumPopup(rect, label, knownChannel);
+                knownChannel = (KnownMaskChannel)EditorGUI.EnumPopup(KnownChannelSubrect(rect), label, knownChannel);
                 var weights = Weights(knownChannel, weightsProp.colorValue);
-                if (customWeightsExpanded) {
-                    rect.y += rect.height + Mathf.Max(KnownChannelStyle.margin.bottom, CustomWeightsStyle.margin.top);
-                    rect.height = HeightOf(CustomWeightsStyle);
+                if (customWeightsExpanded)
                     WithIndent(() => {
-                        weights = ColorField(rect, Labels.ChannelWeights, weights);
+                        weights = ColorField(CustomWeightsSubrect(rect), Labels.ChannelWeights, weights);
                     });
-                }
                 if (EditorGUI.EndChangeCheck())
                     weightsProp.colorValue = weights;
                 if (Event.current.type != EventType.Layout)
@@ -204,6 +199,21 @@ namespace SoftMasking.Editor {
                 EditorGUI.EndProperty();
                 return customWeightsExpanded;
             }
+
+            static Rect KnownChannelSubrect(Rect rect) {
+                var result = rect;
+                result.height = HeightOf(KnownChannelStyle);
+                return result;
+            }
+
+            static Rect CustomWeightsSubrect(Rect rect) {
+                var result = rect;
+                result.y += HeightOf(KnownChannelStyle) + Mathf.Max(KnownChannelStyle.margin.bottom, CustomWeightsStyle.margin.top);
+                result.height = HeightOf(CustomWeightsStyle);
+                return result;
+            }
+
+            static float HeightOf(GUIStyle style) { return style.CalcSize(GUIContent.none).y; }
 
             static Color ColorField(Rect rect, GUIContent label, Color color) {
                 rect = EditorGUI.PrefixLabel(rect, label);
@@ -242,8 +252,6 @@ namespace SoftMasking.Editor {
                 }
             }
 
-            static float HeightOf(GUIStyle style) { return style.CalcSize(GUIContent.none).y; }
-
             enum KnownMaskChannel { Alpha, Red, Green, Blue, Gray, Custom }
 
             static KnownMaskChannel KnownChannel(Color weights) {
@@ -267,7 +275,7 @@ namespace SoftMasking.Editor {
             }
             
             public static bool CustomChannelShouldBeExpandedFor(Color weights) {
-                return KnownChannel(weights) == KnownMaskChannel.Custom;
+                return CustomChannelShouldBeExpandedFor(KnownChannel(weights));
             }
 
             static bool CustomChannelShouldBeExpandedFor(KnownMaskChannel channel) {
