@@ -100,7 +100,7 @@ namespace SoftMasking.Editor {
             Assert.IsNotNull(_raycastThreshold);
             Assert.IsNotNull(_invertMask);
             Assert.IsNotNull(_invertOutsides);
-            _customWeightsExpanded = CustomEditors.KnownChannel(_channelWeights.colorValue) == CustomEditors.KnownMaskChannel.Custom;
+            _customWeightsExpanded = CustomEditors.CustomChannelShouldBeExpandedFor(_channelWeights.colorValue);
         }
 
         public override void OnInspectorGUI() {
@@ -124,7 +124,11 @@ namespace SoftMasking.Editor {
             EditorGUILayout.Slider(_raycastThreshold, 0, 1, Labels.RaycastThreshold);
             EditorGUILayout.PropertyField(_invertMask, Labels.InvertMask);
             EditorGUILayout.PropertyField(_invertOutsides, Labels.InvertOutsides);
-            CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, ref _customWeightsExpanded);
+            var newExpanded = CustomEditors.ChannelWeights(Labels.MaskChannel, _channelWeights, _customWeightsExpanded);
+            if (newExpanded != _customWeightsExpanded) {
+                _customWeightsExpanded = newExpanded;
+                Repaint();
+            }
             ShowErrorsIfAny();
             serializedObject.ApplyModifiedProperties();
         }
@@ -156,11 +160,11 @@ namespace SoftMasking.Editor {
         }
 
         public static class CustomEditors {
-            public static void ChannelWeights(GUIContent label, SerializedProperty weightsProp, ref bool customWeightsExpanded) {
+            public static bool ChannelWeights(GUIContent label, SerializedProperty weightsProp, bool customWeightsExpanded) {
                 var rect = GUILayoutUtility.GetRect(GUIContent.none, KnownChannelStyle);
                 if (customWeightsExpanded)
                     rect.max = GUILayoutUtility.GetRect(GUIContent.none, CustomWeightsStyle).max;
-                ChannelWeights(rect, label, weightsProp, ref customWeightsExpanded);
+                return ChannelWeights(rect, label, weightsProp, customWeightsExpanded);
             }
 
             public static void WithIndent(Action f) {
@@ -172,10 +176,10 @@ namespace SoftMasking.Editor {
                 }
             }
 
-            static readonly GUIStyle KnownChannelStyle = EditorStyles.popup;
-            static readonly GUIStyle CustomWeightsStyle = EditorStyles.textField;
+            static GUIStyle KnownChannelStyle { get { return EditorStyles.popup; } }
+            static GUIStyle CustomWeightsStyle { get { return EditorStyles.textField; } }
 
-            static void ChannelWeights(Rect rect, GUIContent label, SerializedProperty weightsProp, ref bool customWeightsExpanded) {
+            static bool ChannelWeights(Rect rect, GUIContent label, SerializedProperty weightsProp, bool customWeightsExpanded) {
                 var knownChannel =
                     customWeightsExpanded
                         ? KnownMaskChannel.Custom
@@ -196,8 +200,9 @@ namespace SoftMasking.Editor {
                 if (EditorGUI.EndChangeCheck())
                     weightsProp.colorValue = weights;
                 if (Event.current.type != EventType.Layout)
-                    customWeightsExpanded = knownChannel == KnownMaskChannel.Custom;
+                    customWeightsExpanded = CustomChannelShouldBeExpandedFor(knownChannel);
                 EditorGUI.EndProperty();
+                return customWeightsExpanded;
             }
 
             static Color ColorField(Rect rect, GUIContent label, Color color) {
@@ -259,6 +264,14 @@ namespace SoftMasking.Editor {
                     case KnownMaskChannel.Gray: return MaskChannel.gray;
                     default: return custom;
                 }
+            }
+            
+            public static bool CustomChannelShouldBeExpandedFor(Color weights) {
+                return KnownChannel(weights) == KnownMaskChannel.Custom;
+            }
+
+            static bool CustomChannelShouldBeExpandedFor(KnownMaskChannel channel) {
+                return channel == KnownMaskChannel.Custom;
             }
         }
     }
