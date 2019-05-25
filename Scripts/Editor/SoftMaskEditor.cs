@@ -100,6 +100,7 @@ namespace SoftMasking.Editor {
             Assert.IsNotNull(_raycastThreshold);
             Assert.IsNotNull(_invertMask);
             Assert.IsNotNull(_invertOutsides);
+            _customWeightsExpanded = CustomEditors.KnownChannel(_channelWeights.colorValue) == CustomEditors.KnownMaskChannel.Custom;
         }
 
         public override void OnInspectorGUI() {
