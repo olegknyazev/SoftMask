@@ -281,8 +281,8 @@ namespace SoftMasking {
         /// <summary>
         /// If set, mask values inside the mask rectangle will be inverted. In this case mask's
         /// zero value (taking <see cref="channelWeights"/> into account) will be treated as one
-        /// and vice versa. The mask rectangle is the RectTransform of the GameObject which this
-        /// component is attached to or the RectTransform specified by <see cref="separateMask"/>.
+        /// and vice versa. The mask rectangle is the RectTransform of the GameObject this
+        /// component is attached to or <see cref="separateMask"/> if it's not null.
         /// The default value is false.
         /// </summary>
         /// <seealso cref="invertOutsides"/>
@@ -293,10 +293,10 @@ namespace SoftMasking {
         
         /// <summary>
         /// If set, mask values outside the mask rectangle will be inverted. By default, everything
-        /// outside the mask rectangle has zero mask value. When this property is set, mask outsides
-        /// will have value one which means that everything outside the mask will be visible.
-        /// The mask rectangle is the RectTransform of the GameObject which this component
-        /// is attached to or the RectTransform specified by <see cref="separateMask"/>.
+        /// outside the mask rectangle has zero mask value. When this property is set, the mask
+        /// outsides will have value one, which means that everything outside the mask will be
+        /// visible. The mask rectangle is the RectTransform of the GameObject this component
+        /// is attached to or <see cref="separateMask"/> if it's not null.
         /// The default value is false.
         /// </summary>
         /// <seealso cref="invertMask"/>
