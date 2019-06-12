@@ -63,8 +63,8 @@
 # ifdef SOFTMASK_TILED
     float2 _SoftMask_TileRepeat;
 # endif
-	bool _SoftMask_InvertMask;
-	bool _SoftMask_InvertOutsides;
+    bool _SoftMask_InvertMask;
+    bool _SoftMask_InvertOutsides;
 
     // On changing logic of the following functions, don't forget to update
     // according functions in SoftMask.MaterialParameters (C#).
