@@ -118,9 +118,10 @@ namespace SoftMasking.Samples {
 
         Vector2 ClampPosition(Vector2 position) {
             var parentSize = parentTransform.rect.size;
+            var halfSize = parentSize / 2;
             return new Vector2(
-                Mathf.Clamp(position.x, 0f, parentSize.x),
-                Mathf.Clamp(position.y, -parentSize.y, 0f));
+                Mathf.Clamp(position.x, -halfSize.x, halfSize.x),
+                Mathf.Clamp(position.y, -halfSize.y, halfSize.y));
         }
 
         void DoRotate(Vector2 startParentPoint, Vector2 targetParentPoint) {
