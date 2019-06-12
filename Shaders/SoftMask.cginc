@@ -7,30 +7,29 @@
     -------------
 
     #define SOFTMASK_COORDS(idx)
-        Add it to a declaration of the structure that is passed from the vertex shader
+        Add it to the declaration of the structure that is passed from the vertex shader
         to the fragment shader.
           idx    The number of interpolator to use. Specify the first free TEXCOORD index.
 
     #define SOFTMASK_CALCULATE_COORDS(OUT, pos)
-        Use it in a vertex shader to calculate mask-related data.
+        Use it in the vertex shader to calculate mask-related data.
           OUT    An instance of the output structure that will be passed to the fragment
                  shader. It should be of the type that contains a SOFTMASK_COORDS()
                  declaration.
-          pos    A source vertex position that was passed to vertex shader
+          pos    A source vertex position that have been passed to the vertex shader.
 
     #define SOFTMASK_GET_MASK(IN)
-        Use it in a fragment shader to get the mask value for the current pixel.
-          IN     An instance of a vertex shader output structure. It should be of type
+        Use it in the fragment shader to finally compute the mask value.
+          IN     An instance of the vertex shader output structure. It should be of type
                  that contains a SOFTMASK_COORDS() declaration.
 
   The following functions are defined only when one of SOFTMASK_SIMPLE, SOFTMASK_SLICED
-  or SOFTMASK_TILED macro is defined.
+  or SOFTMASK_TILED macro is defined. It's better to use the macros listed above when
+  possible because they properly handle situation when Soft Mask is disabled.
 
     inline float SoftMask_GetMask(float2 maskPosition)
-        Returns the mask value for a given pixel. It's better to use SOFTMASK_GET_MASK()
-        macro instead of this function because the macro accounts for the case when
-        Soft Mask isn't used.
-          maskPosition   Position of the current pixel in mask's local space.
+        Returns the mask value for a given pixel.
+          maskPosition   A position of the current pixel in mask's local space.
                          To get this position use macro SOFTMASK_CALCULATE_COORDS().
 
     inline float4 SoftMask_GetMaskTexture(float2 maskPosition)

@@ -1,10 +1,10 @@
 ﻿Shader "Hidden/UI Default (Soft Masked)"
 {
-    // This is a shader that replaces the Default Unity UI shader. It supports all capabilities
-    // of Default UI and also adds Soft Mask support. It is a bit complicated because it
-    // reflects changes of the Default UI shader between Unity versions. If you search
-    // example of how to add Soft Mask support, you may check CustomWithSoftMask.shader
-    // that included in the package.
+    // This is a shader that replaces the Unity's Default UI shader. It has all capabilities
+    // of the Default UI and also supports Soft Mask. It is a bit complicated because it
+    // reflects changes of the Default UI shader between Unity versions. If you're searching
+    // for an example of how to add Soft Mask support, you may check CustomWithSoftMask.shader
+    // that's included in the package.
 
     Properties
     {
