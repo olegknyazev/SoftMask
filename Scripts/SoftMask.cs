@@ -65,7 +65,7 @@ namespace SoftMasking {
         [SerializeField] RectTransform _separateMask = null;
         [SerializeField] Sprite _sprite = null;
         [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
-        [SerializeField] Texture2D _texture = null;
+        [SerializeField] Texture _texture = null;
         [SerializeField] Rect _textureUVRect = DefaultUVRect;
         [SerializeField] Color _channelWeights = MaskChannel.alpha;
         [SerializeField] float _raycastThreshold = 0.0f;
@@ -157,7 +157,8 @@ namespace SoftMasking {
             TightPackedSprite       = 1 << 2,
             AlphaSplitSprite        = 1 << 3,
             UnsupportedImageType    = 1 << 4,
-            UnreadableTexture       = 1 << 5
+            UnreadableTexture       = 1 << 5,
+            UnreadableRenderTarget  = 1 << 6
         }
 
         /// <summary>
@@ -229,7 +230,12 @@ namespace SoftMasking {
         /// effect only when the source is MaskSource.Texture.
         /// </summary>
         public Texture2D texture {
-            get { return _texture; }
+            get { return _texture as Texture2D; }
+            set { if (_texture != value) Set(ref _texture, value); }
+        }
+
+        public RenderTexture renderTexture {
+            get { return _texture as RenderTexture; }
             set { if (_texture != value) Set(ref _texture, value); }
         }
 
@@ -334,7 +340,9 @@ namespace SoftMasking {
             if (!_parameters.texture) return true;
             if (!isUsingRaycastFiltering) return true;
             float mask;
-            if (!_parameters.SampleMask(localPos, out mask)) {
+            var sampleResult = _parameters.SampleMask(localPos, out mask);
+            if (sampleResult != MaterialParameters.SampleMaskResult.Success) {
+                // TODO better explain depending on sampleResult
                 Debug.LogErrorFormat(this,
                     "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
                     + "it's not readable. You can make the texture readable in the Texture Import Settings.",
@@ -555,7 +563,7 @@ namespace SoftMasking {
             public Image image;
             public Sprite sprite;
             public BorderMode spriteBorderMode;
-            public Texture2D texture;
+            public Texture texture;
             public Rect textureUVRect;
         }
 
@@ -570,7 +578,7 @@ namespace SoftMasking {
                         result.texture = result.sprite ? result.sprite.texture : null;
                     } else if (_graphic is RawImage) {
                         var rawImage = (RawImage)_graphic;
-                        result.texture = rawImage.texture as Texture2D;
+                        result.texture = rawImage.texture;
                         result.textureUVRect = rawImage.uvRect;
                     }
                     break;
@@ -666,7 +674,7 @@ namespace SoftMasking {
             return border;
         }
 
-        void CalculateTextureBased(Texture2D texture, Rect uvRect) {
+        void CalculateTextureBased(Texture texture, Rect uvRect) {
             FillCommonParameters();
             _parameters.maskRect = LocalMaskRect(Vector4.zero);
             _parameters.maskRectUV = Mathr.ToVector(uvRect);
@@ -767,8 +775,7 @@ namespace SoftMasking {
             }
         }
 
-        // Various operations on a Rect represented as Vector4. 
-        // In Vector4 Rect is stored as (xMin, yMin, xMax, yMax).
+        // Various operations on a Rect represented as Vector4 (xMin, yMin, xMax, yMax).
         static class Mathr {
             public static Vector4 ToVector(Rect r) { return new Vector4(r.xMin, r.yMin, r.xMax, r.yMax); }
             public static Vector4 Div(Vector4 v, Vector2 s) { return new Vector4(v.x / s.x, v.y / s.y, v.z / s.x, v.w / s.y); }
@@ -807,21 +814,26 @@ namespace SoftMasking {
             public Vector2 tileRepeat;
             public Color maskChannelWeights;
             public Matrix4x4 worldToMask;
-            public Texture2D texture;
+            public Texture texture;
             public BorderMode borderMode;
             public bool invertMask;
             public bool invertOutsides;
 
-            public Texture2D activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
+            public Texture activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
 
-            public bool SampleMask(Vector2 localPos, out float mask) {
+            public enum SampleMaskResult { Success, NonReadable, NonTexture2D }
+
+            public SampleMaskResult SampleMask(Vector2 localPos, out float mask) {
+                mask = 0;
+                var texture2D = texture as Texture2D;
+                if (!texture2D)
+                    return SampleMaskResult.NonTexture2D;
                 var uv = XY2UV(localPos);
                 try {
-                    mask = MaskValue(texture.GetPixelBilinear(uv.x, uv.y));
-                    return true;
+                    mask = MaskValue(texture2D.GetPixelBilinear(uv.x, uv.y));
+                    return SampleMaskResult.Success;
                 } catch (UnityException) {
-                    mask = 0;
-                    return false;
+                    return SampleMaskResult.NonReadable;
                 }
             }
 
@@ -945,7 +957,7 @@ namespace SoftMasking {
 
             Image image { get { return _softMask.DeduceSourceParameters().image; } }
             Sprite sprite { get { return _softMask.DeduceSourceParameters().sprite; } }
-            Texture2D texture { get { return _softMask.DeduceSourceParameters().texture; } }
+            Texture texture { get { return _softMask.DeduceSourceParameters().texture; } }
 
             bool ThereAreNestedMasks() {
                 var softMask = _softMask; // for use in lambda
@@ -969,9 +981,13 @@ namespace SoftMasking {
 
             Errors CheckTexture() {
                 var result = Errors.NoError;
-                if (_softMask.isUsingRaycastFiltering && texture)
-                    if (!IsReadable(texture))
+                if (_softMask.isUsingRaycastFiltering && texture) {
+                    var texture2D = texture as Texture2D;
+                    if (!texture2D)
+                        result |= Errors.UnreadableRenderTarget;
+                    else if (!IsReadable(texture2D))
                         result |= Errors.UnreadableTexture;
+                }
                 return result;
             }
 
