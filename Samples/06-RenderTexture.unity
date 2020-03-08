@@ -1011,4 +1011,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6aa82741a2daf8458eb4a55f2b02b11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stroke: {fileID: 1183523395}
+  stroke: {fileID: 1183523396}

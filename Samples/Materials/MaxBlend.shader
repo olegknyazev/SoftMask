@@ -13,6 +13,8 @@
 
         _ColorMask("Color Mask", Float) = 15
 
+        _BlendOp("Blend Operation", Float) = 0
+
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip("Use Alpha Clip", Float) = 0
     }
 
@@ -41,6 +43,7 @@
         ZWrite Off
         ZTest[unity_GUIZTestMode]
         Blend SrcAlpha One
+        BlendOp [_BlendOp]
         ColorMask[_ColorMask]
 
         Pass
