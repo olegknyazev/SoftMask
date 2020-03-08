@@ -12,10 +12,17 @@ namespace SoftMasking.Samples {
 
         protected override void Start() {
             base.Start();
-            _renderTexture = new RenderTexture(600, 400, 0, RenderTextureFormat.ARGB32);
+            _renderTexture = new RenderTexture((int)maskSize.x, (int)maskSize.y, 0, RenderTextureFormat.ARGB32);
             _renderTexture.Create();
             renderCamera.targetTexture = _renderTexture;
             targetMask.renderTexture = _renderTexture;
+        }
+
+        Vector2 maskSize {
+            get {
+                var rectTransform = (RectTransform)targetMask.transform;
+                return rectTransform.rect.size;
+            }
         }
     }
 }
