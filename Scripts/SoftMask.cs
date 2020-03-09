@@ -75,6 +75,7 @@ namespace SoftMasking {
         MaterialReplacements _materials;
         MaterialParameters _parameters;
         Sprite _lastUsedSprite;
+        Texture _lastSampledTexture;
         Rect _lastMaskRect;
         bool _maskingWasEnabled;
         bool _destroyed;
@@ -341,8 +342,11 @@ namespace SoftMasking {
             if (!isUsingRaycastFiltering) return true;
             float mask;
             var sampleResult = _parameters.SampleMask(localPos, out mask);
+            var lastTexture = _lastSampledTexture;
+            _lastSampledTexture = _parameters.texture;
             if (sampleResult != MaterialParameters.SampleMaskResult.Success) {
-                WarnTextureReadError(sampleResult);
+                if (lastTexture != _parameters.texture)
+                    WarnTextureReadError(sampleResult);
                 return true;
             }
             if (_invertMask)
