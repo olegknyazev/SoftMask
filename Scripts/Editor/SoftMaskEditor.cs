@@ -77,6 +77,10 @@ namespace SoftMasking.Editor {
             public static readonly string UnreadableTexture =
                 "SoftMask with Raycast Threshold greater than zero can't be used with a CPU-unreadable " +
                 "texture. You can make the texture readable in the Texture Import Settings.";
+            public static readonly string UnreadableRenderTexture =
+                "SoftMask with Raycast Threshold greater than zero can't be used with Render Textures " +
+                "as they're unreadable for CPU. Only a Texture 2D may be used with the raycast filtering " +
+                "capability.";
         }
 
         public void OnEnable() {
@@ -135,12 +139,13 @@ namespace SoftMasking.Editor {
 
         void ShowErrorsIfAny() {
             var errors = CollectErrors();
-            ShowErrorIfPresent(errors, SoftMask.Errors.UnsupportedShaders,   Labels.UnsupportedShaders,   MessageType.Warning);
-            ShowErrorIfPresent(errors, SoftMask.Errors.NestedMasks,          Labels.NestedMasks,          MessageType.Warning);
-            ShowErrorIfPresent(errors, SoftMask.Errors.TightPackedSprite,    Labels.TightPackedSprite,    MessageType.Error);
-            ShowErrorIfPresent(errors, SoftMask.Errors.AlphaSplitSprite,     Labels.AlphaSplitSprite,     MessageType.Error);
-            ShowErrorIfPresent(errors, SoftMask.Errors.UnsupportedImageType, Labels.UnsupportedImageType, MessageType.Error);
-            ShowErrorIfPresent(errors, SoftMask.Errors.UnreadableTexture,    Labels.UnreadableTexture,    MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.UnsupportedShaders,      Labels.UnsupportedShaders,      MessageType.Warning);
+            ShowErrorIfPresent(errors, SoftMask.Errors.NestedMasks,             Labels.NestedMasks,             MessageType.Warning);
+            ShowErrorIfPresent(errors, SoftMask.Errors.TightPackedSprite,       Labels.TightPackedSprite,       MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.AlphaSplitSprite,        Labels.AlphaSplitSprite,        MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.UnsupportedImageType,    Labels.UnsupportedImageType,    MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.UnreadableTexture,       Labels.UnreadableTexture,       MessageType.Error);
+            ShowErrorIfPresent(errors, SoftMask.Errors.UnreadableRenderTexture, Labels.UnreadableRenderTexture, MessageType.Error);
         }
 
         SoftMask.Errors CollectErrors() {

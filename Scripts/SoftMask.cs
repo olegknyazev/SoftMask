@@ -159,7 +159,7 @@ namespace SoftMasking {
             AlphaSplitSprite        = 1 << 3,
             UnsupportedImageType    = 1 << 4,
             UnreadableTexture       = 1 << 5,
-            UnreadableRenderTarget  = 1 << 6
+            UnreadableRenderTexture  = 1 << 6
         }
 
         /// <summary>
@@ -1002,7 +1002,7 @@ namespace SoftMasking {
                 if (_softMask.isUsingRaycastFiltering && texture) {
                     var texture2D = texture as Texture2D;
                     if (!texture2D)
-                        result |= Errors.UnreadableRenderTarget;
+                        result |= Errors.UnreadableRenderTexture;
                     else if (!IsReadable(texture2D))
                         result |= Errors.UnreadableTexture;
                 }
