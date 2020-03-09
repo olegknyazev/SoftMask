@@ -342,11 +342,7 @@ namespace SoftMasking {
             float mask;
             var sampleResult = _parameters.SampleMask(localPos, out mask);
             if (sampleResult != MaterialParameters.SampleMaskResult.Success) {
-                // TODO better explain depending on sampleResult
-                Debug.LogErrorFormat(this,
-                    "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
-                    + "it's not readable. You can make the texture readable in the Texture Import Settings.",
-                    _parameters.activeTexture.name);
+                WarnTextureReadError(sampleResult);
                 return true;
             }
             if (_invertMask)
@@ -722,6 +718,24 @@ namespace SoftMasking {
                 Debug.LogError("SoftMask doesn't support tight packed sprites", this);
             if ((errors & Errors.AlphaSplitSprite) != 0)
                 Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", this);
+        }
+
+        void WarnTextureReadError(MaterialParameters.SampleMaskResult sampleResult) {
+            Assert.AreNotEqual(MaterialParameters.SampleMaskResult.Success, sampleResult);
+            switch (sampleResult) {
+                case MaterialParameters.SampleMaskResult.NonReadable:
+                    Debug.LogErrorFormat(this,
+                        "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
+                        + "it's not readable. You can make the texture readable in the Texture Import Settings.",
+                        _parameters.activeTexture.name);
+                    break;
+                case MaterialParameters.SampleMaskResult.NonTexture2D:
+                    Debug.LogErrorFormat(this,
+                        "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
+                        + "it's not a Texture2D. Raycast Threshold may be used only with regular 2D textures.",
+                        _parameters.activeTexture.name);
+                    break;
+            }
         }
 
         void Set<T>(ref T field, T value) {
