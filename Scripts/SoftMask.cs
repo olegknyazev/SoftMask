@@ -115,11 +115,11 @@ namespace SoftMasking {
             /// </summary>
             Sprite,
             /// <summary>
-            /// The mask image should be taken from an explicitly specified Texture2D. When this
-            /// mode is used, textureUVRect can also be set to determine what part of the texture
-            /// should be used. If the texture isn't set, a solid rectangle of the RectTransform
-            /// dimensions will be used. This mode is analogous to using a RawImage with according 
-            /// texture and uvRect set.
+            /// The mask image should be taken from an explicitly specified Texture2D or
+            /// RenderTexture. When this mode is used, textureUVRect can also be set to determine
+            /// which part of the texture should be used. If the texture isn't set, a solid rectangle
+            /// of the RectTransform dimensions will be used. This mode is analogous to using a
+            /// RawImage with according texture and uvRect set.
             /// </summary>
             Texture
         }
@@ -147,7 +147,8 @@ namespace SoftMasking {
         }
         
         /// <summary>
-        /// Errors encountered during SoftMask diagnostics. Mostly intended to use in Unity Editor.
+        /// Errors encountered during SoftMask diagnostics. Used by SoftMaskEditor to display
+        /// hints relevant to the current state.
         /// </summary>
         [Flags]
         [Serializable]
@@ -159,7 +160,7 @@ namespace SoftMasking {
             AlphaSplitSprite        = 1 << 3,
             UnsupportedImageType    = 1 << 4,
             UnreadableTexture       = 1 << 5,
-            UnreadableRenderTexture  = 1 << 6
+            UnreadableRenderTexture = 1 << 6
         }
 
         /// <summary>
@@ -192,8 +193,8 @@ namespace SoftMasking {
 
         /// <summary>
         /// Specifies a RectTransform that defines the bounds of the mask. Use of a separate
-        /// RectTransform allows to move or resize mask bounds not affecting children.
-        /// When null, the RectTransform of the current object is used.
+        /// RectTransform allows moving or resizing the mask bounds without affecting children.
+        /// When null, the RectTransform of this GameObject is used.
         /// Default value is null.
         /// </summary>
         public RectTransform separateMask {
@@ -228,13 +229,21 @@ namespace SoftMasking {
 
         /// <summary>
         /// Specifies a Texture2D that should be used as the mask image. This property takes
-        /// effect only when the source is MaskSource.Texture.
+        /// effect only when the source is MaskSource.Texture. This and <see cref="renderTexture"/>
+        /// properties are mutually exclusive.
         /// </summary>
+        /// <seealso cref="renderTexture"/>
         public Texture2D texture {
             get { return _texture as Texture2D; }
             set { if (_texture != value) Set(ref _texture, value); }
         }
-
+        
+        /// <summary>
+        /// Specifies a RenderTexture that should be used as the mask image. This property takes
+        /// effect only when the source is MaskSource.Texture. This and <see cref="texture"/>
+        /// properties are mutually exclusive.
+        /// </summary>
+        /// <seealso cref="texture"/>
         public RenderTexture renderTexture {
             get { return _texture as RenderTexture; }
             set { if (_texture != value) Set(ref _texture, value); }
@@ -276,7 +285,7 @@ namespace SoftMasking {
         /// channelWeights applied.
         /// The default value is 0, which means that any pixel belonging to RectTransform is
         /// considered in input events. If you specify the value greater than 0, the mask's 
-        /// texture should be readable.
+        /// texture should be readable and it should be not a RenderTexture.
         /// Accepts values in range [0..1].
         /// </summary>
         public float raycastThreshold {
@@ -284,7 +293,6 @@ namespace SoftMasking {
             set { _raycastThreshold = value; }
         }
 
-        
         /// <summary>
         /// If set, mask values inside the mask rectangle will be inverted. In this case mask's
         /// zero value (taking <see cref="channelWeights"/> into account) will be treated as one
