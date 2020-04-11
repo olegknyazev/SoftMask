@@ -1,0 +1,13 @@
+.vs/
+.idea/
+*.sln
+*.csproj
+*.user
+*~
+
+/Library/
+/Temp/
+/Build/
+/obj/
+
+/Assets/TextMesh Pro*
