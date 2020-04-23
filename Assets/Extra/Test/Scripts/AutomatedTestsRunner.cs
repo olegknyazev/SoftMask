@@ -32,9 +32,9 @@ namespace SoftMasking.Tests {
             ResolutionUtility.SetTestResolution();
             try {
                 foreach (var sceneKey in GetTestSceneKeys()) {
-                    var testResult = new Ref<AutomatedTestResult>();
-                    yield return LoadAndTestScene(sceneKey, testResult);
-                    if (testResult.value.isFail)
+                    var testSucceeded = new Ref<bool>();
+                    yield return LoadAndTestScene(sceneKey, testSucceeded);
+                    if (!testSucceeded.value)
                         break;
                 }
             } finally {
@@ -57,15 +57,6 @@ namespace SoftMasking.Tests {
         }
     #endif
 
-        Regex _testScenesNamePatternRegex;
-        Regex testScenesNamePatternRegex {
-            get {
-                if (_testScenesNamePatternRegex == null)
-                    _testScenesNamePatternRegex = new Regex(testScenesNamePattern);
-                return _testScenesNamePatternRegex;
-            }
-        }
-
     #if UNITY_EDITOR
         IEnumerable<string> GetTestSceneKeys() {
             return 
@@ -76,9 +67,18 @@ namespace SoftMasking.Tests {
                     .Where(path => testScenesNamePatternRegex.IsMatch(Path.GetFileNameWithoutExtension(path)));
         }
         
-        IEnumerator LoadAndTestScene(string sceneKey, Ref<AutomatedTestResult> outResult) {
+        Regex _testScenesNamePatternRegex;
+        Regex testScenesNamePatternRegex {
+            get {
+                if (_testScenesNamePatternRegex == null)
+                    _testScenesNamePatternRegex = new Regex(testScenesNamePattern);
+                return _testScenesNamePatternRegex;
+            }
+        }
+
+        IEnumerator LoadAndTestScene(string sceneKey, Ref<bool> outSuccess) {
             EditorApplication.LoadLevelAdditiveInPlayMode(sceneKey);
-            yield return LoadAndTestSceneImpl(outResult);
+            yield return LoadAndTestSceneImpl(outSuccess);
         }
     #else
         IEnumerable<int> GetTestSceneKeys() {
@@ -86,17 +86,17 @@ namespace SoftMasking.Tests {
             return Enumerable.Range(1, SceneManager.sceneCountInBuildSettings - 1);
         }
         
-        IEnumerator LoadAndTestScene(int sceneKey, Ref<AutomatedTestResult> outResult) {
+        IEnumerator LoadAndTestScene(int sceneKey, Ref<bool> outSuccess) {
             SceneManager.LoadScene(sceneKey, LoadSceneMode.Additive);
-            yield return LoadAndTestSceneImpl(outResult);
+            yield return LoadAndTestSceneImpl(outSuccess);
         }
     #endif
 
-        IEnumerator LoadAndTestSceneImpl(Ref<AutomatedTestResult> outResult) {
+        IEnumerator LoadAndTestSceneImpl(Ref<bool> outSuccess) {
             var scene = SceneManager.GetSceneAt(1);
             try {
                 yield return ActivateScene(scene);
-                yield return TestScene(scene, outResult);
+                yield return TestScene(scene, outSuccess);
             } finally {
                 SceneManager.UnloadScene(SceneManager.GetSceneAt(1));
             }
@@ -108,12 +108,12 @@ namespace SoftMasking.Tests {
             Assert.IsTrue(SceneManager.GetActiveScene() == scene);
         }
 
-        IEnumerator TestScene(Scene scene, Ref<AutomatedTestResult> outResult) {
+        IEnumerator TestScene(Scene scene, Ref<bool> outSuccess) {
             var test = SceneTest.FromScene(scene);
             if (test != null) {
                 test.speedUp = speedRun;
                 yield return StartCoroutine(test.WaitFinish());
-                outResult.value = test.result;
+                outSuccess.value = test.result.isPass;
                 _testResults.Add(scene.name, test.result);
                 changed.InvokeSafe(this);
             }
@@ -127,11 +127,11 @@ namespace SoftMasking.Tests {
             }
 
             public static SceneTest FromScene(Scene scene) {
-                var test = 
-                    scene.GetRootGameObjects()
-                        .Select(x => x.GetComponent<AutomatedTest>())
-                        .FirstOrDefault(x => x != null);
-                return test ? new SceneTest(test) : null;
+                return scene.GetRootGameObjects()
+                    .Select(x => x.GetComponent<AutomatedTest>())
+                    .Where(x => x != null)
+                    .Select(x => new SceneTest(x))
+                    .FirstOrDefault();
             }
 
             public bool speedUp {
