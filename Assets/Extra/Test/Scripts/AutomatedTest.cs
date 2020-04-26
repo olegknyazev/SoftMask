@@ -155,7 +155,7 @@ namespace SoftMasking.Tests {
                         break;
                     }
                 }
-            return new AutomatedTestResult(errors);
+            return new AutomatedTestResult(currentSceneName, errors);
         }
 
         ScreenValidationRule ValidationRuleForStep(int stepIndex) {
@@ -229,6 +229,10 @@ namespace SoftMasking.Tests {
             var injectedHandler = Debug.logger.logHandler as LogHandler;
             if (injectedHandler != null)
                 Debug.logger.logHandler = injectedHandler.originalHandler;
+        }
+
+        string currentSceneName {
+            get { return gameObject.scene.name; }
         }
         
         string currentSceneRelativeDir {

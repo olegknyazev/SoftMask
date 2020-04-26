@@ -18,11 +18,11 @@ namespace SoftMasking.Tests {
         public string[] standaloneSkipScenes = new string[0];
         public bool speedRun = false;
         
-        Dictionary<string, AutomatedTestResult> _testResults = new Dictionary<string, AutomatedTestResult>();
+        List<AutomatedTestResult> _testResults = new List<AutomatedTestResult>();
 
         public bool isFinished { get; private set; }
 
-        public IDictionary<string, AutomatedTestResult> testResults { get { return _testResults; } }
+        public IList<AutomatedTestResult> testResults { get { return _testResults; } }
 
         public event Action<AutomatedTestsRunner> changed;
 
@@ -112,7 +112,7 @@ namespace SoftMasking.Tests {
                 test.speedUp = speedRun;
                 yield return StartCoroutine(test.WaitFinish());
                 outSuccess.value = test.result.isPass;
-                _testResults.Add(scene.name, test.result);
+                _testResults.Add(test.result);
                 changed.InvokeSafe(this);
             }
         }
