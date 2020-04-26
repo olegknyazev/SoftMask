@@ -55,9 +55,7 @@ namespace SoftMasking.Tests {
                 BuildTarget.StandaloneWindows,
                 BuildOptions.AllowDebugging | BuildOptions.ForceEnableAssertions | additionalOptions);
         }
-    #endif
 
-    #if UNITY_EDITOR
         IEnumerable<string> GetTestSceneKeys() {
             return 
                 AssetDatabase

@@ -8,18 +8,35 @@ namespace SoftMasking.Tests {
     public class AutomatedTestsRunnerUI : MonoBehaviour {
         public AutomatedTestsRunner testsRunner;
         [Space]
-        public GameObject uiRoot;
+        public GameObject[] activateAfterTest;
         public Text statusText;
+        public Graphic statusColorDisplay;
+        public GameObject detailsRoot;
         public Text errorsText;
         public RawImage errorDiffImage;
 
         public IEnumerator Start() {
-            uiRoot.SetActive(false);
+            foreach (var obj in activateAfterTest)
+                obj.SetActive(false);
             yield return new WaitUntil(() => testsRunner.isFinished);
-            uiRoot.SetActive(true);
-            statusText.text = "Finished";
-            errorsText.text = FormatErrors();
-            errorDiffImage.texture = DiffTexture();
+            foreach (var obj in activateAfterTest)
+                obj.SetActive(true);
+            statusText.text = FormatStatus();
+            var isFail = testsRunner.testResults.Values.Count(x => x.isFail) > 0;
+            detailsRoot.SetActive(isFail);
+            statusColorDisplay.color = isFail ? Color.red : Color.green;
+            if (isFail) {
+                errorsText.text = FormatErrors();
+                errorDiffImage.texture = DiffTexture();
+                errorDiffImage.SetNativeSize();
+            }
+        }
+
+        string FormatStatus() {
+            var testsFailed = testsRunner.testResults.Values.Count(x => x.isFail);
+            return testsFailed > 0
+                ? "FAIL"
+                : string.Format("PASS ({0} tests runned)", testsRunner.testResults.Count);
         }
 
         string FormatErrors() {
@@ -33,13 +50,6 @@ namespace SoftMasking.Tests {
                         output.Append("  ");
                         output.AppendLine(err.message);
                     }
-                }
-            }
-            foreach (var kv in testsRunner.testResults) {
-                var result = kv.Value;
-                if (result.isPass) {
-                    output.AppendFormat("{0}: OK", kv.Key);
-                    output.AppendLine();
                 }
             }
             return output.ToString();
