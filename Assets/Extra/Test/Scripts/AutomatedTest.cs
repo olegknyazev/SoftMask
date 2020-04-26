@@ -4,22 +4,17 @@ using System.IO;
 using System.Linq;
 using System;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace SoftMasking.Tests {
     [ExecuteInEditMode]
     public class AutomatedTest : MonoBehaviour {
         static readonly string TestScenesPath = "Assets/Extra/Test/Scenes/";
-        static readonly string ReferencePath = TestScenesPath + "ReferenceScreens";
-        static readonly string ScreenshotExt = ".png";
 
         public bool speedUp = false;
 
         [SerializeField] List<ScreenValidationRuleKeyValuePair> _validationRulePairs = new List<ScreenValidationRuleKeyValuePair>();
         [SerializeField] List<Texture2D> _lastExecutionScreens = new List<Texture2D>();
-        [SerializeField] List<Texture2D> _referenceScreens = new List<Texture2D>();
+        [SerializeField] ReferenceScreens _referenceScreens = new ReferenceScreens();
         AutomatedTestResult _result = null;
         bool _updatedAtLeastOnce = false;
         List<ExpectedLogRecord> _expectedLog = new List<ExpectedLogRecord>();
@@ -27,7 +22,7 @@ namespace SoftMasking.Tests {
         AutomatedTestError _explicitFail;
 
         public int referenceStepsCount {
-            get { return _referenceScreens.Count; }
+            get { return _referenceScreens.count; }
         }
         public IEnumerable<ScreenValidationRule> validationRules {
             get { return _validationRulePairs.Select(x => x.rule); }
@@ -52,22 +47,12 @@ namespace SoftMasking.Tests {
 
     #if UNITY_EDITOR
         public void SaveLastRecordAsExample() {
-            DeleteReferenceScreens();
-            if (!Directory.Exists(currentSceneReferenceDir))
-                Directory.CreateDirectory(currentSceneReferenceDir);
-            for (int i = 0; i < _lastExecutionScreens.Count; ++i) {
-                var screenshot = _lastExecutionScreens[i];
-                var screenshotPath = GetScreenshotPath(i);
-                File.WriteAllBytes(screenshotPath, screenshot.EncodeToPNG());
-                AssetDatabase.ImportAsset(screenshotPath);
-                SetupScreenshotImportSettings(screenshotPath);
-                _referenceScreens.Add(screenshot);
-            }
+            _referenceScreens.ReplaceBy(_lastExecutionScreens);
             NotifyChanged();
         }
 
         public void DeleteReference() {
-            DeleteReferenceScreens();
+            _referenceScreens.Clear();
             _validationRulePairs.Clear();
             NotifyChanged();
         }
@@ -151,10 +136,10 @@ namespace SoftMasking.Tests {
                     string.Format("Not all expected log records occured. Expected: {0}, occured: {1}",
                         _expectedLog.Count,
                         _lastExecutionLog.Count)));
-            else if (_lastExecutionScreens.Count != _referenceScreens.Count)
+            else if (_lastExecutionScreens.Count != _referenceScreens.count)
                 errors.Add(new AutomatedTestError(
                     string.Format("Expected {0} steps but {1} occured.", 
-                        _referenceScreens.Count, 
+                        _referenceScreens.count,
                         _lastExecutionScreens.Count)));
             else
                 for (int step = 0; step < _lastExecutionScreens.Count; ++step) {
@@ -206,9 +191,9 @@ namespace SoftMasking.Tests {
 
         public void Awake() {
         #if UNITY_EDITOR
-            LoadReferenceScreens();
+            _referenceScreens.Load(currentSceneRelativeDir);
         #else
-            RemoveObsoleteReferenceScreens();
+            _referenceScreens.RemoveObsoletes();
         #endif
             if (Application.isPlaying)
                 InjectLogHandler();
@@ -236,10 +221,6 @@ namespace SoftMasking.Tests {
                 pair.rule.RoundRect();
         }
 
-        void RemoveObsoleteReferenceScreens() {
-            _referenceScreens.RemoveAll(x => !x);
-        }
-
         void InjectLogHandler() {
             Debug.logger.logHandler = new LogHandler(_lastExecutionLog, Debug.logger.logHandler);
         }
@@ -249,60 +230,14 @@ namespace SoftMasking.Tests {
             if (injectedHandler != null)
                 Debug.logger.logHandler = injectedHandler.originalHandler;
         }
-                
-    #if UNITY_EDITOR
-        void LoadReferenceScreens() {
-            _referenceScreens.Clear();
-            foreach (var potentialPath in IterateScreenshotPaths()) {
-                var screen = AssetDatabase.LoadAssetAtPath<Texture2D>(potentialPath);
-                if (!screen)
-                    break;
-                _referenceScreens.Add(screen);
-            }
-        }
-
-        void DeleteReferenceScreens() {
-            foreach (var screenPath in IterateScreenshotPaths())
-                if (!AssetDatabase.DeleteAsset(screenPath))
-                    break;
-            _referenceScreens.Clear();
-        }
-               
-        IEnumerable<string> IterateScreenshotPaths() {
-            for (int i = 0;; ++i)
-                yield return GetScreenshotPath(i);
-        }
-    #endif
-
-        string GetScreenshotPath(int stepIndex) {
-            return Path.ChangeExtension(
-                Path.Combine(
-                    currentSceneReferenceDir,
-                    string.Format("{0:D2}", stepIndex)),
-                ScreenshotExt);
-        }
         
-        string currentSceneReferenceDir {
+        string currentSceneRelativeDir {
             get {
                 var currentScenePath = gameObject.scene.path;
-                var relativeScenePath =
-                    currentScenePath.StartsWith(TestScenesPath)
-                        ? currentScenePath.Substring(TestScenesPath.Length).Replace(".unity", "")
-                        : gameObject.scene.name;
-                return Path.Combine(ReferencePath, relativeScenePath);
+                return currentScenePath.StartsWith(TestScenesPath)
+                    ? currentScenePath.Substring(TestScenesPath.Length).Replace(".unity", "")
+                    : gameObject.scene.name;
             }
         }
-
-    #if UNITY_EDITOR
-        static void SetupScreenshotImportSettings(string screenshotPath) {
-            var importer = (TextureImporter)AssetImporter.GetAtPath(screenshotPath);
-            importer.npotScale = TextureImporterNPOTScale.None;
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
-            importer.textureType = TextureImporterType.Default;
-            importer.mipmapEnabled = false;
-            importer.isReadable = true;
-            importer.SaveAndReimport();
-        }
-    #endif
     }
 }
