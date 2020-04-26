@@ -21,8 +21,11 @@ namespace SoftMasking.Tests {
             yield return new WaitUntil(() => testsRunner.isFinished);
             foreach (var obj in activateAfterTest)
                 obj.SetActive(true);
+            UpdateStatus();
+        }
+
+        void UpdateStatus() {
             statusText.text = FormatStatus();
-            var isFail = testsRunner.testResults.Count(x => x.isFail) > 0;
             detailsRoot.SetActive(isFail);
             statusColorDisplay.color = isFail ? Color.red : Color.green;
             if (isFail) {
@@ -33,28 +36,29 @@ namespace SoftMasking.Tests {
         }
 
         string FormatStatus() {
-            var testsFailed = testsRunner.testResults.Count(x => x.isFail);
-            return testsFailed > 0
+            return isFail
                 ? "FAIL"
-                : string.Format("PASS ({0} tests runned)", testsRunner.testResults.Count);
+                : string.Format("PASS ({0} tests runned)", testResults.testCount);
         }
+
+        bool isFail { get { return testResults.isFail; } }
+        AutomatedTestResults testResults { get { return testsRunner.testResults; } }
 
         string FormatErrors() {
             var output = new StringBuilder();
-            foreach (var result in testsRunner.testResults)
-                if (result.isFail) {
-                    output.AppendFormat("{0}: FAIL", result.sceneName);
-                    output.AppendLine();
-                    foreach (var err in result.errors) {
-                        output.Append("  ");
-                        output.AppendLine(err.message);
-                    }
+            foreach (var result in testResults.failures) {
+                output.AppendFormat("{0}: FAIL", result.sceneName);
+                output.AppendLine();
+                foreach (var err in result.errors) {
+                    output.Append("  ");
+                    output.AppendLine(err.message);
                 }
+            }
             return output.ToString();
         }
 
         Texture DiffTexture() {
-            var firstFailed = testsRunner.testResults.FirstOrDefault(x => x.isFail);
+            var firstFailed = testResults.failures.First();
             var firstError = firstFailed != null ? firstFailed.errors.First() : null;
             return firstError != null ? firstError.diff : null;
         }
