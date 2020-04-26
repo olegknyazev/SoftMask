@@ -1093,7 +1093,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.09937265}
+  m_AnchoredPosition: {x: 0, y: 0.27713996}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1334635402
@@ -1563,7 +1563,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testsRunner: {fileID: 1617914400}
   activateAfterTest:
-  - {fileID: 1410188462}
+  - {fileID: 956619791}
   - {fileID: 308537441}
   statusText: {fileID: 1942896745}
   statusColorDisplay: {fileID: 1410188465}
@@ -2164,7 +2164,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 202379801}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9995487
+  m_Size: 0.8702516
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
