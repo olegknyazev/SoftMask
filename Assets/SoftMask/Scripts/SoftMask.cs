@@ -581,7 +581,7 @@ namespace SoftMasking {
                         var image = (Image)_graphic;
                         result.image = image;
                         result.sprite = image.sprite;
-                        result.spriteBorderMode = ToBorderMode(image.type);
+                        result.spriteBorderMode = BorderModeOf(image);
                         result.texture = image.sprite ? image.sprite.texture : null;
                     } else if (_graphic is RawImage) {
                         var rawImage = (RawImage)_graphic;
@@ -605,17 +605,13 @@ namespace SoftMasking {
             return result;
         }
 
-        BorderMode ToBorderMode(Image.Type imageType) {
-            switch (imageType) {
+        BorderMode BorderModeOf(Image image) {
+            switch (image.type) {
                 case Image.Type.Simple: return BorderMode.Simple;
                 case Image.Type.Sliced: return BorderMode.Sliced;
                 case Image.Type.Tiled: return BorderMode.Tiled;
                 default:
-                    // TODO should report this only once? 
-                    Debug.LogErrorFormat(
-                        this,
-                        "SoftMask doesn't support image type {0}. Image type Simple will be used.",
-                        imageType);
+                    _warningReporter.UnsupportedImageType(image);
                     return BorderMode.Simple;
             }
         }
@@ -1057,6 +1053,12 @@ namespace SoftMasking {
                     Debug.LogError("SoftMask doesn't support tight packed sprites", _owner);
                 if ((errors & Errors.AlphaSplitSprite) != 0)
                     Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", _owner);
+            }
+
+            public void UnsupportedImageType(Image image) {
+                Debug.LogErrorFormat(_owner,
+                    "SoftMask doesn't support image type {0}. Image type Simple will be used.",
+                    image.type);
             }
         }
     }
