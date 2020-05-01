@@ -67,10 +67,16 @@ namespace SoftMasking.Tests {
         }
 
         public YieldInstruction Proceed(float delaySeconds = 0f) {
-            var saveScreenshotCoroutine = StartCoroutine(ProcessImpl());
-            return WaitForDelayAfterStep(delaySeconds, saveScreenshotCoroutine);
+            return StartCoroutine(WaitAll(
+                StartCoroutine(ProcessImpl()),
+                new WaitForSeconds(speedUp ? 0 : delaySeconds)));
         }
-        
+       
+        IEnumerator WaitAll(params YieldInstruction[] instructions) {
+            foreach (var i in instructions)
+                yield return i;
+        }
+ 
         IEnumerator ProcessImpl() {
             if (!_updatedAtLeastOnce) { // TODO it would be clearer to refer ResolutionUtility's coroutine here?
                 // Seems like 2019.1 needs at least two frames to adjust canvas after a game view size change
@@ -84,12 +90,6 @@ namespace SoftMasking.Tests {
                 _lastExecutionScreens.Add(texture);
                 NotifyChanged();
             }
-        }
-
-        YieldInstruction WaitForDelayAfterStep(float delaySeconds, Coroutine stepCoroutine) {
-            return delaySeconds > 0f && !speedUp
-                ? new WaitForSeconds(delaySeconds)
-                : (YieldInstruction)stepCoroutine;
         }
 
         public YieldInstruction ProceedAnimation(Animator animator, float normalizedTime) {
