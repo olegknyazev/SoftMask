@@ -75,7 +75,6 @@ namespace SoftMasking {
         MaterialReplacements _materials;
         MaterialParameters _parameters;
         WarningReporter _warningReporter;
-        Sprite _lastUsedSprite;
         Rect _lastMaskRect;
         bool _maskingWasEnabled;
         bool _destroyed;
@@ -1017,11 +1016,15 @@ namespace SoftMasking {
             UnityEngine.Object _owner;
             Texture _lastReadTexture;
             Sprite _lastUsedSprite;
+            Sprite _lastUsedImage; // TODO bad name
+            Image.Type _lastUsedImageType;
         
             public WarningReporter(UnityEngine.Object owner) {
                 _owner = owner;
                 _lastReadTexture = null;
                 _lastUsedSprite = null;
+                _lastUsedImage = null;
+                _lastUsedImageType = Image.Type.Simple;
             }
 
             public void TextureReadError(MaterialParameters.SampleMaskResult sampleResult, Texture texture) {
@@ -1056,6 +1059,10 @@ namespace SoftMasking {
             }
 
             public void UnsupportedImageType(Image image) {
+                if (_lastUsedImage == image.sprite && _lastUsedImageType == image.type)
+                    return;
+                _lastUsedImage = image.sprite;
+                _lastUsedImageType = image.type;
                 Debug.LogErrorFormat(_owner,
                     "SoftMask doesn't support image type {0}. Image type Simple will be used.",
                     image.type);
