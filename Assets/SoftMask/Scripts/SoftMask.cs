@@ -594,7 +594,7 @@ namespace SoftMasking {
                 case MaskSource.Sprite:
                     result.sprite = _sprite;
                     result.spriteBorderMode = _spriteBorderMode;
-                    result.texture = _sprite ? _sprite.texture : null; // TODO make SourceParameters immutable and expose specific ctors?
+                    result.texture = _sprite ? _sprite.texture : null;
                     break;
                 case MaskSource.Texture:
                     result.texture = _texture;
@@ -642,11 +642,6 @@ namespace SoftMasking {
                 CalculateSolidFill();
                 return;
             }
-            // TODO why check here, it's already checked in the calling function?
-            //if (!sprite) {
-            //    CalculateSolidFill();
-            //    return;
-            //}
             FillCommonParameters();
             var inner = DataUtility.GetInnerUV(sprite);
             var outer = DataUtility.GetOuterUV(sprite);
