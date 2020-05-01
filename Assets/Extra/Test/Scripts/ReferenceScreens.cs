@@ -20,8 +20,18 @@ namespace SoftMasking.Tests {
 
     #if UNITY_EDITOR
         public void Load(string sceneRelativePath) {
-            _sceneRelativePath = sceneRelativePath;
+            _sceneRelativePath = AppendVersionSpecificFolderIfPresent(sceneRelativePath);
             LoadReferenceScreens();
+        }
+
+        string AppendVersionSpecificFolderIfPresent(string sceneRelativePath) {
+        #if UNITY_2019_1_OR_NEWER // Currently we support only 2019+ specific screens
+            var relativeScenePath2019 = Path.Combine(sceneRelativePath, "2019");
+            var scenePath2019 = Path.Combine(ReferenceScreensFolder, relativeScenePath2019);
+            if (!string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(scenePath2019)))
+                return relativeScenePath2019;
+        #endif
+            return sceneRelativePath;
         }
         
         void LoadReferenceScreens() {
@@ -73,7 +83,6 @@ namespace SoftMasking.Tests {
         public void Clear() {
             DeleteReferenceScreens();
         }
-    #endif
 
         string GetScreenshotPath(int stepIndex) {
             return Path.ChangeExtension(
@@ -86,6 +95,7 @@ namespace SoftMasking.Tests {
         string currentSceneReferenceDir {
             get { return Path.Combine(ReferenceScreensFolder, _sceneRelativePath); }
         }
+    #endif
         
         public void RemoveObsoletes() {
             _referenceScreens.RemoveAll(x => !x);
