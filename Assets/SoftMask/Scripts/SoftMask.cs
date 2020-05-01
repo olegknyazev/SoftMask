@@ -601,7 +601,7 @@ namespace SoftMasking {
                     result.textureUVRect = _textureUVRect;
                     break;
                 default:
-                    Debug.LogErrorFormat(this, "Unknown MaskSource: {0}", _source);
+                    Debug.LogAssertionFormat(this, "Unknown MaskSource: {0}", _source);
                     break;
             }
             return result;
@@ -890,7 +890,7 @@ namespace SoftMasking {
                     case BorderMode.Sliced: return MapBorder(localPos, repeat: false);
                     case BorderMode.Tiled: return MapBorder(localPos, repeat: true);
                     default:
-                        Debug.LogError("Unknown BorderMode");
+                        Debug.LogAssertion("Unknown BorderMode");
                         return MapSimple(localPos);
                 }
             }
