@@ -631,12 +631,9 @@ namespace SoftMasking {
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
-            var lastSprite = _lastUsedSprite; // it's used only for reporting
-            _lastUsedSprite = sprite;
             var spriteErrors = Diagnostics.CheckSprite(sprite);
             if (spriteErrors != Errors.NoError) {
-                if (lastSprite != sprite)
-                    WarnSpriteErrors(spriteErrors);
+                _warningReporter.SpriteErrors(spriteErrors, sprite);
                 CalculateSolidFill();
                 return;
             }
@@ -721,12 +718,6 @@ namespace SoftMasking {
                 Debug.LogWarning("SoftMask may not work because its defaultShader is not set", this);
         }
 
-        void WarnSpriteErrors(Errors errors) {
-            if ((errors & Errors.TightPackedSprite) != 0)
-                Debug.LogError("SoftMask doesn't support tight packed sprites", this);
-            if ((errors & Errors.AlphaSplitSprite) != 0)
-                Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", this);
-        }
 
         void Set<T>(ref T field, T value) {
             field = value;
@@ -1029,10 +1020,12 @@ namespace SoftMasking {
         struct WarningReporter {
             UnityEngine.Object _owner;
             Texture _lastReadTexture;
+            Sprite _lastUsedSprite;
         
             public WarningReporter(UnityEngine.Object owner) {
                 _owner = owner;
                 _lastReadTexture = null;
+                _lastUsedSprite = null;
             }
 
             public void TextureReadError(MaterialParameters.SampleMaskResult sampleResult, Texture texture) {
@@ -1055,7 +1048,16 @@ namespace SoftMasking {
                         break;
                 }
             }
-    
+                
+            public void SpriteErrors(Errors errors, Sprite sprite) {
+                if (_lastUsedSprite == sprite)
+                    return;
+                _lastUsedSprite = sprite;
+                if ((errors & Errors.TightPackedSprite) != 0)
+                    Debug.LogError("SoftMask doesn't support tight packed sprites", _owner);
+                if ((errors & Errors.AlphaSplitSprite) != 0)
+                    Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", _owner);
+            }
         }
     }
 }
