@@ -227,13 +227,13 @@ namespace SoftMasking.Tests {
         }
 
         void InjectLogHandler() {
-            Debug.unityLogger.logHandler = new LogHandler(_lastExecutionLog, Debug.unityLogger.logHandler);
+            Debug.logger.logHandler = new LogHandler(_lastExecutionLog, Debug.logger.logHandler);
         }
 
         void EjectLogHandler() {
-            var injectedHandler = Debug.unityLogger.logHandler as LogHandler;
+            var injectedHandler = Debug.logger.logHandler as LogHandler;
             if (injectedHandler != null)
-                Debug.unityLogger.logHandler = injectedHandler.originalHandler;
+                Debug.logger.logHandler = injectedHandler.originalHandler;
         }
 
         
