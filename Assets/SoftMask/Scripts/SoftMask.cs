@@ -74,8 +74,8 @@ namespace SoftMasking {
 
         MaterialReplacements _materials;
         MaterialParameters _parameters;
+        WarningReporter _warningReporter;
         Sprite _lastUsedSprite;
-        Texture _lastSampledTexture;
         Rect _lastMaskRect;
         bool _maskingWasEnabled;
         bool _destroyed;
@@ -92,6 +92,7 @@ namespace SoftMasking {
                     MaterialReplacer.globalReplacers,
                     new MaterialReplacerImpl(this));
             _materials = new MaterialReplacements(materialReplacer, m => _parameters.Apply(m));
+            _warningReporter = new WarningReporter(this);
         }
 
         /// <summary>
@@ -350,11 +351,8 @@ namespace SoftMasking {
             if (!isUsingRaycastFiltering) return true;
             float mask;
             var sampleResult = _parameters.SampleMask(localPos, out mask);
-            var lastTexture = _lastSampledTexture;
-            _lastSampledTexture = _parameters.texture;
             if (sampleResult != MaterialParameters.SampleMaskResult.Success) {
-                if (lastTexture != _parameters.texture)
-                    WarnTextureReadError(sampleResult);
+                _warningReporter.TextureReadError(sampleResult, _parameters.texture);
                 return true;
             }
             if (_invertMask)
@@ -730,24 +728,6 @@ namespace SoftMasking {
                 Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", this);
         }
 
-        void WarnTextureReadError(MaterialParameters.SampleMaskResult sampleResult) {
-            Assert.AreNotEqual(MaterialParameters.SampleMaskResult.Success, sampleResult);
-            switch (sampleResult) {
-                case MaterialParameters.SampleMaskResult.NonReadable:
-                    Debug.LogErrorFormat(this,
-                        "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
-                        + "it's not readable. You can make the texture readable in the Texture Import Settings.",
-                        _parameters.activeTexture.name);
-                    break;
-                case MaterialParameters.SampleMaskResult.NonTexture2D:
-                    Debug.LogErrorFormat(this,
-                        "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
-                        + "it's not a Texture2D. Raycast Threshold may be used only with regular 2D textures.",
-                        _parameters.activeTexture.name);
-                    break;
-            }
-        }
-
         void Set<T>(ref T field, T value) {
             field = value;
             _dirty = true;
@@ -1044,6 +1024,38 @@ namespace SoftMasking {
                     || type == Image.Type.Sliced
                     || type == Image.Type.Tiled;
             }
+        }
+
+        struct WarningReporter {
+            UnityEngine.Object _owner;
+            Texture _lastReadTexture;
+        
+            public WarningReporter(UnityEngine.Object owner) {
+                _owner = owner;
+                _lastReadTexture = null;
+            }
+
+            public void TextureReadError(MaterialParameters.SampleMaskResult sampleResult, Texture texture) {
+                Assert.AreNotEqual(MaterialParameters.SampleMaskResult.Success, sampleResult);
+                if (_lastReadTexture == texture)
+                    return;
+                _lastReadTexture = texture;
+                switch (sampleResult) {
+                    case MaterialParameters.SampleMaskResult.NonReadable:
+                        Debug.LogErrorFormat(_owner,
+                            "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
+                            + "it's not readable. You can make the texture readable in the Texture Import Settings.",
+                            texture.name);
+                        break;
+                    case MaterialParameters.SampleMaskResult.NonTexture2D:
+                        Debug.LogErrorFormat(_owner,
+                            "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
+                            + "it's not a Texture2D. Raycast Threshold may be used only with regular 2D textures.",
+                            texture.name);
+                        break;
+                }
+            }
+    
         }
     }
 }
