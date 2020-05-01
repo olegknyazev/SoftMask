@@ -17,6 +17,7 @@ namespace SoftMasking.Tests {
         public string testScenesNamePattern = "^Test.+$";
         public string[] standaloneSkipScenes = new string[0];
         public bool speedRun = false;
+        public bool stopOnFirstFail = true;
         
         public AutomatedTestResults testResults { get; private set; }
         public bool isFinished { get { return testResults != null; } }
@@ -33,8 +34,9 @@ namespace SoftMasking.Tests {
                     var testResult = new Ref<AutomatedTestResult>();
                     yield return LoadAndTestScene(sceneKey, testResult);
                     testResultList.Add(testResult.value);
-                    if (testResult.value.isFail)
-                        break;
+                    if (stopOnFirstFail)
+                        if (testResult.value.isFail)
+                            break;
                 }
             } finally {
                 ResolutionUtility.RevertTestResolution();
