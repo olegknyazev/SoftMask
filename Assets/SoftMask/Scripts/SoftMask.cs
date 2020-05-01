@@ -580,10 +580,11 @@ namespace SoftMasking {
             switch (_source) {
                 case MaskSource.Graphic:
                     if (_graphic is Image) {
-                        result.image = (Image)_graphic;
-                        result.sprite = result.image.sprite;
-                        result.spriteBorderMode = ToBorderMode(result.image.type);
-                        result.texture = result.sprite ? result.sprite.texture : null;
+                        var image = (Image)_graphic;
+                        result.image = image;
+                        result.sprite = image.sprite;
+                        result.spriteBorderMode = ToBorderMode(image.type);
+                        result.texture = image.sprite ? image.sprite.texture : null;
                     } else if (_graphic is RawImage) {
                         var rawImage = (RawImage)_graphic;
                         result.texture = rawImage.texture;
@@ -593,7 +594,7 @@ namespace SoftMasking {
                 case MaskSource.Sprite:
                     result.sprite = _sprite;
                     result.spriteBorderMode = _spriteBorderMode;
-                    result.texture = result.sprite ? result.sprite.texture : null; // TODO make SourceParameters immutable and expose specific ctors?
+                    result.texture = _sprite ? _sprite.texture : null; // TODO make SourceParameters immutable and expose specific ctors?
                     break;
                 case MaskSource.Texture:
                     result.texture = _texture;
@@ -612,6 +613,7 @@ namespace SoftMasking {
                 case Image.Type.Sliced: return BorderMode.Sliced;
                 case Image.Type.Tiled: return BorderMode.Tiled;
                 default:
+                    // TODO should report this only once? 
                     Debug.LogErrorFormat(
                         this,
                         "SoftMask doesn't support image type {0}. Image type Simple will be used.",
@@ -631,7 +633,7 @@ namespace SoftMasking {
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
-            var lastSprite = _lastUsedSprite;
+            var lastSprite = _lastUsedSprite; // it's used only for reporting
             _lastUsedSprite = sprite;
             var spriteErrors = Diagnostics.CheckSprite(sprite);
             if (spriteErrors != Errors.NoError) {
@@ -640,10 +642,11 @@ namespace SoftMasking {
                 CalculateSolidFill();
                 return;
             }
-            if (!sprite) {
-                CalculateSolidFill();
-                return;
-            }
+            // TODO why check here, it's already checked in the calling function?
+            //if (!sprite) {
+            //    CalculateSolidFill();
+            //    return;
+            //}
             FillCommonParameters();
             var inner = DataUtility.GetInnerUV(sprite);
             var outer = DataUtility.GetOuterUV(sprite);
