@@ -72,6 +72,11 @@ namespace SoftMasking.Tests {
         }
         
         IEnumerator ProcessImpl() {
+            if (!_updatedAtLeastOnce) { // TODO it would be clearer to refer ResolutionUtility's coroutine here?
+                // Seems like 2019.1 needs at least two frames to adjust canvas after a game view size change
+                yield return null;
+                yield return null;
+            }
             yield return new WaitForEndOfFrame();
             if (!isFinished) {
                 var texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
@@ -222,13 +227,13 @@ namespace SoftMasking.Tests {
         }
 
         void InjectLogHandler() {
-            Debug.logger.logHandler = new LogHandler(_lastExecutionLog, Debug.logger.logHandler);
+            Debug.unityLogger.logHandler = new LogHandler(_lastExecutionLog, Debug.unityLogger.logHandler);
         }
 
         void EjectLogHandler() {
-            var injectedHandler = Debug.logger.logHandler as LogHandler;
+            var injectedHandler = Debug.unityLogger.logHandler as LogHandler;
             if (injectedHandler != null)
-                Debug.logger.logHandler = injectedHandler.originalHandler;
+                Debug.unityLogger.logHandler = injectedHandler.originalHandler;
         }
 
         string currentSceneName {

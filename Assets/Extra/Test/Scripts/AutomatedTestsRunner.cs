@@ -100,6 +100,8 @@ namespace SoftMasking.Tests {
         }
 
         IEnumerator ActivateScene(Scene scene) {
+            while (!scene.isLoaded)
+                yield return null;
             while (!SceneManager.SetActiveScene(scene))
                 yield return null;
             Assert.IsTrue(SceneManager.GetActiveScene() == scene);
