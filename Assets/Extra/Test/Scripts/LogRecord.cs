@@ -1,31 +1,35 @@
-﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System;
-using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace SoftMasking.Tests {
-    public class LogRecord {
-        public readonly string message;
-        public readonly LogType logType;
-        public readonly UnityEngine.Object context;
+    [Serializable] public class LogRecord {
+        [SerializeField] private string _message;
+        [SerializeField] private LogType _logType;
+        [SerializeField] private string _context;
 
         public LogRecord(string message, LogType logType, UnityEngine.Object context) {
-            this.message = message;
-            this.logType = logType;
-            this.context = context;
+            _message = message;
+            _logType = logType;
+            _context = context ? context.name : null;
         }
+
+        public string message { get { return _message; } }
+        public LogType logType { get { return _logType; } }
+        public string context { get { return _context; } }
     }
 
     [Serializable] public class ExpectedLogRecord {
         public string messagePattern;
         public LogType logType;
-        public UnityEngine.Object context;
+        public string context;
 
         public ExpectedLogRecord(string message, LogType logType, UnityEngine.Object context) {
             this.messagePattern = message;
             this.logType = logType;
-            this.context = context;
+            this.context = context ? context.name : null;
         }
             
         public bool Match(LogRecord record) {
