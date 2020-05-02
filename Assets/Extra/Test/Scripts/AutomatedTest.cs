@@ -68,16 +68,16 @@ namespace SoftMasking.Tests {
 
         public YieldInstruction Proceed(float delaySeconds = 0f) {
             return StartCoroutine(WaitAll(
-                StartCoroutine(ProcessImpl()),
+                StartCoroutine(CaptureScreenshot()),
                 new WaitForSeconds(speedUp ? 0 : delaySeconds)));
         }
        
-        IEnumerator WaitAll(params YieldInstruction[] instructions) {
+        static IEnumerator WaitAll(params YieldInstruction[] instructions) {
             foreach (var i in instructions)
                 yield return i;
         }
  
-        IEnumerator ProcessImpl() {
+        IEnumerator CaptureScreenshot() {
             if (!_updatedAtLeastOnce) { // TODO it would be clearer to refer ResolutionUtility's coroutine here?
                 // Seems like 2019.1 needs at least two frames to adjust canvas after a game view size change
                 yield return null;
@@ -93,10 +93,10 @@ namespace SoftMasking.Tests {
         }
 
         public YieldInstruction ProceedAnimation(Animator animator, float normalizedTime) {
-            return StartCoroutine(ProcessAnimation(animator, normalizedTime));
+            return StartCoroutine(PlayAnimatorUpTo(animator, normalizedTime));
         }
         
-        IEnumerator ProcessAnimation(Animator animator, float normalizedTime) {
+        IEnumerator PlayAnimatorUpTo(Animator animator, float normalizedTime) {
             if (!_updatedAtLeastOnce)
                 yield return null; // to prevent execution before Update
             if (!speedUp)
@@ -104,10 +104,10 @@ namespace SoftMasking.Tests {
                     yield return null;
             var state = animator.GetCurrentAnimatorStateInfo(0);
             animator.Play(state.shortNameHash, 0, normalizedTime);            
-            yield return StartCoroutine(ProcessImpl());
+            yield return StartCoroutine(CaptureScreenshot());
         }
         
-        float GetAnimationTime(Animator animator) {
+        static float GetAnimationTime(Animator animator) {
             return animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
         }
 
@@ -236,7 +236,6 @@ namespace SoftMasking.Tests {
                 Debug.logger.logHandler = injectedHandler.originalHandler;
         }
 
-        
         string currentSceneRelativeDir {
             get {
                 var currentScenePath = gameObject.scene.path;
