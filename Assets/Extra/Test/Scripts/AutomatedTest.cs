@@ -6,6 +6,16 @@ using System;
 using UnityEngine;
 
 namespace SoftMasking.Tests {
+    [Serializable] public class CapturedStepState {
+        [SerializeField] Texture2D _texture;
+
+        public CapturedStepState(Texture2D texture) {
+            _texture = texture;
+        }
+
+        public Texture2D texture { get { return _texture; } }
+    }
+
     [ExecuteInEditMode]
     public class AutomatedTest : MonoBehaviour {
         static readonly string TestScenesPath = "Assets/Extra/Test/Scenes/";
@@ -13,8 +23,8 @@ namespace SoftMasking.Tests {
         public bool speedUp = false;
 
         [SerializeField] List<ScreenValidationRuleKeyValuePair> _validationRulePairs = new List<ScreenValidationRuleKeyValuePair>();
-        [SerializeField] List<Texture2D> _lastExecutionScreens = new List<Texture2D>();
-        [SerializeField] ReferenceScreens _referenceScreens = new ReferenceScreens();
+        [SerializeField] List<CapturedStepState> _lastExecutionSteps = new List<CapturedStepState>();
+        [SerializeField] ReferenceSteps _referenceSteps = new ReferenceSteps();
         AutomatedTestResult _result = null;
         bool _updatedAtLeastOnce = false;
         List<ExpectedLogRecord> _expectedLog = new List<ExpectedLogRecord>();
@@ -22,7 +32,7 @@ namespace SoftMasking.Tests {
         AutomatedTestError _explicitFail;
 
         public int referenceStepsCount {
-            get { return _referenceScreens.count; }
+            get { return _referenceSteps.count; }
         }
         public IEnumerable<ScreenValidationRule> validationRules {
             get { return _validationRulePairs.Select(x => x.rule); }
@@ -31,10 +41,10 @@ namespace SoftMasking.Tests {
             get { return referenceStepsCount == 0; }
         }
         public int lastExecutionStepsCount {
-            get { return _lastExecutionScreens.Count; }
+            get { return _lastExecutionSteps.Count; }
         }
         public bool isLastExecutionEmpty {
-            get { return _lastExecutionScreens.Count == 0; }
+            get { return _lastExecutionSteps.Count == 0; }
         }
         public bool isFinished {
             get { return _result != null; }
@@ -47,12 +57,12 @@ namespace SoftMasking.Tests {
 
     #if UNITY_EDITOR
         public void SaveLastRecordAsExample() {
-            _referenceScreens.ReplaceBy(_lastExecutionScreens);
+            _referenceSteps.ReplaceBy(_lastExecutionSteps);
             NotifyChanged();
         }
 
         public void DeleteReference() {
-            _referenceScreens.Clear();
+            _referenceSteps.Clear();
             _validationRulePairs.Clear();
             NotifyChanged();
         }
@@ -68,7 +78,7 @@ namespace SoftMasking.Tests {
 
         public YieldInstruction Proceed(float delaySeconds = 0f) {
             return StartCoroutine(WaitAll(
-                StartCoroutine(CaptureScreenshot()),
+                StartCoroutine(CaptureStep()),
                 new WaitForSeconds(speedUp ? 0 : delaySeconds)));
         }
        
@@ -77,7 +87,7 @@ namespace SoftMasking.Tests {
                 yield return i;
         }
  
-        IEnumerator CaptureScreenshot() {
+        IEnumerator CaptureStep() {
             if (!_updatedAtLeastOnce) { // TODO it would be clearer to refer ResolutionUtility's coroutine here?
                 // Seems like 2019.1 needs at least two frames to adjust canvas after a game view size change
                 yield return null;
@@ -87,7 +97,7 @@ namespace SoftMasking.Tests {
             if (!isFinished) {
                 var texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
                 texture.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0, false);
-                _lastExecutionScreens.Add(texture);
+                _lastExecutionSteps.Add(new CapturedStepState(texture));
                 NotifyChanged();
             }
         }
@@ -104,7 +114,7 @@ namespace SoftMasking.Tests {
                     yield return null;
             var state = animator.GetCurrentAnimatorStateInfo(0);
             animator.Play(state.shortNameHash, 0, normalizedTime);            
-            yield return StartCoroutine(CaptureScreenshot());
+            yield return StartCoroutine(CaptureStep());
         }
         
         static float GetAnimationTime(Animator animator) {
@@ -141,22 +151,24 @@ namespace SoftMasking.Tests {
                     string.Format("Not all expected log records occured. Expected: {0}, occured: {1}",
                         _expectedLog.Count,
                         _lastExecutionLog.Count)));
-            else if (_lastExecutionScreens.Count != _referenceScreens.count)
+            else if (_lastExecutionSteps.Count != _referenceSteps.count)
                 errors.Add(new AutomatedTestError(
                     string.Format("Expected {0} steps but {1} occured.", 
-                        _referenceScreens.count,
-                        _lastExecutionScreens.Count)));
+                        _referenceSteps.count,
+                        _lastExecutionSteps.Count)));
             else
-                for (int step = 0; step < _lastExecutionScreens.Count; ++step) {
+                for (int step = 0; step < _lastExecutionSteps.Count; ++step) {
                     var validator = ValidationRuleForStep(step);
-                    if (!validator.Validate(_referenceScreens[step], _lastExecutionScreens[step])) {
-                        File.WriteAllBytes("actual.png", _lastExecutionScreens[step].EncodeToPNG());
-                        File.WriteAllBytes("ref.png", _referenceScreens[step].EncodeToPNG());
-                        File.WriteAllBytes("diff.png", validator.Diff(_referenceScreens[step], _lastExecutionScreens[step]).EncodeToPNG());
+                    var referenceStep = _referenceSteps[step];
+                    var lastExecutionStep = _lastExecutionSteps[step];
+                    if (!validator.Validate(referenceStep.texture, lastExecutionStep.texture)) {
+                        File.WriteAllBytes("actual.png", lastExecutionStep.texture.EncodeToPNG());
+                        File.WriteAllBytes("ref.png", referenceStep.texture.EncodeToPNG());
+                        File.WriteAllBytes("diff.png", validator.Diff(referenceStep.texture, lastExecutionStep.texture).EncodeToPNG());
                         errors.Add(new AutomatedTestError(
                             string.Format("Screenshots differ at step {0}.", step), 
-                            step, 
-                            validator.Diff(_referenceScreens[step], _lastExecutionScreens[step])));
+                            step,
+                            validator.Diff(referenceStep.texture, lastExecutionStep.texture)));
                         break;
                     }
                 }
@@ -196,7 +208,7 @@ namespace SoftMasking.Tests {
 
         public void Awake() {
         #if UNITY_EDITOR
-            _referenceScreens.Load(currentSceneRelativeDir);
+            _referenceSteps.Load(currentSceneRelativeDir);
         #else
             _referenceScreens.RemoveObsoletes();
         #endif
@@ -205,7 +217,7 @@ namespace SoftMasking.Tests {
         }
 
         public void Start() {
-            _lastExecutionScreens.Clear();
+            _lastExecutionSteps.Clear();
             if (Application.isPlaying)
                 ResolutionUtility.SetTestResolution();
         }

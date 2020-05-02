@@ -8,15 +8,15 @@ using UnityEditor;
 
 namespace SoftMasking.Tests {
     [Serializable]
-    public class ReferenceScreens {
+    public class ReferenceSteps {
         static readonly string ReferenceScreensFolder = "Assets/Extra/Test/Scenes/ReferenceScreens";
         static readonly string ScreenshotExt = ".png";
 
-        [SerializeField] List<Texture2D> _referenceScreens = new List<Texture2D>();
+        [SerializeField] List<CapturedStepState> _steps = new List<CapturedStepState>();
         [SerializeField] string _sceneRelativePath;
 
-        public int count { get { return _referenceScreens.Count; } }
-        public Texture2D this[int index] { get { return _referenceScreens[index]; } }
+        public int count { get { return _steps.Count; } }
+        public CapturedStepState this[int index] { get { return _steps[index]; } }
 
     #if UNITY_EDITOR
         public void Load(string sceneRelativePath) {
@@ -38,26 +38,26 @@ namespace SoftMasking.Tests {
         }
         
         void LoadReferenceScreens() {
-            _referenceScreens.Clear();
+            _steps.Clear();
             foreach (var potentialPath in IterateScreenshotPaths()) {
                 var screen = AssetDatabase.LoadAssetAtPath<Texture2D>(potentialPath);
                 if (!screen)
                     break;
-                _referenceScreens.Add(screen);
+                _steps.Add(new CapturedStepState(screen));
             }
         }
 
-        public void ReplaceBy(List<Texture2D> newScreens) {
+        public void ReplaceBy(List<CapturedStepState> newSteps) {
             DeleteReferenceScreens();
             if (!Directory.Exists(currentSceneReferenceDir))
                 Directory.CreateDirectory(currentSceneReferenceDir);
-            for (int i = 0; i < newScreens.Count; ++i) {
-                var screenshot = newScreens[i];
+            for (int i = 0; i < newSteps.Count; ++i) {
+                var screenshot = newSteps[i].texture;
                 var screenshotPath = GetScreenshotPath(i);
                 File.WriteAllBytes(screenshotPath, screenshot.EncodeToPNG());
                 AssetDatabase.ImportAsset(screenshotPath);
                 SetupScreenshotImportSettings(screenshotPath);
-                _referenceScreens.Add(screenshot);
+                _steps.Add(newSteps[i]);
             }
         }
         
@@ -65,7 +65,7 @@ namespace SoftMasking.Tests {
             foreach (var screenPath in IterateScreenshotPaths())
                 if (!AssetDatabase.DeleteAsset(screenPath))
                     break;
-            _referenceScreens.Clear();
+            _steps.Clear();
         }
            
         static void SetupScreenshotImportSettings(string screenshotPath) {
@@ -101,7 +101,7 @@ namespace SoftMasking.Tests {
     #endif
         
         public void RemoveObsoletes() {
-            _referenceScreens.RemoveAll(x => !x);
+            _steps.RemoveAll(x => !x.texture);
         }
     }
 }
