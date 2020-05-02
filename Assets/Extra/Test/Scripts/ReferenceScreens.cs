@@ -21,6 +21,9 @@ namespace SoftMasking.Tests {
     #if UNITY_EDITOR
         public void Load(string sceneRelativePath) {
             _sceneRelativePath = AppendVersionSpecificFolderIfPresent(sceneRelativePath);
+            // Despite _referenceScreens are serialized, we still need to re-load them
+            // each start. Otherwise we will be not able to transfer a new reference screen
+            // sequence from play mode to edit mode.
             LoadReferenceScreens();
         }
 
