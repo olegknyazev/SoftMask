@@ -6,12 +6,10 @@ namespace SoftMasking.Tests {
     public class TestEditorErrors : MonoBehaviour {
         public AutomatedTest automatedTest;
         public GameObject objectToActivate;
-        public List<ExpectedLogRecord> expectedLog = new List<ExpectedLogRecord>();
 
         public IEnumerator Start() {
-            foreach (var record in expectedLog)
-                automatedTest.ExpectLog(record);
             yield return null;
+            yield return automatedTest.Proceed();
             objectToActivate.SetActive(true);
             yield return null;
             yield return automatedTest.Proceed();

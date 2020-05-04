@@ -1,0 +1,1 @@
+Mask with Unreadable Texture :: Error :: Raycast Threshold greater than 0 can't be used on Soft Mask with texture 'Rotate' because it's not readable. You can make the texture readable in the Texture Import Settings.
