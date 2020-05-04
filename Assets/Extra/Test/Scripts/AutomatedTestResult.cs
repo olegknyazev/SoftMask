@@ -21,11 +21,13 @@ namespace SoftMasking.Tests {
     }
 
     public class AutomatedTestResult {
-        List<AutomatedTestError> _errors;
+        List<AutomatedTestError> _errors = new List<AutomatedTestError>();
 
-        public AutomatedTestResult(string sceneName, IEnumerable<AutomatedTestError> errors) {
+        // TODO there is always no more than one error
+        public AutomatedTestResult(string sceneName, AutomatedTestError error) {
             this.sceneName = sceneName;
-            _errors = new List<AutomatedTestError>(errors);
+            if (error != null)
+                _errors.Add(error);
         }
 
         public string sceneName { get; private set; }

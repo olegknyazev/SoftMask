@@ -68,19 +68,19 @@ namespace SoftMasking.Tests {
             return string.Join("\n", log.Select(x => x.ToString()).ToArray());
         }
 
-        public static void Diff(
-                IEnumerable<LogRecord> left,
-                IEnumerable<LogRecord> right,
-                List<LogRecord> missingInLeft,
-                List<LogRecord> missingInRight) {
-            missingInLeft.Clear();
-            missingInRight.Clear();
-            foreach (var l in left)
-                if (!right.Contains(l))
-                    missingInRight.Add(l);
-            foreach (var r in right)
-                if (!left.Contains(r))
-                    missingInLeft.Add(r);
+        public struct DiffResult {
+            public readonly List<LogRecord> missing;
+            public readonly List<LogRecord> extra;
+            public DiffResult(IEnumerable<LogRecord> missing, IEnumerable<LogRecord> extra) {
+                this.missing = missing.ToList();
+                this.extra = extra.ToList();
+            }
+        }
+        
+        public static DiffResult Diff(IEnumerable<LogRecord> expected, IEnumerable<LogRecord> actual) {
+            return new DiffResult(
+                expected.Where(x => !actual.Contains(x)),
+                actual.Where(x => !expected.Contains(x)));
         }
     }
 }

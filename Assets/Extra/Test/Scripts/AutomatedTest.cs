@@ -119,49 +119,62 @@ namespace SoftMasking.Tests {
         }
         
         AutomatedTestResult Validate() {
-            var errors = new List<AutomatedTestError>();
+            return new AutomatedTestResult(currentSceneRelativeDir, ValidateImpl());
+        }
+
+        AutomatedTestError ValidateImpl() {
             if (_explicitFail != null)
-                errors.Add(_explicitFail);
+                return _explicitFail;
             else if (_lastExecutionSteps.Count != _referenceSteps.count)
-                errors.Add(new AutomatedTestError(
+                return new AutomatedTestError(
                     string.Format("Expected {0} steps but {1} occured.", 
                         _referenceSteps.count,
-                        _lastExecutionSteps.Count)));
+                        _lastExecutionSteps.Count));
             else {
-                var extraLog = new List<LogRecord>();
-                var missingLog = new List<LogRecord>();
                 for (int step = 0; step < _lastExecutionSteps.Count; ++step) {
-                    LogRecords.Diff(_referenceSteps[step].logRecords, _lastExecutionSteps[step].logRecords, extraLog, missingLog);
-                    if (extraLog.Count > 0) {
-                        errors.Add(new AutomatedTestError(
-                            string.Format("{0} unexpected log messages at step {1}. First unexpected: {2}",
-                                extraLog.Count, step, extraLog[0]),
-                            step));
-                        break;
-                    }
-                    if (missingLog.Count > 0) {
-                        errors.Add(new AutomatedTestError(
-                            string.Format("{0} expected log messages are missing at step {1}. First missing: {2}",
-                                missingLog.Count, step, missingLog[0]),
-                            step));
-                        break;
-                    }
-                    var validator = ValidationRuleForStep(step);
-                    var referenceStep = _referenceSteps[step];
-                    var lastExecutionStep = _lastExecutionSteps[step];
-                    if (!validator.Validate(referenceStep.texture, lastExecutionStep.texture)) {
-                        File.WriteAllBytes("actual.png", lastExecutionStep.texture.EncodeToPNG());
-                        File.WriteAllBytes("ref.png", referenceStep.texture.EncodeToPNG());
-                        File.WriteAllBytes("diff.png", validator.Diff(referenceStep.texture, lastExecutionStep.texture).EncodeToPNG());
-                        errors.Add(new AutomatedTestError(
-                            string.Format("Screenshots differ at step {0}.", step), 
-                            step,
-                            validator.Diff(referenceStep.texture, lastExecutionStep.texture)));
-                        break;
-                    }
+                    var logError = ValidateLog(step);
+                    if (logError != null)
+                        return logError;
+                    var screenError = ValidateScreen(step);
+                    if (screenError != null)
+                        return screenError;
                 }
             }
-            return new AutomatedTestResult(currentSceneRelativeDir, errors);
+            return null;
+        }
+
+        AutomatedTestError ValidateLog(int step) {
+            var expected = _referenceSteps[step];
+            var actual = _lastExecutionSteps[step];
+            var diff = LogRecords.Diff(expected.logRecords, actual.logRecords);
+            if (diff.extra.Count > 0)
+                return new AutomatedTestError(
+                    string.Format("{0} unexpected log message(s) at step {1}. First unexpected: {2}",
+                        diff.extra.Count, step, diff.extra[0]),
+                    step);
+            if (diff.missing.Count > 0)
+                return new AutomatedTestError(
+                    string.Format("{0} expected log message(s) are missing at step {1}. First missing: {2}",
+                        diff.missing.Count, step, diff.missing[0]),
+                    step);
+            return null;
+        }
+
+        AutomatedTestError ValidateScreen(int step) {
+            var expected = _referenceSteps[step];
+            var actual = _lastExecutionSteps[step];
+            var validator = ValidationRuleForStep(step);
+            if (!validator.Validate(expected.texture, actual.texture)) {
+                var diff = validator.Diff(expected.texture, actual.texture);
+                File.WriteAllBytes("actual.png", actual.texture.EncodeToPNG());
+                File.WriteAllBytes("ref.png", expected.texture.EncodeToPNG());
+                File.WriteAllBytes("diff.png", diff.EncodeToPNG());
+                return new AutomatedTestError(
+                    string.Format("Screenshots differ at step {0}.", step), 
+                    step,
+                    diff);
+            }
+            return null;
         }
 
         ScreenValidationRule ValidationRuleForStep(int stepIndex) {
