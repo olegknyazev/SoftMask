@@ -17,8 +17,6 @@ namespace SoftMasking.Tests {
         [SerializeField] ReferenceSteps _referenceSteps = new ReferenceSteps();
         AutomatedTestResult _result = null;
         bool _updatedAtLeastOnce = false;
-        List<ExpectedLogRecord> _expectedLog = new List<ExpectedLogRecord>();
-        List<LogRecord> _lastExecutionLog = new List<LogRecord>();
         AutomatedTestError _explicitFail;
         List<LogRecord> _currentStepRecords = new List<LogRecord>();
 
@@ -58,15 +56,7 @@ namespace SoftMasking.Tests {
             NotifyChanged();
         }
     #endif
-        
-        public void ExpectLog(ExpectedLogRecord expectedRecord) {
-            _expectedLog.Add(expectedRecord);
-        }
-
-        public void ExpectLog(string messagePattern, LogType logType, UnityEngine.Object context) {
-            _expectedLog.Add(new ExpectedLogRecord(messagePattern, logType, context));
-        }
-
+    
         public YieldInstruction Proceed(float delaySeconds = 0f) {
             return StartCoroutine(WaitAll(
                 StartCoroutine(CaptureStep()),
@@ -185,12 +175,10 @@ namespace SoftMasking.Tests {
 
         class LogHandler : ILogHandler {
             readonly List<LogRecord> _log;
-            readonly List<LogRecord> _log2;
             readonly ILogHandler _originalHandler;
 
-            public LogHandler(List<LogRecord> log, List<LogRecord> log2, ILogHandler original) {
+            public LogHandler(List<LogRecord> log, ILogHandler original) {
                 _log = log;
-                _log2 = log2;
                 _originalHandler = original;
             }
 
@@ -198,13 +186,11 @@ namespace SoftMasking.Tests {
 
             public void LogException(Exception exception, UnityEngine.Object context) {
                 _log.Add(new LogRecord(exception.Message, LogType.Exception, context));
-                _log2.Add(new LogRecord(exception.Message, LogType.Exception, context));
                 _originalHandler.LogException(exception, context);
             }
 
             public void LogFormat(LogType logType, UnityEngine.Object context, string format, params object[] args) {
                 _log.Add(new LogRecord(string.Format(format, args), logType, context));
-                _log2.Add(new LogRecord(string.Format(format, args), logType, context));
                 _originalHandler.LogFormat(logType, context, format, args);
             }
         }
@@ -242,7 +228,7 @@ namespace SoftMasking.Tests {
         }
 
         void InjectLogHandler() {
-            Debug.logger.logHandler = new LogHandler(_lastExecutionLog, _currentStepRecords, Debug.logger.logHandler);
+            Debug.logger.logHandler = new LogHandler(_currentStepRecords, Debug.logger.logHandler);
         }
 
         void EjectLogHandler() {

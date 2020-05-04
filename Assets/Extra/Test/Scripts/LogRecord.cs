@@ -83,32 +83,4 @@ namespace SoftMasking.Tests {
                     missingInLeft.Add(r);
         }
     }
-
-    [Serializable] public class ExpectedLogRecord {
-        public string messagePattern;
-        public LogType logType;
-        public string context;
-
-        public ExpectedLogRecord(string message, LogType logType, UnityEngine.Object context) {
-            this.messagePattern = message;
-            this.logType = logType;
-            this.context = context ? context.name : null;
-        }
-            
-        public bool Match(LogRecord record) {
-            return record.logType == logType
-                && (record.context == context || context == null)
-                && Regex.IsMatch(record.message, messagePattern);
-        }
-
-        public List<LogRecord> Filter(List<LogRecord> log) {
-            var matchIndex = log.FindIndex(x => Match(x));
-            if (matchIndex == -1)
-                return log;
-            var nextIndex = matchIndex + 1;
-            var beforeMatch = log.Take(matchIndex);
-            var afterMatch = log.Skip(nextIndex).Take(log.Count - nextIndex);
-            return beforeMatch.Concat(afterMatch).ToList();
-        }
-    }
 }
