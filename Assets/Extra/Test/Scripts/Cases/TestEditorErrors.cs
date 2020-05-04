@@ -4,19 +4,23 @@ using UnityEngine;
 
 namespace SoftMasking.Tests {
     public class TestEditorErrors : MonoBehaviour {
-        [Serializable] public struct Case {
+        [Serializable] public class Case {
             public GameObject objectToActivate;
+
+            public IEnumerable Execute(AutomatedTest test) {
+                yield return test.Proceed(0.1f);
+                objectToActivate.SetActive(true);
+                yield return test.Proceed(0.1f);
+            }
         }
 
         public AutomatedTest automatedTest;
         public Case[] cases;
 
         public IEnumerator Start() {
-            foreach (var c in cases) {
-                yield return automatedTest.Proceed(0.1f);
-                c.objectToActivate.SetActive(true);
-                yield return automatedTest.Proceed(0.1f);
-            }
+            foreach (var c in cases)
+                foreach (var step in c.Execute(automatedTest))
+                    yield return step;
             yield return automatedTest.Finish();
         }
     }
