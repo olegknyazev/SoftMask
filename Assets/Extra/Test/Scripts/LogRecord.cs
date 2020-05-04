@@ -78,9 +78,13 @@ namespace SoftMasking.Tests {
         }
         
         public static DiffResult Diff(IEnumerable<LogRecord> expected, IEnumerable<LogRecord> actual) {
-            return new DiffResult(
-                expected.Where(x => !actual.Contains(x)),
-                actual.Where(x => !expected.Contains(x)));
+            var missing = expected.ToList();
+            foreach (var a in actual)
+                missing.Remove(a);
+            var extra = actual.ToList();
+            foreach (var e in expected)
+                extra.Remove(e);
+            return new DiffResult(missing, extra);
         }
     }
 }
