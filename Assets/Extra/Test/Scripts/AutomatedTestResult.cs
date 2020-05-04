@@ -21,19 +21,14 @@ namespace SoftMasking.Tests {
     }
 
     public class AutomatedTestResult {
-        List<AutomatedTestError> _errors = new List<AutomatedTestError>();
-
-        // TODO there is always no more than one error
         public AutomatedTestResult(string sceneName, AutomatedTestError error) {
             this.sceneName = sceneName;
-            if (error != null)
-                _errors.Add(error);
+            this.error = error;
         }
 
         public string sceneName { get; private set; }
-        public IEnumerable<AutomatedTestError> errors { get { return _errors; } }
-        public int errorCount { get { return _errors.Count; } }
-        public bool isPass { get { return _errors.Count == 0; } }
+        public AutomatedTestError error { get; private set; }
+        public bool isPass { get { return error == null; } }
         public bool isFail { get { return !isPass; } }
     }
     

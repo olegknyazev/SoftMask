@@ -84,17 +84,14 @@ namespace SoftMasking.Editor {
                     if (result.isPass)
                         GUILayout.Label("Passed", AutomatedTestStyles.passed);
                     else {
-                        GUILayout.Label(
-                            string.Format("Failed ({0} errors)", result.errorCount),
-                            AutomatedTestStyles.failed);
+                        GUILayout.Label("Failed", AutomatedTestStyles.failed);
                         using (var scrollScope = new GUILayout.ScrollViewScope(_errorDiffScrollPos)) {
-                            GUILayout.Box(result.errors.First().diff);
+                            GUILayout.Box(result.error.diff);
                             _errorDiffScrollPos = scrollScope.scrollPosition;
                         }
+                        using (new IndentScope())
+                            EditorGUILayout.LabelField(result.error.message, AutomatedTestStyles.errorMessage);
                     }
-                    using (new IndentScope())
-                        foreach (var error in result.errors)
-                            EditorGUILayout.LabelField(error.message, AutomatedTestStyles.errorMessage);
                     break;
             }
         }
