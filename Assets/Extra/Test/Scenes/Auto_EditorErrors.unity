@@ -910,30 +910,40 @@ MonoBehaviour:
       _logRecords: []
     - _texture: {fileID: 2800000, guid: 81e64313664d984408e9f24ef03b5613, type: 3}
       _logRecords:
+      - _message: SoftMask will not work on BadImage1 (UnityEngine.UI.Image) because
+          material CustomWithoutSoftMask (UnityEngine.Material) doesn't support masking.
+          Add masking support to your material or set Graphic's material to None to
+          use a default one.
+        _logType: 2
+        _context: BadImage1
+    - _texture: {fileID: 2800000, guid: 517dcfb7f5c37b449abfa721d0496477, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: 8a549167ba1a8a1439ea34adf15d0219, type: 3}
+      _logRecords:
       - _message: SoftMask will not work on BadImage2 (UnityEngine.UI.Image) because
           material CustomWithoutSoftMask (UnityEngine.Material) doesn't support masking.
           Add masking support to your material or set Graphic's material to None to
           use a default one.
         _logType: 2
         _context: BadImage2
-    - _texture: {fileID: 2800000, guid: 517dcfb7f5c37b449abfa721d0496477, type: 3}
+    - _texture: {fileID: 2800000, guid: 203c8a0842935264c8f43e5241a8ef40, type: 3}
       _logRecords: []
-    - _texture: {fileID: 2800000, guid: 8a549167ba1a8a1439ea34adf15d0219, type: 3}
+    - _texture: {fileID: 2800000, guid: 0cadf4c07628cac46a18c2eb0d7743ad, type: 3}
       _logRecords:
       - _message: SoftMask doesn't support tight packed sprites
         _logType: 0
         _context: TightPackedPanel
-    - _texture: {fileID: 2800000, guid: 203c8a0842935264c8f43e5241a8ef40, type: 3}
+    - _texture: {fileID: 2800000, guid: 213d0fe921c5d9d4a98638d82b652fdb, type: 3}
       _logRecords: []
-    - _texture: {fileID: 2800000, guid: 0cadf4c07628cac46a18c2eb0d7743ad, type: 3}
+    - _texture: {fileID: 2800000, guid: 03d9b478a30ea1d43ada8217e75c534c, type: 3}
       _logRecords:
       - _message: SoftMask doesn't support image type Filled. Image type Simple will
           be used.
         _logType: 0
         _context: BadImageTypePanel
-    - _texture: {fileID: 2800000, guid: 213d0fe921c5d9d4a98638d82b652fdb, type: 3}
+    - _texture: {fileID: 2800000, guid: cfd439985e80a754997d15ffb507cb43, type: 3}
       _logRecords: []
-    - _texture: {fileID: 2800000, guid: 03d9b478a30ea1d43ada8217e75c534c, type: 3}
+    - _texture: {fileID: 2800000, guid: 48f14ffdfda713347b832d7d9adb1935, type: 3}
       _logRecords: []
     _sceneRelativePath: Auto_EditorErrors
 --- !u!4 &1181548947
@@ -992,12 +1002,16 @@ MonoBehaviour:
   automatedTest: {fileID: 1181548946}
   cases:
   - objectToActivate: {fileID: 1963117032}
-  - objectToActivate: {fileID: 1922147947}
   - objectToActivate: {fileID: 1087495057}
   - objectToActivate: {fileID: 898240015}
   unsupportedShaderCase:
     objectToActivate: {fileID: 1593875598}
     badImage: {fileID: 526915565}
+  tightSpriteCase:
+    objectToActivate: {fileID: 1922147947}
+    maskPanel: {fileID: 172423254}
+    nonTightPackedSprite: {fileID: 21300000, guid: 79df64dea39d20f49af5a0a9fb980de4,
+      type: 3}
 --- !u!1 &1251924190
 GameObject:
   m_ObjectHideFlags: 0

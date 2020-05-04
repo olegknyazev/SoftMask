@@ -35,9 +35,8 @@ namespace SoftMasking.Tests {
             public Image badImage;
 
             protected override IEnumerable DoExecute() {
-                yield return Proceed();
-                objectToActivate.SetActive(true);
-                yield return Proceed();
+                foreach (var x in base.DoExecute())
+                    yield return x;
                 var prevMaterial = badImage.material;
                 badImage.material = null;
                 yield return Proceed();
@@ -46,12 +45,28 @@ namespace SoftMasking.Tests {
             }
         }
 
+        [Serializable] public class TightSpriteCase : Case {
+            public Image maskPanel;
+            public Sprite nonTightPackedSprite;
+
+            protected override IEnumerable DoExecute() {
+                foreach (var x in base.DoExecute())
+                    yield return x;
+                var prevSprite = maskPanel.sprite;
+                maskPanel.sprite = nonTightPackedSprite;
+                yield return Proceed();
+                maskPanel.sprite = prevSprite;
+                yield return Proceed();
+            }
+        }
+
         public AutomatedTest automatedTest;
         public Case[] cases;
         public UnsupportedShaderCase unsupportedShaderCase;
+        public TightSpriteCase tightSpriteCase;
 
         public IEnumerator Start() {
-            var casesToRun = new [] { unsupportedShaderCase }.Concat(cases);
+            var casesToRun = new Case[] { unsupportedShaderCase, tightSpriteCase }.Concat(cases);
             foreach (var c in casesToRun)
                 foreach (var step in c.Execute(automatedTest))
                     yield return step;
