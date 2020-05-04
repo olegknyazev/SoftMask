@@ -934,12 +934,10 @@ MonoBehaviour:
       _logRecords: []
     - _texture: {fileID: 2800000, guid: 03d9b478a30ea1d43ada8217e75c534c, type: 3}
       _logRecords:
-      - _message: SoftMask will not work on BadImage2 (UnityEngine.UI.Image) because
-          material CustomWithoutSoftMask (UnityEngine.Material) doesn't support masking.
-          Add masking support to your material or set Graphic's material to None to
-          use a default one.
-        _logType: 2
-        _context: BadImage2
+      - _message: SoftMask doesn't support image type Filled. Image type Simple will
+          be used.
+        _logType: 0
+        _context: BadImageTypePanel
     - _texture: {fileID: 2800000, guid: cfd439985e80a754997d15ffb507cb43, type: 3}
       _logRecords: []
     - _texture: {fileID: 2800000, guid: 48f14ffdfda713347b832d7d9adb1935, type: 3}
@@ -951,6 +949,16 @@ MonoBehaviour:
     - _texture: {fileID: 2800000, guid: adc3d9ba3dd8a7049b5bc3f4f7c4df5c, type: 3}
       _logRecords: []
     - _texture: {fileID: 2800000, guid: 83142093e148aac4786acb33bd3d1ce5, type: 3}
+      _logRecords:
+      - _message: SoftMask will not work on BadImage2 (UnityEngine.UI.Image) because
+          material CustomWithoutSoftMask (UnityEngine.Material) doesn't support masking.
+          Add masking support to your material or set Graphic's material to None to
+          use a default one.
+        _logType: 2
+        _context: BadImage2
+    - _texture: {fileID: 2800000, guid: fa9e7ac79f000de4b9ea8b7a561ad94e, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: cf6a15e1ac7277244bcccfffb2aca085, type: 3}
       _logRecords: []
     _sceneRelativePath: Auto_EditorErrors
 --- !u!4 &1181548947
@@ -1007,9 +1015,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   automatedTest: {fileID: 1181548946}
-  cases:
-  - objectToActivate: {fileID: 1963117032}
-  - objectToActivate: {fileID: 898240015}
   unsupportedShaderCase:
     objectToActivate: {fileID: 1593875598}
     badImage: {fileID: 526915565}
@@ -1021,6 +1026,9 @@ MonoBehaviour:
   badImageTypeCase:
     objectToActivate: {fileID: 1087495057}
     maskPanel: {fileID: 1773065062}
+  genericCases:
+  - objectToActivate: {fileID: 1963117032}
+  - objectToActivate: {fileID: 898240015}
 --- !u!1 &1251924190
 GameObject:
   m_ObjectHideFlags: 0

@@ -75,13 +75,13 @@ namespace SoftMasking.Tests {
         }
 
         public AutomatedTest automatedTest;
-        public Case[] cases;
         public UnsupportedShaderCase unsupportedShaderCase;
         public TightSpriteCase tightSpriteCase;
         public BadImageTypeCase badImageTypeCase;
+        public Case[] genericCases;
 
         public IEnumerator Start() {
-            var casesToRun = new Case[] { unsupportedShaderCase, tightSpriteCase, badImageTypeCase }.Concat(cases);
+            var casesToRun = new Case[] { unsupportedShaderCase, tightSpriteCase, badImageTypeCase }.Concat(genericCases);
             foreach (var c in casesToRun)
                 foreach (var step in c.Execute(automatedTest))
                     yield return step;
