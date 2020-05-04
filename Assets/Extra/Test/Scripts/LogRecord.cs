@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -38,15 +36,6 @@ namespace SoftMasking.Tests {
                 (LogType)Enum.Parse(typeof(LogType), parts[1]),
                 parts[0]);
         }
-        
-        public static IEnumerable<LogRecord> ParseAll(string content) {
-            var lines = content.Split(new [] { "\n" }, StringSplitOptions.None);
-            return lines.Select(line => FromString(line));
-        }
-
-        public static string FormatAll(IEnumerable<LogRecord> log) {
-            return string.Join("\n", log.Select(x => x.ToString()).ToArray());
-        }
 
         static readonly string separator = "::";
         static readonly string[] separators = new [] { separator };
@@ -66,6 +55,17 @@ namespace SoftMasking.Tests {
             hash = hash * 31 + logType.GetHashCode();
             hash = hash * 31 + message.GetHashCode();
             return hash;
+        }
+    }
+
+    public static class LogRecords {
+        public static IEnumerable<LogRecord> Parse(string content) {
+            var lines = content.Split(new [] { "\n" }, StringSplitOptions.None);
+            return lines.Select(line => LogRecord.FromString(line));
+        }
+
+        public static string Format(IEnumerable<LogRecord> log) {
+            return string.Join("\n", log.Select(x => x.ToString()).ToArray());
         }
 
         public static void Diff(

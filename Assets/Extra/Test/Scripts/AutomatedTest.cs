@@ -131,7 +131,7 @@ namespace SoftMasking.Tests {
                 var extraLog = new List<LogRecord>();
                 var missingLog = new List<LogRecord>();
                 for (int step = 0; step < _lastExecutionSteps.Count; ++step) {
-                    LogRecord.Diff(_referenceSteps[step].logRecords, _lastExecutionSteps[step].logRecords, extraLog, missingLog);
+                    LogRecords.Diff(_referenceSteps[step].logRecords, _lastExecutionSteps[step].logRecords, extraLog, missingLog);
                     if (extraLog.Count > 0) {
                         errors.Add(new AutomatedTestError(
                             string.Format("{0} unexpected log messages at step {1}. First unexpected: {2}",

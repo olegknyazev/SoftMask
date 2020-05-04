@@ -45,7 +45,7 @@ namespace SoftMasking.Tests {
                 if (!screen)
                     break;
                 var log = TryLoadAssetForStep<TextAsset>(i, LogExt);
-                var logRecords = log ? LogRecord.ParseAll(log.text) : new LogRecord[0];
+                var logRecords = log ? LogRecords.Parse(log.text) : new LogRecord[0];
                 _steps.Add(new CapturedStep(screen, logRecords));
             }
         }
@@ -84,7 +84,7 @@ namespace SoftMasking.Tests {
         
         void SaveLogIfPresent(CapturedStep newStep, string logPath) {
             if (newStep.hasLog) {
-                File.WriteAllText(logPath, LogRecord.FormatAll(newStep.logRecords));
+                File.WriteAllText(logPath, LogRecords.Format(newStep.logRecords));
                 AssetDatabase.ImportAsset(logPath);
             }
         }
