@@ -34,9 +34,9 @@ namespace SoftMasking.Tests {
             var parts = str.Split(separators, StringSplitOptions.None).Select(x => x.Trim()).ToList();
             Assert.AreEqual(3, parts.Count);
             return new LogRecord(
-                parts[0],
+                parts[2],
                 (LogType)Enum.Parse(typeof(LogType), parts[1]),
-                parts[2]);
+                parts[0]);
         }
         
         public static IEnumerable<LogRecord> ParseAll(string content) {
