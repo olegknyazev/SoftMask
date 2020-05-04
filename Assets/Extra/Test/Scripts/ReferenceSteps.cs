@@ -11,6 +11,7 @@ namespace SoftMasking.Tests {
     public class ReferenceSteps {
         static readonly string ReferenceScreensFolder = "Assets/Extra/Test/Scenes/ReferenceScreens";
         static readonly string ScreenshotExt = ".png";
+        static readonly string LogExt = ".txt";
 
         [SerializeField] List<CapturedStepState> _steps = new List<CapturedStepState>();
         [SerializeField] string _sceneRelativePath;
@@ -24,7 +25,7 @@ namespace SoftMasking.Tests {
             // Despite _referenceScreens are serialized, we still need to re-load them
             // each start. Otherwise we will be not able to transfer a new reference screen
             // sequence from play mode to edit mode.
-            LoadReferenceScreens();
+            LoadSteps();
         }
 
         string AppendVersionSpecificFolderIfPresent(string sceneRelativePath) {
@@ -37,37 +38,57 @@ namespace SoftMasking.Tests {
             return sceneRelativePath;
         }
         
-        void LoadReferenceScreens() {
+        void LoadSteps() {
             _steps.Clear();
-            foreach (var potentialPath in IterateScreenshotPaths()) {
-                var screen = AssetDatabase.LoadAssetAtPath<Texture2D>(potentialPath);
+            for (int i = 0;; ++i) {
+                var screen = TryLoadAssetForStep<Texture2D>(i, ScreenshotExt);
                 if (!screen)
                     break;
-                _steps.Add(new CapturedStepState(screen));
+                var log = TryLoadAssetForStep<TextAsset>(i, LogExt);
+                var logRecords = log ? LogRecord.ParseAll(log.text) : new LogRecord[0];
+                _steps.Add(new CapturedStepState(screen, logRecords));
             }
         }
 
+        T TryLoadAssetForStep<T>(int step, string assetExtension) where T : UnityEngine.Object {
+            var potentialPath = GetAssetPath(step, assetExtension);
+            return AssetDatabase.LoadAssetAtPath<T>(potentialPath);
+        }
+
         public void ReplaceBy(List<CapturedStepState> newSteps) {
-            DeleteReferenceScreens();
+            DeleteReference();
             if (!Directory.Exists(currentSceneReferenceDir))
                 Directory.CreateDirectory(currentSceneReferenceDir);
             for (int i = 0; i < newSteps.Count; ++i) {
-                var screenshot = newSteps[i].texture;
-                var screenshotPath = GetScreenshotPath(i);
-                File.WriteAllBytes(screenshotPath, screenshot.EncodeToPNG());
-                AssetDatabase.ImportAsset(screenshotPath);
-                SetupScreenshotImportSettings(screenshotPath);
-                _steps.Add(newSteps[i]);
+                var newStep = newSteps[i];
+                SaveScreenshot(newStep, GetScreenshotPath(i));
+                SaveLogIfPresent(newStep, GetLogPath(i));
+                _steps.Add(newStep);
             }
         }
-        
-        void DeleteReferenceScreens() {
-            foreach (var screenPath in IterateScreenshotPaths())
-                if (!AssetDatabase.DeleteAsset(screenPath))
+
+        void DeleteReference() {
+            for (int i = 0;; ++i) {
+                AssetDatabase.DeleteAsset(GetLogPath(i));
+                if (!AssetDatabase.DeleteAsset(GetScreenshotPath(i)))
                     break;
+            }
             _steps.Clear();
         }
-           
+          
+        static void SaveScreenshot(CapturedStepState step, string screenshotPath) {
+            File.WriteAllBytes(screenshotPath, step.texture.EncodeToPNG());
+            AssetDatabase.ImportAsset(screenshotPath);
+            SetupScreenshotImportSettings(screenshotPath);
+        }
+        
+        void SaveLogIfPresent(CapturedStepState newStep, string logPath) {
+            if (newStep.hasLog) {
+                File.WriteAllText(logPath, LogRecord.FormatAll(newStep.logRecords));
+                AssetDatabase.ImportAsset(logPath);
+            }
+        }
+ 
         static void SetupScreenshotImportSettings(string screenshotPath) {
             var importer = (TextureImporter)AssetImporter.GetAtPath(screenshotPath);
             importer.npotScale = TextureImporterNPOTScale.None;
@@ -78,23 +99,26 @@ namespace SoftMasking.Tests {
             importer.SaveAndReimport();
         }
 
-        IEnumerable<string> IterateScreenshotPaths() {
-            for (int i = 0;; ++i)
-                yield return GetScreenshotPath(i);
-        }
-            
         public void Clear() {
-            DeleteReferenceScreens();
+            DeleteReference();
         }
 
         string GetScreenshotPath(int stepIndex) {
+            return GetAssetPath(stepIndex, ScreenshotExt);
+        }
+
+        string GetLogPath(int stepIndex) {
+            return GetAssetPath(stepIndex, LogExt);
+        }
+
+        string GetAssetPath(int stepIndex, string assetExtension) {
             return Path.ChangeExtension(
                 Path.Combine(
                     currentSceneReferenceDir,
                     string.Format("{0:D2}", stepIndex)),
-                ScreenshotExt);
+                assetExtension);
         }
-        
+
         string currentSceneReferenceDir {
             get { return Path.Combine(ReferenceScreensFolder, _sceneRelativePath); }
         }

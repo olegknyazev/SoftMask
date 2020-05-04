@@ -8,12 +8,17 @@ using UnityEngine;
 namespace SoftMasking.Tests {
     [Serializable] public class CapturedStepState {
         [SerializeField] Texture2D _texture;
+        [SerializeField] List<LogRecord> _logRecords;
 
-        public CapturedStepState(Texture2D texture) {
+        public CapturedStepState(Texture2D texture) : this(texture, null) {}
+        public CapturedStepState(Texture2D texture, IEnumerable<LogRecord> log) {
             _texture = texture;
+            _logRecords = log != null ? log.ToList() : new List<LogRecord>();
         }
 
         public Texture2D texture { get { return _texture; } }
+        public IEnumerable<LogRecord> logRecords { get { return _logRecords; } }
+        public bool hasLog { get { return _logRecords.Count > 0; } }
     }
 
     [ExecuteInEditMode]
@@ -30,6 +35,7 @@ namespace SoftMasking.Tests {
         List<ExpectedLogRecord> _expectedLog = new List<ExpectedLogRecord>();
         List<LogRecord> _lastExecutionLog = new List<LogRecord>();
         AutomatedTestError _explicitFail;
+        List<LogRecord> _currentStepRecords = new List<LogRecord>();
 
         public int referenceStepsCount {
             get { return _referenceSteps.count; }
@@ -97,7 +103,8 @@ namespace SoftMasking.Tests {
             if (!isFinished) {
                 var texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
                 texture.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0, false);
-                _lastExecutionSteps.Add(new CapturedStepState(texture));
+                _lastExecutionSteps.Add(new CapturedStepState(texture, _currentStepRecords));
+                _currentStepRecords.Clear();
                 NotifyChanged();
             }
         }
@@ -186,10 +193,12 @@ namespace SoftMasking.Tests {
 
         class LogHandler : ILogHandler {
             readonly List<LogRecord> _log;
+            readonly List<LogRecord> _log2;
             readonly ILogHandler _originalHandler;
 
-            public LogHandler(List<LogRecord> log, ILogHandler original) {
+            public LogHandler(List<LogRecord> log, List<LogRecord> log2, ILogHandler original) {
                 _log = log;
+                _log2 = log2;
                 _originalHandler = original;
             }
 
@@ -197,11 +206,13 @@ namespace SoftMasking.Tests {
 
             public void LogException(Exception exception, UnityEngine.Object context) {
                 _log.Add(new LogRecord(exception.Message, LogType.Exception, context));
+                _log2.Add(new LogRecord(exception.Message, LogType.Exception, context));
                 _originalHandler.LogException(exception, context);
             }
 
             public void LogFormat(LogType logType, UnityEngine.Object context, string format, params object[] args) {
                 _log.Add(new LogRecord(string.Format(format, args), logType, context));
+                _log2.Add(new LogRecord(string.Format(format, args), logType, context));
                 _originalHandler.LogFormat(logType, context, format, args);
             }
         }
@@ -239,7 +250,7 @@ namespace SoftMasking.Tests {
         }
 
         void InjectLogHandler() {
-            Debug.logger.logHandler = new LogHandler(_lastExecutionLog, Debug.logger.logHandler);
+            Debug.logger.logHandler = new LogHandler(_lastExecutionLog, _currentStepRecords, Debug.logger.logHandler);
         }
 
         void EjectLogHandler() {
