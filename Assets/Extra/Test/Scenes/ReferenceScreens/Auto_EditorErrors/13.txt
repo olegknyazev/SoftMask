@@ -1,0 +1,1 @@
+BadImage2 :: Warning :: SoftMask will not work on BadImage2 (UnityEngine.UI.Image) because material CustomWithoutSoftMask (UnityEngine.Material) doesn't support masking. Add masking support to your material or set Graphic's material to None to use a default one.

@@ -60,13 +60,28 @@ namespace SoftMasking.Tests {
             }
         }
 
+        [Serializable] public class BadImageTypeCase : Case {
+            public Image maskPanel;
+
+            protected override IEnumerable DoExecute() {
+                foreach (var x in base.DoExecute())
+                    yield return x;
+                var prevType = maskPanel.type;
+                maskPanel.type = Image.Type.Simple;
+                yield return Proceed();
+                maskPanel.type = prevType;
+                yield return Proceed();
+            }
+        }
+
         public AutomatedTest automatedTest;
         public Case[] cases;
         public UnsupportedShaderCase unsupportedShaderCase;
         public TightSpriteCase tightSpriteCase;
+        public BadImageTypeCase badImageTypeCase;
 
         public IEnumerator Start() {
-            var casesToRun = new Case[] { unsupportedShaderCase, tightSpriteCase }.Concat(cases);
+            var casesToRun = new Case[] { unsupportedShaderCase, tightSpriteCase, badImageTypeCase }.Concat(cases);
             foreach (var c in casesToRun)
                 foreach (var step in c.Execute(automatedTest))
                     yield return step;
