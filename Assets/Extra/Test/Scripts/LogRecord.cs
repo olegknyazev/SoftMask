@@ -50,6 +50,38 @@ namespace SoftMasking.Tests {
 
         static readonly string separator = "::";
         static readonly string[] separators = new [] { separator };
+
+        public override bool Equals(object obj) {
+            var that = obj as LogRecord;
+            if (that == null)
+                return false;
+            return this.context == that.context
+                && this.logType == that.logType
+                && this.message == that.message;
+        }
+
+        public override int GetHashCode() {
+            int hash = 17;
+            hash = hash * 31 + context.GetHashCode();
+            hash = hash * 31 + logType.GetHashCode();
+            hash = hash * 31 + message.GetHashCode();
+            return hash;
+        }
+
+        public static void Diff(
+                IEnumerable<LogRecord> left,
+                IEnumerable<LogRecord> right,
+                List<LogRecord> missingInLeft,
+                List<LogRecord> missingInRight) {
+            missingInLeft.Clear();
+            missingInRight.Clear();
+            foreach (var l in left)
+                if (!right.Contains(l))
+                    missingInRight.Add(l);
+            foreach (var r in right)
+                if (!left.Contains(r))
+                    missingInLeft.Add(r);
+        }
     }
 
     [Serializable] public class ExpectedLogRecord {

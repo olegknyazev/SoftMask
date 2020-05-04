@@ -130,26 +130,32 @@ namespace SoftMasking.Tests {
         
         AutomatedTestResult Validate() {
             var errors = new List<AutomatedTestError>();
-            var unexpectedLog = _expectedLog.Aggregate(_lastExecutionLog, (log, pat) => pat.Filter(log));
             if (_explicitFail != null)
                 errors.Add(_explicitFail);
-            else if (unexpectedLog.Count > 0)
-                errors.Add(new AutomatedTestError(
-                    string.Format("{0} unexpected log records occured. First unexpected:\n{1}",
-                        unexpectedLog.Count,
-                        unexpectedLog[0].message)));
-            else if (_expectedLog.Count > _lastExecutionLog.Count)
-                errors.Add(new AutomatedTestError(
-                    string.Format("Not all expected log records occured. Expected: {0}, occured: {1}",
-                        _expectedLog.Count,
-                        _lastExecutionLog.Count)));
             else if (_lastExecutionSteps.Count != _referenceSteps.count)
                 errors.Add(new AutomatedTestError(
                     string.Format("Expected {0} steps but {1} occured.", 
                         _referenceSteps.count,
                         _lastExecutionSteps.Count)));
-            else
+            else {
+                var extraLog = new List<LogRecord>();
+                var missingLog = new List<LogRecord>();
                 for (int step = 0; step < _lastExecutionSteps.Count; ++step) {
+                    LogRecord.Diff(_referenceSteps[step].logRecords, _lastExecutionSteps[step].logRecords, extraLog, missingLog);
+                    if (extraLog.Count > 0) {
+                        errors.Add(new AutomatedTestError(
+                            string.Format("{0} unexpected log messages at step {1}. First unexpected: {2}",
+                                extraLog.Count, step, extraLog[0]),
+                            step));
+                        break;
+                    }
+                    if (missingLog.Count > 0) {
+                        errors.Add(new AutomatedTestError(
+                            string.Format("{0} expected log messages are missing at step {1}. First missing: {2}",
+                                missingLog.Count, step, missingLog[0]),
+                            step));
+                        break;
+                    }
                     var validator = ValidationRuleForStep(step);
                     var referenceStep = _referenceSteps[step];
                     var lastExecutionStep = _lastExecutionSteps[step];
@@ -164,6 +170,7 @@ namespace SoftMasking.Tests {
                         break;
                     }
                 }
+            }
             return new AutomatedTestResult(currentSceneRelativeDir, errors);
         }
 
