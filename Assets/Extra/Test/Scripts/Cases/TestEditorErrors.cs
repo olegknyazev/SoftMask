@@ -1,18 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 namespace SoftMasking.Tests {
     public class TestEditorErrors : MonoBehaviour {
+        [Serializable] public struct Case {
+            public GameObject objectToActivate;
+        }
+
         public AutomatedTest automatedTest;
-        public GameObject objectToActivate;
+        public Case[] cases;
 
         public IEnumerator Start() {
-            yield return null;
-            yield return automatedTest.Proceed();
-            objectToActivate.SetActive(true);
-            yield return null;
-            yield return automatedTest.Proceed();
+            foreach (var c in cases) {
+                yield return automatedTest.Proceed(0.1f);
+                c.objectToActivate.SetActive(true);
+                yield return automatedTest.Proceed(0.1f);
+            }
             yield return automatedTest.Finish();
         }
     }

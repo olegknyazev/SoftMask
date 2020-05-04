@@ -223,7 +223,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &284764999
 RectTransform:
   m_ObjectHideFlags: 0
@@ -666,7 +666,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &898240016
 RectTransform:
   m_ObjectHideFlags: 0
@@ -843,7 +843,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1087495058
 RectTransform:
   m_ObjectHideFlags: 0
@@ -897,6 +897,32 @@ MonoBehaviour:
   _referenceSteps:
     _steps:
     - _texture: {fileID: 2800000, guid: ecb500ed33d9fde408279dfc64bb24a6, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: 5651604f661f0c743b8b44b1f138f41b, type: 3}
+      _logRecords:
+      - _message: SoftMask doesn't support image type Filled. Image type Simple will
+          be used.
+        _logType: 0
+        _context: BadImageTypePanel
+      - _message: SoftMask doesn't support tight packed sprites
+        _logType: 0
+        _context: TightPackedPanel
+      - _message: SoftMask will not work on BadImage2 (UnityEngine.UI.Image) because
+          material CustomWithoutSoftMask (UnityEngine.Material) doesn't support masking.
+          Add masking support to your material or set Graphic's material to None to
+          use a default one.
+        _logType: 2
+        _context: BadImage2
+      - _message: SoftMask will not work on BadImage1 (UnityEngine.UI.Image) because
+          material CustomWithoutSoftMask (UnityEngine.Material) doesn't support masking.
+          Add masking support to your material or set Graphic's material to None to
+          use a default one.
+        _logType: 2
+        _context: BadImage1
+      - _message: SoftMask doesn't support image type Filled. Image type Simple will
+          be used.
+        _logType: 0
+        _context: BadImageTypePanel
     _sceneRelativePath: Auto_EditorErrors
 --- !u!4 &1181548947
 Transform:
@@ -952,27 +978,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   automatedTest: {fileID: 1181548946}
-  objectToActivate: {fileID: 284764998}
-  expectedLog:
-  - messagePattern: SoftMask doesn't support tight packed sprites
-    logType: 0
-    context: TightPackedPanel
-  - messagePattern: SoftMask doesn't support image type Filled. Image type Simple
-      will be used.
-    logType: 0
-    context: BadImageTypePanel
-  - messagePattern: SoftMask doesn't support image type Filled. Image type Simple
-      will be used.
-    logType: 0
-    context: BadImageTypePanel
-  - messagePattern: SoftMask will not work on BadImage1 .* because material .* doesn't
-      support masking
-    logType: 2
-    context: BadImage1
-  - messagePattern: SoftMask will not work on BadImage2 .* because material .* doesn't
-      support masking
-    logType: 2
-    context: BadImage2
+  cases:
+  - objectToActivate: {fileID: 1593875598}
+  - objectToActivate: {fileID: 1963117032}
+  - objectToActivate: {fileID: 1922147947}
+  - objectToActivate: {fileID: 1087495057}
+  - objectToActivate: {fileID: 898240015}
 --- !u!1 &1251924190
 GameObject:
   m_ObjectHideFlags: 0
@@ -1516,7 +1527,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1593875599
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2165,7 +2176,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1922147948
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2289,7 +2300,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1963117033
 RectTransform:
   m_ObjectHideFlags: 0
