@@ -1,1 +1,1 @@
-BadImageTypePanel :: Error :: SoftMask doesn't support image type Filled. Image type Simple will be used.
+TightPackedPanel :: Error :: SoftMask doesn't support tight packed sprites
