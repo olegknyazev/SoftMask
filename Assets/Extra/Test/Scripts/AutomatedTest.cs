@@ -6,21 +6,6 @@ using System;
 using UnityEngine;
 
 namespace SoftMasking.Tests {
-    [Serializable] public class CapturedStepState {
-        [SerializeField] Texture2D _texture;
-        [SerializeField] List<LogRecord> _logRecords;
-
-        public CapturedStepState(Texture2D texture) : this(texture, null) {}
-        public CapturedStepState(Texture2D texture, IEnumerable<LogRecord> log) {
-            _texture = texture;
-            _logRecords = log != null ? log.ToList() : new List<LogRecord>();
-        }
-
-        public Texture2D texture { get { return _texture; } }
-        public IEnumerable<LogRecord> logRecords { get { return _logRecords; } }
-        public bool hasLog { get { return _logRecords.Count > 0; } }
-    }
-
     [ExecuteInEditMode]
     public class AutomatedTest : MonoBehaviour {
         static readonly string TestScenesPath = "Assets/Extra/Test/Scenes/";
@@ -28,7 +13,7 @@ namespace SoftMasking.Tests {
         public bool speedUp = false;
 
         [SerializeField] List<ScreenValidationRuleKeyValuePair> _validationRulePairs = new List<ScreenValidationRuleKeyValuePair>();
-        [SerializeField] List<CapturedStepState> _lastExecutionSteps = new List<CapturedStepState>();
+        [SerializeField] List<CapturedStep> _lastExecutionSteps = new List<CapturedStep>();
         [SerializeField] ReferenceSteps _referenceSteps = new ReferenceSteps();
         AutomatedTestResult _result = null;
         bool _updatedAtLeastOnce = false;
@@ -103,7 +88,7 @@ namespace SoftMasking.Tests {
             if (!isFinished) {
                 var texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
                 texture.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0, false);
-                _lastExecutionSteps.Add(new CapturedStepState(texture, _currentStepRecords));
+                _lastExecutionSteps.Add(new CapturedStep(texture, _currentStepRecords));
                 _currentStepRecords.Clear();
                 NotifyChanged();
             }

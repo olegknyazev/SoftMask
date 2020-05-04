@@ -13,11 +13,11 @@ namespace SoftMasking.Tests {
         static readonly string ScreenshotExt = ".png";
         static readonly string LogExt = ".txt";
 
-        [SerializeField] List<CapturedStepState> _steps = new List<CapturedStepState>();
+        [SerializeField] List<CapturedStep> _steps = new List<CapturedStep>();
         [SerializeField] string _sceneRelativePath;
 
         public int count { get { return _steps.Count; } }
-        public CapturedStepState this[int index] { get { return _steps[index]; } }
+        public CapturedStep this[int index] { get { return _steps[index]; } }
 
     #if UNITY_EDITOR
         public void Load(string sceneRelativePath) {
@@ -46,7 +46,7 @@ namespace SoftMasking.Tests {
                     break;
                 var log = TryLoadAssetForStep<TextAsset>(i, LogExt);
                 var logRecords = log ? LogRecord.ParseAll(log.text) : new LogRecord[0];
-                _steps.Add(new CapturedStepState(screen, logRecords));
+                _steps.Add(new CapturedStep(screen, logRecords));
             }
         }
 
@@ -55,7 +55,7 @@ namespace SoftMasking.Tests {
             return AssetDatabase.LoadAssetAtPath<T>(potentialPath);
         }
 
-        public void ReplaceBy(List<CapturedStepState> newSteps) {
+        public void ReplaceBy(List<CapturedStep> newSteps) {
             DeleteReference();
             if (!Directory.Exists(currentSceneReferenceDir))
                 Directory.CreateDirectory(currentSceneReferenceDir);
@@ -76,13 +76,13 @@ namespace SoftMasking.Tests {
             _steps.Clear();
         }
           
-        static void SaveScreenshot(CapturedStepState step, string screenshotPath) {
+        static void SaveScreenshot(CapturedStep step, string screenshotPath) {
             File.WriteAllBytes(screenshotPath, step.texture.EncodeToPNG());
             AssetDatabase.ImportAsset(screenshotPath);
             SetupScreenshotImportSettings(screenshotPath);
         }
         
-        void SaveLogIfPresent(CapturedStepState newStep, string logPath) {
+        void SaveLogIfPresent(CapturedStep newStep, string logPath) {
             if (newStep.hasLog) {
                 File.WriteAllText(logPath, LogRecord.FormatAll(newStep.logRecords));
                 AssetDatabase.ImportAsset(logPath);
