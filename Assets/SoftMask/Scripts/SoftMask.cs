@@ -55,8 +55,8 @@ namespace SoftMasking {
 		// CustomWithSoftMask.shader from included samples.
         //
         // All replacements are cached in SoftMask instances. By default Unity draws UI with a
-        // very small amount of material instances (they are spawned one per masking/clipping layer),
-        // so, SoftMask creates a relatively small amount of overrides.
+        // very small number of material instances (they are spawned one per masking/clipping layer),
+        // so, SoftMask creates a relatively small number of overrides.
         //
 
         [SerializeField] Shader _defaultShader = null;
