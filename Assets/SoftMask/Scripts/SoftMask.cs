@@ -577,7 +577,6 @@ namespace SoftMasking {
                 case MaskSource.Graphic:
                     if (_graphic is Image) {
                         var image = (Image)_graphic;
-                        _warningReporter.ImageUsed(image);
                         result.image = image;
                         result.sprite = image.sprite;
                         result.spriteBorderMode = BorderModeOf(image);
@@ -616,21 +615,21 @@ namespace SoftMasking {
 
         void CalculateMaskParameters() {
             var sourceParams = DeduceSourceParameters();
-            if (sourceParams.sprite)
-                CalculateSpriteBased(sourceParams.sprite, sourceParams.spriteBorderMode);
-            else if (sourceParams.texture)
+            _warningReporter.ImageUsed(sourceParams.image);
+            var spriteErrors = Diagnostics.CheckSprite(sourceParams.sprite);
+            _warningReporter.SpriteUsed(sourceParams.sprite, spriteErrors);
+            if (sourceParams.sprite) {
+                if (spriteErrors == Errors.NoError)
+                    CalculateSpriteBased(sourceParams.sprite, sourceParams.spriteBorderMode);
+                else
+                    CalculateSolidFill();
+            } else if (sourceParams.texture)
                 CalculateTextureBased(sourceParams.texture, sourceParams.textureUVRect);
             else
                 CalculateSolidFill();
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
-            var spriteErrors = Diagnostics.CheckSprite(sprite);
-            _warningReporter.SpriteUsed(sprite, spriteErrors);
-            if (spriteErrors != Errors.NoError) {
-                CalculateSolidFill();
-                return;
-            }
             FillCommonParameters();
             var inner = DataUtility.GetInnerUV(sprite);
             var outer = DataUtility.GetOuterUV(sprite);
