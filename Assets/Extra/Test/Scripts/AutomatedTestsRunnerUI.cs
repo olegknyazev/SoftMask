@@ -49,18 +49,16 @@ namespace SoftMasking.Tests {
             foreach (var result in testResults.failures) {
                 output.AppendFormat("{0}: FAIL", result.sceneName);
                 output.AppendLine();
-                foreach (var err in result.errors) {
+                if (result.isFail) {
                     output.Append("  ");
-                    output.AppendLine(err.message);
+                    output.AppendLine(result.error.message);
                 }
             }
             return output.ToString();
         }
 
         Texture DiffTexture() {
-            var firstFailed = testResults.failures.First();
-            var firstError = firstFailed != null ? firstFailed.errors.First() : null;
-            return firstError != null ? firstError.diff : null;
+            return this.testResults.failures.First().error.diff;
         }
     }
 }

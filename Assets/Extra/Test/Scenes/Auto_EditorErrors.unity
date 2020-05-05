@@ -120,7 +120,7 @@ GameObject:
   - component: {fileID: 172423254}
   - component: {fileID: 172423253}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: TightPackedPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -405,7 +405,7 @@ GameObject:
   - component: {fileID: 526915565}
   - component: {fileID: 526915564}
   m_Layer: 5
-  m_Name: BadImage
+  m_Name: BadImage1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -893,9 +893,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speedUp: 0
   _validationRulePairs: []
-  _lastExecutionScreens: []
-  _referenceScreens:
-  - {fileID: 2800000, guid: ecb500ed33d9fde408279dfc64bb24a6, type: 3}
+  _lastExecutionSteps: []
+  _referenceSteps:
+    _steps:
+    - _texture: {fileID: 2800000, guid: ecb500ed33d9fde408279dfc64bb24a6, type: 3}
+    _sceneRelativePath: Auto_EditorErrors
 --- !u!4 &1181548947
 Transform:
   m_ObjectHideFlags: 0
@@ -954,23 +956,23 @@ MonoBehaviour:
   expectedLog:
   - messagePattern: SoftMask doesn't support tight packed sprites
     logType: 0
-    context: {fileID: 172423253}
+    context: TightPackedPanel
   - messagePattern: SoftMask doesn't support image type Filled. Image type Simple
       will be used.
     logType: 0
-    context: {fileID: 1773065061}
+    context: BadImageTypePanel
   - messagePattern: SoftMask doesn't support image type Filled. Image type Simple
       will be used.
     logType: 0
-    context: {fileID: 1773065061}
-  - messagePattern: SoftMask will not work on BadImage .* because material .* doesn't
+    context: BadImageTypePanel
+  - messagePattern: SoftMask will not work on BadImage1 .* because material .* doesn't
       support masking
     logType: 2
-    context: {fileID: 526915562}
-  - messagePattern: SoftMask will not work on BadImage .* because material .* doesn't
+    context: BadImage1
+  - messagePattern: SoftMask will not work on BadImage2 .* because material .* doesn't
       support masking
     logType: 2
-    context: {fileID: 1850007278}
+    context: BadImage2
 --- !u!1 &1251924190
 GameObject:
   m_ObjectHideFlags: 0
@@ -1814,7 +1816,7 @@ GameObject:
   - component: {fileID: 1773065062}
   - component: {fileID: 1773065061}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: BadImageTypePanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2001,7 +2003,7 @@ GameObject:
   - component: {fileID: 1814392845}
   - component: {fileID: 1814392844}
   m_Layer: 5
-  m_Name: BadImage
+  m_Name: Image2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2081,7 +2083,7 @@ GameObject:
   - component: {fileID: 1850007281}
   - component: {fileID: 1850007280}
   m_Layer: 5
-  m_Name: BadImage
+  m_Name: BadImage2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

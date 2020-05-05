@@ -14,7 +14,6 @@ namespace SoftMasking.Tests {
             if (output)
                 output.text = "Last calls: " +
                     string.Join(", ", CustomReplacer.lastCalls.Select(x => x.ToString()).ToArray());
-            automatedTest.ExpectLog("^SoftMask will not work on Button.*", LogType.Warning, null);
             yield return automatedTest.Proceed();
             yield return automatedTest.Finish();
         }
