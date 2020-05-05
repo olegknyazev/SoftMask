@@ -350,10 +350,9 @@ namespace SoftMasking {
             if (!isUsingRaycastFiltering) return true;
             float mask;
             var sampleResult = _parameters.SampleMask(localPos, out mask);
-            if (sampleResult != MaterialParameters.SampleMaskResult.Success) {
-                _warningReporter.TextureReadError(sampleResult, _parameters.texture);
+            _warningReporter.TextureRead(_parameters.texture, sampleResult);
+            if (sampleResult != MaterialParameters.SampleMaskResult.Success)
                 return true;
-            }
             if (_invertMask)
                 mask = 1 - mask;
             return mask >= _raycastThreshold;
@@ -578,6 +577,7 @@ namespace SoftMasking {
                 case MaskSource.Graphic:
                     if (_graphic is Image) {
                         var image = (Image)_graphic;
+                        _warningReporter.ImageUsed(image);
                         result.image = image;
                         result.sprite = image.sprite;
                         result.spriteBorderMode = BorderModeOf(image);
@@ -610,7 +610,6 @@ namespace SoftMasking {
                 case Image.Type.Sliced: return BorderMode.Sliced;
                 case Image.Type.Tiled: return BorderMode.Tiled;
                 default:
-                    _warningReporter.UnsupportedImageType(image);
                     return BorderMode.Simple;
             }
         }
@@ -627,8 +626,8 @@ namespace SoftMasking {
 
         void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
             var spriteErrors = Diagnostics.CheckSprite(sprite);
+            _warningReporter.SpriteUsed(sprite, spriteErrors);
             if (spriteErrors != Errors.NoError) {
-                _warningReporter.SpriteErrors(spriteErrors, sprite);
                 CalculateSolidFill();
                 return;
             }
@@ -1005,7 +1004,7 @@ namespace SoftMasking {
                 }
             }
 
-            static bool IsSupportedImageType(Image.Type type) {
+            public static bool IsSupportedImageType(Image.Type type) {
                 return type == Image.Type.Simple
                     || type == Image.Type.Sliced
                     || type == Image.Type.Tiled;
@@ -1027,8 +1026,7 @@ namespace SoftMasking {
                 _lastUsedImageType = Image.Type.Simple;
             }
 
-            public void TextureReadError(MaterialParameters.SampleMaskResult sampleResult, Texture texture) {
-                Assert.AreNotEqual(MaterialParameters.SampleMaskResult.Success, sampleResult);
+            public void TextureRead(Texture texture, MaterialParameters.SampleMaskResult sampleResult) {
                 if (_lastReadTexture == texture)
                     return;
                 _lastReadTexture = texture;
@@ -1048,7 +1046,7 @@ namespace SoftMasking {
                 }
             }
                 
-            public void SpriteErrors(Errors errors, Sprite sprite) {
+            public void SpriteUsed(Sprite sprite, Errors errors) {
                 if (_lastUsedSprite == sprite)
                     return;
                 _lastUsedSprite = sprite;
@@ -1058,11 +1056,13 @@ namespace SoftMasking {
                     Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", _owner);
             }
 
-            public void UnsupportedImageType(Image image) {
+            public void ImageUsed(Image image) {
                 if (_lastUsedImage == image.sprite && _lastUsedImageType == image.type)
                     return;
                 _lastUsedImage = image.sprite;
                 _lastUsedImageType = image.type;
+                if (Diagnostics.IsSupportedImageType(image.type))
+                    return;
                 Debug.LogErrorFormat(_owner,
                     "SoftMask doesn't support image type {0}. Image type Simple will be used.",
                     image.type);
