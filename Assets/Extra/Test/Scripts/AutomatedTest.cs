@@ -210,7 +210,7 @@ namespace SoftMasking.Tests {
         #if UNITY_EDITOR
             _referenceSteps.Load(currentSceneRelativeDir);
         #else
-            _referenceScreens.RemoveObsoletes();
+            _referenceSteps.RemoveObsoletes();
         #endif
             if (Application.isPlaying)
                 InjectLogHandler();
