@@ -10,7 +10,7 @@ namespace SoftMasking.Tests {
         public AutomatedTest automatedTest;
 
         public IEnumerator Start() {
-            yield return null;
+            yield return new WaitForEndOfFrame();
             if (output)
                 output.text = "Last calls: " +
                     string.Join(", ", CustomReplacer.lastCalls.Select(x => x.ToString()).ToArray());
