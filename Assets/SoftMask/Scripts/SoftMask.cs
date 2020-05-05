@@ -1015,14 +1015,14 @@ namespace SoftMasking {
             UnityEngine.Object _owner;
             Texture _lastReadTexture;
             Sprite _lastUsedSprite;
-            Sprite _lastUsedImage; // TODO bad name
+            Sprite _lastUsedImageSprite;
             Image.Type _lastUsedImageType;
         
             public WarningReporter(UnityEngine.Object owner) {
                 _owner = owner;
                 _lastReadTexture = null;
                 _lastUsedSprite = null;
-                _lastUsedImage = null;
+                _lastUsedImageSprite = null;
                 _lastUsedImageType = Image.Type.Simple;
             }
 
@@ -1057,10 +1057,17 @@ namespace SoftMasking {
             }
 
             public void ImageUsed(Image image) {
-                if (_lastUsedImage == image.sprite && _lastUsedImageType == image.type)
+                if (!image) {
+                    _lastUsedImageSprite = null;
+                    _lastUsedImageType = Image.Type.Simple;
                     return;
-                _lastUsedImage = image.sprite;
+                }
+                if (_lastUsedImageSprite == image.sprite && _lastUsedImageType == image.type)
+                    return;
+                _lastUsedImageSprite = image.sprite;
                 _lastUsedImageType = image.type;
+                if (!image)
+                    return;
                 if (Diagnostics.IsSupportedImageType(image.type))
                     return;
                 Debug.LogErrorFormat(_owner,
