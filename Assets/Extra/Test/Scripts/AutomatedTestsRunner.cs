@@ -66,7 +66,14 @@ namespace SoftMasking.Tests {
                     .FindAssets("t: Scene", new [] { testScenesPath })
                     .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
                     .Where(path => !string.IsNullOrEmpty(path))
-                    .Where(path => testScenesNamePatternRegex.IsMatch(Path.GetFileNameWithoutExtension(path)));
+                    .Where(path => IsTestScene(path));
+        }
+
+        bool IsTestScene(string scenePath) {
+            Assert.IsFalse(string.IsNullOrEmpty(scenePath));
+            var sceneName = Path.GetFileNameWithoutExtension(scenePath);
+            return testScenesNamePatternRegex.IsMatch(sceneName)
+                && MatchesUnityVersion(sceneName);
         }
         
         Regex _testScenesNamePatternRegex;
@@ -76,6 +83,25 @@ namespace SoftMasking.Tests {
                     _testScenesNamePatternRegex = new Regex(testScenesNamePattern);
                 return _testScenesNamePatternRegex;
             }
+        }
+
+        bool MatchesUnityVersion(string testSceneName) {
+            return unityMajorVersion > GetSceneVersion(testSceneName);
+        }
+
+        int GetSceneVersion(string sceneName) {
+            var split = sceneName.Split('_');
+            if (split.Length > 1) {
+                var lastPart = split.Last();
+                int version;
+                if (int.TryParse(lastPart, out version))
+                    return version;
+            }
+            return 0;
+        }
+
+        static int unityMajorVersion {
+            get { return int.Parse(Application.unityVersion.Split('.').First()); }
         }
 
         IEnumerator LoadAndTestScene(string sceneKey, Ref<AutomatedTestResult> outResult) {
