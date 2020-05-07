@@ -18,6 +18,7 @@ namespace SoftMasking.Tests {
         public string[] standaloneSkipScenes = new string[0];
         public bool speedRun = false;
         public bool stopOnFirstFail = true;
+        public bool exitOnFinish = false;
         
         public AutomatedTestResults testResults { get; private set; }
         public bool isFinished { get { return testResults != null; } }
@@ -41,6 +42,8 @@ namespace SoftMasking.Tests {
             } finally {
                 ResolutionUtility.RevertTestResolution();
                 testResults = new AutomatedTestResults(testResultList);
+                ReportToLog(testResults);
+                ExitIfRequested();
             }
         }
 
@@ -144,6 +147,24 @@ namespace SoftMasking.Tests {
             public IEnumerator WaitFinish() {
                 while (!_automatedTest.isFinished)
                     yield return null;
+            }
+        }
+
+        static void ReportToLog(AutomatedTestResults results) {
+            Debug.LogFormat("Testing finished: {0}", results.isPass ? "PASS" : "FAIL");
+            if (results.isFail) {
+                var failure = results.failures.First();
+                Debug.LogFormat("First failure: {0}\n{1}", failure.sceneName, failure.error.message);
+            }
+        }
+
+        void ExitIfRequested() {
+            if (exitOnFinish) {
+            #if UNITY_EDITOR
+                EditorApplication.Exit(testResults.isPass ? 0 : 1);
+            #else
+                Debug.LogError("exitOnFinish facility implemented only in editor mode for now");
+            #endif
             }
         }
     }
