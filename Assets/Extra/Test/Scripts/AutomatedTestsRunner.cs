@@ -86,7 +86,7 @@ namespace SoftMasking.Tests {
         }
 
         bool MatchesUnityVersion(string testSceneName) {
-            return unityMajorVersion > GetSceneVersion(testSceneName);
+            return unityMajorVersion >= GetSceneVersion(testSceneName);
         }
 
         int GetSceneVersion(string sceneName) {
