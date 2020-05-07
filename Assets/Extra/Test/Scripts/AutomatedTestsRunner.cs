@@ -17,12 +17,11 @@ namespace SoftMasking.Tests {
         public string testScenesNamePattern = "^Test.+$";
         public string[] standaloneSkipScenes = new string[0];
         public bool speedRun = false;
+        public bool stopOnFirstFail = true;
+        public bool exitOnFinish = false;
         
-        Dictionary<string, AutomatedTestResult> _testResults = new Dictionary<string, AutomatedTestResult>();
-
-        public bool isFinished { get; private set; }
-
-        public IDictionary<string, AutomatedTestResult> testResults { get { return _testResults; } }
+        public AutomatedTestResults testResults { get; private set; }
+        public bool isFinished { get { return testResults != null; } }
 
         public event Action<AutomatedTestsRunner> changed;
 
@@ -30,16 +29,21 @@ namespace SoftMasking.Tests {
 
         public IEnumerator Start() {
             ResolutionUtility.SetTestResolution();
+            var testResultList = new List<AutomatedTestResult>();
             try {
                 foreach (var sceneKey in GetTestSceneKeys()) {
                     var testResult = new Ref<AutomatedTestResult>();
                     yield return LoadAndTestScene(sceneKey, testResult);
-                    if (testResult.value.isFail)
-                        break;
+                    testResultList.Add(testResult.value);
+                    if (stopOnFirstFail)
+                        if (testResult.value.isFail)
+                            break;
                 }
             } finally {
                 ResolutionUtility.RevertTestResolution();
-                isFinished = true;
+                testResults = new AutomatedTestResults(testResultList);
+                ReportToLog(testResults);
+                ExitIfRequested();
             }
         }
 
@@ -55,18 +59,7 @@ namespace SoftMasking.Tests {
                 BuildTarget.StandaloneWindows,
                 BuildOptions.AllowDebugging | BuildOptions.ForceEnableAssertions | additionalOptions);
         }
-    #endif
 
-        Regex _testScenesNamePatternRegex;
-        Regex testScenesNamePatternRegex {
-            get {
-                if (_testScenesNamePatternRegex == null)
-                    _testScenesNamePatternRegex = new Regex(testScenesNamePattern);
-                return _testScenesNamePatternRegex;
-            }
-        }
-
-    #if UNITY_EDITOR
         IEnumerable<string> GetTestSceneKeys() {
             return 
                 AssetDatabase
@@ -76,6 +69,15 @@ namespace SoftMasking.Tests {
                     .Where(path => testScenesNamePatternRegex.IsMatch(Path.GetFileNameWithoutExtension(path)));
         }
         
+        Regex _testScenesNamePatternRegex;
+        Regex testScenesNamePatternRegex {
+            get {
+                if (_testScenesNamePatternRegex == null)
+                    _testScenesNamePatternRegex = new Regex(testScenesNamePattern);
+                return _testScenesNamePatternRegex;
+            }
+        }
+
         IEnumerator LoadAndTestScene(string sceneKey, Ref<AutomatedTestResult> outResult) {
             EditorApplication.LoadLevelAdditiveInPlayMode(sceneKey);
             yield return LoadAndTestSceneImpl(outResult);
@@ -103,6 +105,8 @@ namespace SoftMasking.Tests {
         }
 
         IEnumerator ActivateScene(Scene scene) {
+            while (!scene.isLoaded)
+                yield return null;
             while (!SceneManager.SetActiveScene(scene))
                 yield return null;
             Assert.IsTrue(SceneManager.GetActiveScene() == scene);
@@ -114,7 +118,6 @@ namespace SoftMasking.Tests {
                 test.speedUp = speedRun;
                 yield return StartCoroutine(test.WaitFinish());
                 outResult.value = test.result;
-                _testResults.Add(scene.name, test.result);
                 changed.InvokeSafe(this);
             }
         }
@@ -127,11 +130,11 @@ namespace SoftMasking.Tests {
             }
 
             public static SceneTest FromScene(Scene scene) {
-                var test = 
-                    scene.GetRootGameObjects()
-                        .Select(x => x.GetComponent<AutomatedTest>())
-                        .FirstOrDefault(x => x != null);
-                return test ? new SceneTest(test) : null;
+                return scene.GetRootGameObjects()
+                    .Select(x => x.GetComponent<AutomatedTest>())
+                    .Where(x => x != null)
+                    .Select(x => new SceneTest(x))
+                    .FirstOrDefault();
             }
 
             public bool speedUp {
@@ -144,6 +147,24 @@ namespace SoftMasking.Tests {
             public IEnumerator WaitFinish() {
                 while (!_automatedTest.isFinished)
                     yield return null;
+            }
+        }
+
+        static void ReportToLog(AutomatedTestResults results) {
+            Debug.LogFormat("Testing finished: {0}", results.isPass ? "PASS" : "FAIL");
+            if (results.isFail) {
+                var failure = results.failures.First();
+                Debug.LogFormat("First failure: {0}\n{1}", failure.sceneName, failure.error.message);
+            }
+        }
+
+        void ExitIfRequested() {
+            if (exitOnFinish) {
+            #if UNITY_EDITOR
+                EditorApplication.Exit(testResults.isPass ? 0 : 1);
+            #else
+                Debug.LogError("exitOnFinish facility implemented only in editor mode for now");
+            #endif
             }
         }
     }

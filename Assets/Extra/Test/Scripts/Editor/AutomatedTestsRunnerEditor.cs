@@ -61,28 +61,24 @@ namespace SoftMasking.Editor {
                     break;
                 case State.Finished:
                     var results = targetRunner.testResults;
-                    var isFail = results.Values.Any(x => x.isFail);
+                    var isFail = results.isFail;
                     if (isFail) {
-                        var errorCount = results.Values.Sum(x => x.errorCount);
-                        var failedSceneCount = results.Values.Count(x => x.isFail);
+                        var errorCount = results.failures.Count();
                         GUILayout.Label(
-                            string.Format("Failed ({0} errors in {1} scenes)",
-                                errorCount,
-                                failedSceneCount),
+                            string.Format("Failed ({0} errors)", errorCount),
                             AutomatedTestStyles.failed);
                         using (var scrollScope = new GUILayout.ScrollViewScope(_errorDiffScrollPos)) {
-                            GUILayout.Box(results.Values.First(x => x.isFail).errors.First().diff);
+                            GUILayout.Box(results.failures.First().error.diff);
                             _errorDiffScrollPos = scrollScope.scrollPosition;
                         }
+                        using (new IndentScope())
+                            foreach (var result in results.failures) {
+                                EditorGUILayout.LabelField(result.sceneName);
+                                using (new IndentScope())
+                                    EditorGUILayout.LabelField(result.error.message);
+                            }
                     } else
                         GUILayout.Label("Passed", AutomatedTestStyles.passed);
-                    using (new IndentScope())
-                        foreach (var kvp in results) {
-                            EditorGUILayout.LabelField(kvp.Key);
-                            using (new IndentScope())
-                                foreach (var error in kvp.Value.errors)
-                                    EditorGUILayout.LabelField(error.message);
-                        }
                     break;
             }
         }

@@ -1,0 +1,1 @@
+Mask with non-2D Texture :: Error :: Raycast Threshold greater than 0 can't be used on Soft Mask with texture 'RenderTexture' because it's not a Texture2D. Raycast Threshold may be used only with regular 2D textures.

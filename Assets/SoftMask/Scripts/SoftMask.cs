@@ -55,8 +55,8 @@ namespace SoftMasking {
 		// CustomWithSoftMask.shader from included samples.
         //
         // All replacements are cached in SoftMask instances. By default Unity draws UI with a
-        // very small amount of material instances (they are spawned one per masking/clipping layer),
-        // so, SoftMask creates a relatively small amount of overrides.
+        // very small number of material instances (they are spawned one per masking/clipping layer),
+        // so, SoftMask creates a relatively small number of overrides.
         //
 
         [SerializeField] Shader _defaultShader = null;
@@ -74,8 +74,7 @@ namespace SoftMasking {
 
         MaterialReplacements _materials;
         MaterialParameters _parameters;
-        Sprite _lastUsedSprite;
-        Texture _lastSampledTexture;
+        WarningReporter _warningReporter;
         Rect _lastMaskRect;
         bool _maskingWasEnabled;
         bool _destroyed;
@@ -92,6 +91,7 @@ namespace SoftMasking {
                     MaterialReplacer.globalReplacers,
                     new MaterialReplacerImpl(this));
             _materials = new MaterialReplacements(materialReplacer, m => _parameters.Apply(m));
+            _warningReporter = new WarningReporter(this);
         }
 
         /// <summary>
@@ -350,13 +350,9 @@ namespace SoftMasking {
             if (!isUsingRaycastFiltering) return true;
             float mask;
             var sampleResult = _parameters.SampleMask(localPos, out mask);
-            var lastTexture = _lastSampledTexture;
-            _lastSampledTexture = _parameters.texture;
-            if (sampleResult != MaterialParameters.SampleMaskResult.Success) {
-                if (lastTexture != _parameters.texture)
-                    WarnTextureReadError(sampleResult);
+            _warningReporter.TextureRead(_parameters.texture, sampleResult);
+            if (sampleResult != MaterialParameters.SampleMaskResult.Success)
                 return true;
-            }
             if (_invertMask)
                 mask = 1 - mask;
             return mask >= _raycastThreshold;
@@ -580,10 +576,11 @@ namespace SoftMasking {
             switch (_source) {
                 case MaskSource.Graphic:
                     if (_graphic is Image) {
-                        result.image = (Image)_graphic;
-                        result.sprite = result.image.sprite;
-                        result.spriteBorderMode = ToBorderMode(result.image.type);
-                        result.texture = result.sprite ? result.sprite.texture : null;
+                        var image = (Image)_graphic;
+                        result.image = image;
+                        result.sprite = image.sprite;
+                        result.spriteBorderMode = BorderModeOf(image);
+                        result.texture = image.sprite ? image.sprite.texture : null;
                     } else if (_graphic is RawImage) {
                         var rawImage = (RawImage)_graphic;
                         result.texture = rawImage.texture;
@@ -593,57 +590,46 @@ namespace SoftMasking {
                 case MaskSource.Sprite:
                     result.sprite = _sprite;
                     result.spriteBorderMode = _spriteBorderMode;
-                    result.texture = result.sprite ? result.sprite.texture : null; // TODO make SourceParameters immutable and expose specific ctors?
+                    result.texture = _sprite ? _sprite.texture : null;
                     break;
                 case MaskSource.Texture:
                     result.texture = _texture;
                     result.textureUVRect = _textureUVRect;
                     break;
                 default:
-                    Debug.LogErrorFormat(this, "Unknown MaskSource: {0}", _source);
+                    Debug.LogAssertionFormat(this, "Unknown MaskSource: {0}", _source);
                     break;
             }
             return result;
         }
 
-        BorderMode ToBorderMode(Image.Type imageType) {
-            switch (imageType) {
+        BorderMode BorderModeOf(Image image) {
+            switch (image.type) {
                 case Image.Type.Simple: return BorderMode.Simple;
                 case Image.Type.Sliced: return BorderMode.Sliced;
                 case Image.Type.Tiled: return BorderMode.Tiled;
                 default:
-                    Debug.LogErrorFormat(
-                        this,
-                        "SoftMask doesn't support image type {0}. Image type Simple will be used.",
-                        imageType);
                     return BorderMode.Simple;
             }
         }
 
         void CalculateMaskParameters() {
             var sourceParams = DeduceSourceParameters();
-            if (sourceParams.sprite)
-                CalculateSpriteBased(sourceParams.sprite, sourceParams.spriteBorderMode);
-            else if (sourceParams.texture)
+            _warningReporter.ImageUsed(sourceParams.image);
+            var spriteErrors = Diagnostics.CheckSprite(sourceParams.sprite);
+            _warningReporter.SpriteUsed(sourceParams.sprite, spriteErrors);
+            if (sourceParams.sprite) {
+                if (spriteErrors == Errors.NoError)
+                    CalculateSpriteBased(sourceParams.sprite, sourceParams.spriteBorderMode);
+                else
+                    CalculateSolidFill();
+            } else if (sourceParams.texture)
                 CalculateTextureBased(sourceParams.texture, sourceParams.textureUVRect);
             else
                 CalculateSolidFill();
         }
 
         void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
-            var lastSprite = _lastUsedSprite;
-            _lastUsedSprite = sprite;
-            var spriteErrors = Diagnostics.CheckSprite(sprite);
-            if (spriteErrors != Errors.NoError) {
-                if (lastSprite != sprite)
-                    WarnSpriteErrors(spriteErrors);
-                CalculateSolidFill();
-                return;
-            }
-            if (!sprite) {
-                CalculateSolidFill();
-                return;
-            }
             FillCommonParameters();
             var inner = DataUtility.GetInnerUV(sprite);
             var outer = DataUtility.GetOuterUV(sprite);
@@ -725,30 +711,6 @@ namespace SoftMasking {
                 Debug.LogWarning("SoftMask may not work because its defaultShader is not set", this);
         }
 
-        void WarnSpriteErrors(Errors errors) {
-            if ((errors & Errors.TightPackedSprite) != 0)
-                Debug.LogError("SoftMask doesn't support tight packed sprites", this);
-            if ((errors & Errors.AlphaSplitSprite) != 0)
-                Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", this);
-        }
-
-        void WarnTextureReadError(MaterialParameters.SampleMaskResult sampleResult) {
-            Assert.AreNotEqual(MaterialParameters.SampleMaskResult.Success, sampleResult);
-            switch (sampleResult) {
-                case MaterialParameters.SampleMaskResult.NonReadable:
-                    Debug.LogErrorFormat(this,
-                        "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
-                        + "it's not readable. You can make the texture readable in the Texture Import Settings.",
-                        _parameters.activeTexture.name);
-                    break;
-                case MaterialParameters.SampleMaskResult.NonTexture2D:
-                    Debug.LogErrorFormat(this,
-                        "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
-                        + "it's not a Texture2D. Raycast Threshold may be used only with regular 2D textures.",
-                        _parameters.activeTexture.name);
-                    break;
-            }
-        }
 
         void Set<T>(ref T field, T value) {
             field = value;
@@ -892,7 +854,7 @@ namespace SoftMasking {
                     case BorderMode.Sliced: return MapBorder(localPos, repeat: false);
                     case BorderMode.Tiled: return MapBorder(localPos, repeat: true);
                     default:
-                        Debug.LogError("Unknown BorderMode");
+                        Debug.LogAssertion("Unknown BorderMode");
                         return MapSimple(localPos);
                 }
             }
@@ -1041,10 +1003,75 @@ namespace SoftMasking {
                 }
             }
 
-            static bool IsSupportedImageType(Image.Type type) {
+            public static bool IsSupportedImageType(Image.Type type) {
                 return type == Image.Type.Simple
                     || type == Image.Type.Sliced
                     || type == Image.Type.Tiled;
+            }
+        }
+
+        struct WarningReporter {
+            UnityEngine.Object _owner;
+            Texture _lastReadTexture;
+            Sprite _lastUsedSprite;
+            Sprite _lastUsedImageSprite;
+            Image.Type _lastUsedImageType;
+        
+            public WarningReporter(UnityEngine.Object owner) {
+                _owner = owner;
+                _lastReadTexture = null;
+                _lastUsedSprite = null;
+                _lastUsedImageSprite = null;
+                _lastUsedImageType = Image.Type.Simple;
+            }
+
+            public void TextureRead(Texture texture, MaterialParameters.SampleMaskResult sampleResult) {
+                if (_lastReadTexture == texture)
+                    return;
+                _lastReadTexture = texture;
+                switch (sampleResult) {
+                    case MaterialParameters.SampleMaskResult.NonReadable:
+                        Debug.LogErrorFormat(_owner,
+                            "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
+                            + "it's not readable. You can make the texture readable in the Texture Import Settings.",
+                            texture.name);
+                        break;
+                    case MaterialParameters.SampleMaskResult.NonTexture2D:
+                        Debug.LogErrorFormat(_owner,
+                            "Raycast Threshold greater than 0 can't be used on Soft Mask with texture '{0}' because "
+                            + "it's not a Texture2D. Raycast Threshold may be used only with regular 2D textures.",
+                            texture.name);
+                        break;
+                }
+            }
+                
+            public void SpriteUsed(Sprite sprite, Errors errors) {
+                if (_lastUsedSprite == sprite)
+                    return;
+                _lastUsedSprite = sprite;
+                if ((errors & Errors.TightPackedSprite) != 0)
+                    Debug.LogError("SoftMask doesn't support tight packed sprites", _owner);
+                if ((errors & Errors.AlphaSplitSprite) != 0)
+                    Debug.LogError("SoftMask doesn't support sprites with an alpha split texture", _owner);
+            }
+
+            public void ImageUsed(Image image) {
+                if (!image) {
+                    _lastUsedImageSprite = null;
+                    _lastUsedImageType = Image.Type.Simple;
+                    return;
+                }
+                if (_lastUsedImageSprite == image.sprite && _lastUsedImageType == image.type)
+                    return;
+                _lastUsedImageSprite = image.sprite;
+                _lastUsedImageType = image.type;
+                if (!image)
+                    return;
+                if (Diagnostics.IsSupportedImageType(image.type))
+                    return;
+                Debug.LogErrorFormat(_owner,
+                    "SoftMask doesn't support image type {0}. Image type Simple will be used.",
+                    image.type);
             }
         }
     }
