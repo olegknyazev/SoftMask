@@ -567,6 +567,7 @@ namespace SoftMasking {
             public Image image;
             public Sprite sprite;
             public BorderMode spriteBorderMode;
+            public float spritePixelsPerUnit;
             public Texture texture;
             public Rect textureUVRect;
         }
@@ -580,6 +581,11 @@ namespace SoftMasking {
                         result.image = image;
                         result.sprite = image.sprite;
                         result.spriteBorderMode = BorderModeOf(image);
+                    #if UNITY_2019_2_OR_NEWER
+                        result.spritePixelsPerUnit = image.sprite.pixelsPerUnit * image.pixelsPerUnitMultiplier;
+                    #else
+                        result.spritePixelsPerUnit = image.sprite.pixelsPerUnit;
+                    #endif
                         result.texture = image.sprite ? image.sprite.texture : null;
                     } else if (_graphic is RawImage) {
                         var rawImage = (RawImage)_graphic;
@@ -590,6 +596,7 @@ namespace SoftMasking {
                 case MaskSource.Sprite:
                     result.sprite = _sprite;
                     result.spriteBorderMode = _spriteBorderMode;
+                    result.spritePixelsPerUnit = _sprite.pixelsPerUnit;
                     result.texture = _sprite ? _sprite.texture : null;
                     break;
                 case MaskSource.Texture:
@@ -620,7 +627,7 @@ namespace SoftMasking {
             _warningReporter.SpriteUsed(sourceParams.sprite, spriteErrors);
             if (sourceParams.sprite) {
                 if (spriteErrors == Errors.NoError)
-                    CalculateSpriteBased(sourceParams.sprite, sourceParams.spriteBorderMode);
+                    CalculateSpriteBased(sourceParams.sprite, sourceParams.spriteBorderMode, sourceParams.spritePixelsPerUnit);
                 else
                     CalculateSolidFill();
             } else if (sourceParams.texture)
@@ -629,7 +636,7 @@ namespace SoftMasking {
                 CalculateSolidFill();
         }
 
-        void CalculateSpriteBased(Sprite sprite, BorderMode borderMode) {
+        void CalculateSpriteBased(Sprite sprite, BorderMode borderMode, float spritePixelsPerUnit) {
             FillCommonParameters();
             var inner = DataUtility.GetInnerUV(sprite);
             var outer = DataUtility.GetOuterUV(sprite);
@@ -640,15 +647,16 @@ namespace SoftMasking {
                 var normalizedPadding = Mathr.Div(padding, sprite.rect.size);
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(normalizedPadding, Mathr.Size(fullMaskRect)));
             } else {
-                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, padding * SpriteToCanvasScale(sprite));
-                var adjustedBorder = AdjustBorders(sprite.border * SpriteToCanvasScale(sprite), fullMaskRect);
+                var spriteToCanvasScale = SpriteToCanvasScale(spritePixelsPerUnit);
+                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, padding * spriteToCanvasScale);
+                var adjustedBorder = AdjustBorders(sprite.border * spriteToCanvasScale, fullMaskRect);
                 _parameters.maskBorder = LocalMaskRect(adjustedBorder);
                 _parameters.maskBorderUV = inner;
             }
             _parameters.texture = sprite.texture;
             _parameters.borderMode = borderMode;
             if (borderMode == BorderMode.Tiled)
-                _parameters.tileRepeat = MaskRepeat(sprite, _parameters.maskBorder);
+                _parameters.tileRepeat = MaskRepeat(sprite, spritePixelsPerUnit, _parameters.maskBorder);
         }
 
         static Vector4 AdjustBorders(Vector4 border, Vector4 rect) {
@@ -687,10 +695,9 @@ namespace SoftMasking {
             _parameters.invertOutsides = _invertOutsides;
         }
 
-        float SpriteToCanvasScale(Sprite sprite) {
-            var canvasPPU = canvas ? canvas.referencePixelsPerUnit : 100;
-            var maskPPU = sprite ? sprite.pixelsPerUnit : 100;
-            return canvasPPU / maskPPU;
+        float SpriteToCanvasScale(float spritePixelsPerUnit) {
+            var canvasPixelsPerUnit = canvas ? canvas.referencePixelsPerUnit : 100;
+            return canvasPixelsPerUnit / spritePixelsPerUnit;
         }
 
         Matrix4x4 WorldToMask() {
@@ -701,9 +708,9 @@ namespace SoftMasking {
             return Mathr.ApplyBorder(Mathr.ToVector(maskTransform.rect), border);
         }
 
-        Vector2 MaskRepeat(Sprite sprite, Vector4 centralPart) {
+        Vector2 MaskRepeat(Sprite sprite, float spritePixelsPerUnit, Vector4 centralPart) {
             var textureCenter = Mathr.ApplyBorder(Mathr.ToVector(sprite.rect), sprite.border);
-            return Mathr.Div(Mathr.Size(centralPart) * SpriteToCanvasScale(sprite), Mathr.Size(textureCenter));
+            return Mathr.Div(Mathr.Size(centralPart) * SpriteToCanvasScale(spritePixelsPerUnit), Mathr.Size(textureCenter));
         }
 
         void WarnIfDefaultShaderIsNotSet() {
