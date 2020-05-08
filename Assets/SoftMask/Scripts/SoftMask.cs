@@ -65,10 +65,11 @@ namespace SoftMasking {
         [SerializeField] RectTransform _separateMask = null;
         [SerializeField] Sprite _sprite = null;
         [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
+        [SerializeField] float _spritePixelsPerUnitMultiplier = 1f;
         [SerializeField] Texture _texture = null;
         [SerializeField] Rect _textureUVRect = DefaultUVRect;
         [SerializeField] Color _channelWeights = MaskChannel.alpha;
-        [SerializeField] float _raycastThreshold = 0.0f;
+        [SerializeField] float _raycastThreshold = 0f;
         [SerializeField] bool _invertMask = false;
         [SerializeField] bool _invertOutsides = false;
 
@@ -225,6 +226,11 @@ namespace SoftMasking {
         public BorderMode spriteBorderMode {
             get { return _spriteBorderMode; }
             set { if (_spriteBorderMode != value) Set(ref _spriteBorderMode, value); }
+        }
+
+        public float spritePixelsPerUnitMultiplier {
+            get { return _spritePixelsPerUnitMultiplier; }
+            set { if (_spritePixelsPerUnitMultiplier != value) Set(ref _spritePixelsPerUnitMultiplier, value); }
         }
 
         /// <summary>
@@ -603,7 +609,7 @@ namespace SoftMasking {
                     result.sprite = _sprite;
                     result.spriteBorderMode = _spriteBorderMode;
                     if (_sprite) {
-                        result.spritePixelsPerUnit = _sprite.pixelsPerUnit;
+                        result.spritePixelsPerUnit = _sprite.pixelsPerUnit * _spritePixelsPerUnitMultiplier;
                         result.texture = _sprite.texture;
                     } else
                         result.spritePixelsPerUnit = DefaultPixelsPerUnit;
