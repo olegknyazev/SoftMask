@@ -395,6 +395,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   automatedTest: {fileID: 1028915148}
   image: {fileID: 728085502}
+  pixelsPerUnitMultiplierSteps:
+  - 0.5
+  - 1
+  - 2
 --- !u!1 &728085500
 GameObject:
   m_ObjectHideFlags: 0
@@ -537,7 +541,13 @@ MonoBehaviour:
       tolerance: 0
   _lastExecutionSteps: []
   _referenceSteps:
-    _steps: []
+    _steps:
+    - _texture: {fileID: 2800000, guid: d8b24f5e530681d448b335706a584f0c, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: 1dd9b65c8bd78da4398eab2e0546f11f, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: a8cd29905c9aae44bb5548dc2f06a9bb, type: 3}
+      _logRecords: []
     _sceneRelativePath: Auto_ImagePixelsPerUnitModifier_2019
 --- !u!4 &1028915149
 Transform:
@@ -667,7 +677,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -59, y: -22}
+  m_AnchoredPosition: {x: -59, y: -22.000008}
   m_SizeDelta: {x: 160, y: 32.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1739043756
