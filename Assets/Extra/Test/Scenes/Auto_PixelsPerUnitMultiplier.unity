@@ -397,6 +397,7 @@ MonoBehaviour:
   image: {fileID: 0}
   mask: {fileID: 728085504}
   pixelsPerUnitMultiplierSteps:
+  - 0
   - 0.5
   - 1
   - 2
@@ -515,7 +516,13 @@ MonoBehaviour:
       tolerance: 0
   _lastExecutionSteps: []
   _referenceSteps:
-    _steps: []
+    _steps:
+    - _texture: {fileID: 2800000, guid: f9973727e0956204c9058f5f789be4b7, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: 83ce1efdf9635b34d8546629f6466777, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: bac0f55ed9ed7094f9c93d88c1864c3f, type: 3}
+      _logRecords: []
     _sceneRelativePath: Auto_PixelsPerUnitMultiplier
 --- !u!4 &1028915149
 Transform:
