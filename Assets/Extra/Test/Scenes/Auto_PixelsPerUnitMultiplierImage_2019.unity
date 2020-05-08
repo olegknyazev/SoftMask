@@ -395,7 +395,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   automatedTest: {fileID: 1028915148}
   image: {fileID: 728085502}
+  mask: {fileID: 0}
   pixelsPerUnitMultiplierSteps:
+  - 0
   - 0.5
   - 1
   - 2
@@ -488,6 +490,7 @@ MonoBehaviour:
   _separateMask: {fileID: 0}
   _sprite: {fileID: 0}
   _spriteBorderMode: 0
+  _spritePixelsPerUnitMultiplier: 1
   _texture: {fileID: 0}
   _textureUVRect:
     serializedVersion: 2
@@ -548,7 +551,7 @@ MonoBehaviour:
       _logRecords: []
     - _texture: {fileID: 2800000, guid: a8cd29905c9aae44bb5548dc2f06a9bb, type: 3}
       _logRecords: []
-    _sceneRelativePath: Auto_ImagePixelsPerUnitModifier_2019
+    _sceneRelativePath: Auto_PixelsPerUnitMultiplierImage_2019
 --- !u!4 &1028915149
 Transform:
   m_ObjectHideFlags: 0
