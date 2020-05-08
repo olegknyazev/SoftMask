@@ -230,7 +230,10 @@ namespace SoftMasking {
 
         public float spritePixelsPerUnitMultiplier {
             get { return _spritePixelsPerUnitMultiplier; }
-            set { if (_spritePixelsPerUnitMultiplier != value) Set(ref _spritePixelsPerUnitMultiplier, value); }
+            set { 
+                if (_spritePixelsPerUnitMultiplier != value)
+                    Set(ref _spritePixelsPerUnitMultiplier, ClampPixelsPerUnitMultiplier(value));
+            }
         }
 
         /// <summary>
@@ -424,11 +427,16 @@ namespace SoftMasking {
     #if UNITY_EDITOR
         protected override void OnValidate() {
             base.OnValidate();
+            _spritePixelsPerUnitMultiplier = ClampPixelsPerUnitMultiplier(_spritePixelsPerUnitMultiplier);
             _dirty = true;
             _maskTransform = null;
             _graphic = null;
         }
     #endif
+
+        static float ClampPixelsPerUnitMultiplier(float value) {
+            return Mathf.Max(value, 0.01f);
+        }
 
         protected override void OnTransformParentChanged() {
             base.OnTransformParentChanged();
