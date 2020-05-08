@@ -496,7 +496,7 @@ namespace SoftMasking {
         }
 
         void OnGraphicDirty() {
-            if (isBasedOnGraphic)
+            if (isBasedOnGraphic) // TODO is this check neccessary?
                 _dirty = true;
         }
 
