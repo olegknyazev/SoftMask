@@ -572,21 +572,27 @@ namespace SoftMasking {
             public Rect textureUVRect;
         }
 
+        const float DefaultPixelsPerUnit = 100f;
+
         SourceParameters DeduceSourceParameters() {
             var result = new SourceParameters();
             switch (_source) {
                 case MaskSource.Graphic:
                     if (_graphic is Image) {
                         var image = (Image)_graphic;
+                        var sprite = image.sprite;
                         result.image = image;
-                        result.sprite = image.sprite;
+                        result.sprite = sprite;
                         result.spriteBorderMode = BorderModeOf(image);
-                    #if UNITY_2019_2_OR_NEWER
-                        result.spritePixelsPerUnit = image.sprite.pixelsPerUnit * image.pixelsPerUnitMultiplier;
-                    #else
-                        result.spritePixelsPerUnit = image.sprite.pixelsPerUnit;
-                    #endif
-                        result.texture = image.sprite ? image.sprite.texture : null;
+                        if (sprite) {
+                        #if UNITY_2019_2_OR_NEWER
+                            result.spritePixelsPerUnit = sprite.pixelsPerUnit * image.pixelsPerUnitMultiplier;
+                        #else
+                            result.spritePixelsPerUnit = sprite.pixelsPerUnit;
+                        #endif
+                            result.texture = sprite.texture;
+                        } else
+                            result.spritePixelsPerUnit = DefaultPixelsPerUnit;
                     } else if (_graphic is RawImage) {
                         var rawImage = (RawImage)_graphic;
                         result.texture = rawImage.texture;
@@ -596,8 +602,11 @@ namespace SoftMasking {
                 case MaskSource.Sprite:
                     result.sprite = _sprite;
                     result.spriteBorderMode = _spriteBorderMode;
-                    result.spritePixelsPerUnit = _sprite.pixelsPerUnit;
-                    result.texture = _sprite ? _sprite.texture : null;
+                    if (_sprite) {
+                        result.spritePixelsPerUnit = _sprite.pixelsPerUnit;
+                        result.texture = _sprite.texture;
+                    } else
+                        result.spritePixelsPerUnit = DefaultPixelsPerUnit;
                     break;
                 case MaskSource.Texture:
                     result.texture = _texture;
