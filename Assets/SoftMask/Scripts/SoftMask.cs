@@ -212,22 +212,31 @@ namespace SoftMasking {
 
         /// <summary>
         /// Specifies a Sprite that should be used as the mask image. This property takes
-        /// effect only when the source is MaskSource.Sprite.
+        /// effect only when source is MaskSource.Sprite.
         /// </summary>
+        /// <seealso cref="source"/>
         public Sprite sprite {
             get { return _sprite; }
             set { if (_sprite != value) Set(ref _sprite, value); }
         }
 
         /// <summary>
-        /// Specifies the draw mode of sprite borders. This property takes effect only when the
+        /// Specifies how to draw sprite borders. This property takes effect only when
         /// source is MaskSource.Sprite.
         /// </summary>
+        /// <seealso cref="source"/>
+        /// <seealso cref="sprite"/>
         public BorderMode spriteBorderMode {
             get { return _spriteBorderMode; }
             set { if (_spriteBorderMode != value) Set(ref _spriteBorderMode, value); }
         }
 
+        /// <summary>
+        /// A multiplier that is applied to the pixelsPerUnit property of the selected sprite.
+        /// Default value is 1. This property takes effect only when source is MaskSource.Sprite.
+        /// </summary>
+        /// <seealso cref="source"/>
+        /// <seealso cref="sprite"/>
         public float spritePixelsPerUnitMultiplier {
             get { return _spritePixelsPerUnitMultiplier; }
             set { 
