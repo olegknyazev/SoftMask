@@ -6,12 +6,12 @@ using UnityEditor;
 using UnityEngine;
 
 namespace SoftMasking.TextMeshPro.Editor {
-    // Generates Binary and Package variants of samples from Source samples.
+    // Generates Binary and Package variants of TextMesh Pro samples from Source samples.
     public static class SampleVariantsGenerator {
         const string samplesRoot = "Assets/SoftMask/Samples/TextMeshPro";
-        const string sourcePrefix = "SourceTMPro";
-        const string binaryPrefix = "BinaryTMPro";
-        const string packagePrefix = "PackageTMPro";
+        const string sourcePrefix = "_ForOldSourceTMProVersion";
+        const string binaryPrefix = "_ForOldBinaryTMProVersion";
+        const string packagePrefix = "";
 
         struct Bucket {
             public string source;
@@ -25,16 +25,6 @@ namespace SoftMasking.TextMeshPro.Editor {
             public Bucket Map(Func<string, string> f) {
                 return new Bucket(f(source), destinations.Select(f).ToArray());
             }
-        }
-
-        static void ReplaceInFiles(IEnumerable<Bucket> replacements, Bucket files) {
-            var src = File.ReadAllText(files.source);
-            for (int i = 0; i < files.destinations.Length; ++i)
-                File.WriteAllText(
-                    files.destinations[i],
-                    replacements.Aggregate(
-                        src,
-                        (t, repl) => t.Replace(repl.source, repl.destinations[i])));
         }
 
         static readonly List<Bucket> tmproReplacements = new List<Bucket> {
@@ -55,10 +45,11 @@ namespace SoftMasking.TextMeshPro.Editor {
         [MenuItem("Tools/Soft Mask/Generate Binary and Package sample variants")]
         public static void GenerateAssets() {
             var assetBuckets = CollectAssets();
-            var allReplacements = tmproReplacements.Concat(CollectAssetReplacements(assetBuckets));
+            var assetReplacements = ToGUIDs(assetBuckets);
+            var allReplacements = tmproReplacements.Concat(assetReplacements);
             foreach (var assets in assetBuckets) {
                 Debug.LogFormat("Updating {0}", assets.source);
-                ReplaceInFiles(allReplacements, assets);
+                ReplaceInAssetFiles(assets, allReplacements);
             }
             AssetDatabase.Refresh();
         }
@@ -80,9 +71,18 @@ namespace SoftMasking.TextMeshPro.Editor {
                         });
         }
 
-        static IEnumerable<Bucket> CollectAssetReplacements(
-                IEnumerable<Bucket> assetReplacements) {
-            return assetReplacements.Select(r => r.Map(AssetDatabase.AssetPathToGUID));
+        static IEnumerable<Bucket> ToGUIDs(IEnumerable<Bucket> assetPathBuckets) {
+            return assetPathBuckets.Select(r => r.Map(AssetDatabase.AssetPathToGUID));
+        }
+
+        static void ReplaceInAssetFiles(Bucket files, IEnumerable<Bucket> replacements) {
+            var fileContent = File.ReadAllText(files.source);
+            for (int i = 0; i < files.destinations.Length; ++i)
+                File.WriteAllText(
+                    files.destinations[i],
+                    replacements.Aggregate(
+                        fileContent,
+                        (content, repl) => content.Replace(repl.source, repl.destinations[i])));
         }
     }
 }
