@@ -11,6 +11,7 @@ namespace SoftMasking.Editor {
         SerializedProperty _separateMask;
         SerializedProperty _sprite;
         SerializedProperty _spriteBorderMode;
+        SerializedProperty _spritePixelsPerUnitMultiplier;
         SerializedProperty _texture;
         SerializedProperty _textureUVRect;
         SerializedProperty _channelWeights;
@@ -28,6 +29,8 @@ namespace SoftMasking.Editor {
             public static readonly GUIContent SpriteBorderMode = new GUIContent("Sprite Border Mode",
                 "Specifies how sprite borders should be processed. Corresponds to Unity UI Image " +
                 "types. The Sliced and Tiled modes are available only for sprites having borders.");
+            public static readonly GUIContent SpritePixelsPerUnitMultiplier = new GUIContent("Pixels Per Unit Multiplier",
+                "Specifies a multiplier that is applied to Sprite's Pixels Per Unit property.");
             public static readonly GUIContent Texture = new GUIContent("Texture",
                 "Texture that should be used as the mask image.");
             public static readonly GUIContent TextureUVRect = new GUIContent("Texture UV Rect",
@@ -88,6 +91,7 @@ namespace SoftMasking.Editor {
             _separateMask = serializedObject.FindProperty("_separateMask");
             _sprite = serializedObject.FindProperty("_sprite");
             _spriteBorderMode = serializedObject.FindProperty("_spriteBorderMode");
+            _spritePixelsPerUnitMultiplier = serializedObject.FindProperty("_spritePixelsPerUnitMultiplier");
             _texture = serializedObject.FindProperty("_texture");
             _textureUVRect = serializedObject.FindProperty("_textureUVRect");
             _channelWeights = serializedObject.FindProperty("_channelWeights");
@@ -98,6 +102,7 @@ namespace SoftMasking.Editor {
             Assert.IsNotNull(_separateMask);
             Assert.IsNotNull(_sprite);
             Assert.IsNotNull(_spriteBorderMode);
+            Assert.IsNotNull(_spritePixelsPerUnitMultiplier);
             Assert.IsNotNull(_texture);
             Assert.IsNotNull(_textureUVRect);
             Assert.IsNotNull(_channelWeights);
@@ -117,6 +122,8 @@ namespace SoftMasking.Editor {
                     case SoftMask.MaskSource.Sprite:
                         EditorGUILayout.PropertyField(_sprite, Labels.Sprite);
                         EditorGUILayout.PropertyField(_spriteBorderMode, Labels.SpriteBorderMode);
+                        if ((SoftMask.BorderMode)_spriteBorderMode.enumValueIndex != SoftMask.BorderMode.Simple)
+                            EditorGUILayout.PropertyField(_spritePixelsPerUnitMultiplier, Labels.SpritePixelsPerUnitMultiplier);
                         break;
                     case SoftMask.MaskSource.Texture:
                         EditorGUILayout.PropertyField(_texture, Labels.Texture);

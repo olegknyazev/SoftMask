@@ -65,10 +65,11 @@ namespace SoftMasking {
         [SerializeField] RectTransform _separateMask = null;
         [SerializeField] Sprite _sprite = null;
         [SerializeField] BorderMode _spriteBorderMode = BorderMode.Simple;
+        [SerializeField] float _spritePixelsPerUnitMultiplier = 1f;
         [SerializeField] Texture _texture = null;
         [SerializeField] Rect _textureUVRect = DefaultUVRect;
         [SerializeField] Color _channelWeights = MaskChannel.alpha;
-        [SerializeField] float _raycastThreshold = 0.0f;
+        [SerializeField] float _raycastThreshold = 0f;
         [SerializeField] bool _invertMask = false;
         [SerializeField] bool _invertOutsides = false;
 
@@ -211,20 +212,37 @@ namespace SoftMasking {
 
         /// <summary>
         /// Specifies a Sprite that should be used as the mask image. This property takes
-        /// effect only when the source is MaskSource.Sprite.
+        /// effect only when source is MaskSource.Sprite.
         /// </summary>
+        /// <seealso cref="source"/>
         public Sprite sprite {
             get { return _sprite; }
             set { if (_sprite != value) Set(ref _sprite, value); }
         }
 
         /// <summary>
-        /// Specifies the draw mode of sprite borders. This property takes effect only when the
+        /// Specifies how to draw sprite borders. This property takes effect only when
         /// source is MaskSource.Sprite.
         /// </summary>
+        /// <seealso cref="source"/>
+        /// <seealso cref="sprite"/>
         public BorderMode spriteBorderMode {
             get { return _spriteBorderMode; }
             set { if (_spriteBorderMode != value) Set(ref _spriteBorderMode, value); }
+        }
+
+        /// <summary>
+        /// A multiplier that is applied to the pixelsPerUnit property of the selected sprite.
+        /// Default value is 1. This property takes effect only when source is MaskSource.Sprite.
+        /// </summary>
+        /// <seealso cref="source"/>
+        /// <seealso cref="sprite"/>
+        public float spritePixelsPerUnitMultiplier {
+            get { return _spritePixelsPerUnitMultiplier; }
+            set { 
+                if (_spritePixelsPerUnitMultiplier != value)
+                    Set(ref _spritePixelsPerUnitMultiplier, ClampPixelsPerUnitMultiplier(value));
+            }
         }
 
         /// <summary>
@@ -418,11 +436,16 @@ namespace SoftMasking {
     #if UNITY_EDITOR
         protected override void OnValidate() {
             base.OnValidate();
+            _spritePixelsPerUnitMultiplier = ClampPixelsPerUnitMultiplier(_spritePixelsPerUnitMultiplier);
             _dirty = true;
             _maskTransform = null;
             _graphic = null;
         }
     #endif
+
+        static float ClampPixelsPerUnitMultiplier(float value) {
+            return Mathf.Max(value, 0.01f);
+        }
 
         protected override void OnTransformParentChanged() {
             base.OnTransformParentChanged();
@@ -603,7 +626,7 @@ namespace SoftMasking {
                     result.sprite = _sprite;
                     result.spriteBorderMode = _spriteBorderMode;
                     if (_sprite) {
-                        result.spritePixelsPerUnit = _sprite.pixelsPerUnit;
+                        result.spritePixelsPerUnit = _sprite.pixelsPerUnit * _spritePixelsPerUnitMultiplier;
                         result.texture = _sprite.texture;
                     } else
                         result.spritePixelsPerUnit = DefaultPixelsPerUnit;
