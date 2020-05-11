@@ -6,12 +6,12 @@ using UnityEditor;
 using UnityEngine;
 
 namespace SoftMasking.TextMeshPro.Editor {
-    // Generates Binary and Package variants of samples from Source samples.
+    // Generates Binary and Package variants of TextMesh Pro samples from Source samples.
     public static class SampleVariantsGenerator {
         const string samplesRoot = "Assets/SoftMask/Samples/TextMeshPro";
-        const string sourcePrefix = "SourceTMPro";
-        const string binaryPrefix = "BinaryTMPro";
-        const string packagePrefix = "PackageTMPro";
+        const string sourcePrefix = "_ForOldSourceTMProVersion";
+        const string binaryPrefix = "_ForOldBinaryTMProVersion";
+        const string packagePrefix = "";
 
         struct Bucket {
             public string source;
