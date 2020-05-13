@@ -43,20 +43,40 @@ namespace SoftMasking.Editor {
             Assert.IsTrue(ConvertMaskMenu.CanConvert());
         }
 
-        [Test] public void WhenInvokedOnNonRenderableImage_ShouldConvertItToSpriteSoftMask() {
-            var standardSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
-            var go = CreateGameObject();
-            var image = go.AddComponent<Image>();
-            image.sprite = standardSprite;
-            image.type = Image.Type.Sliced;
-            var mask = go.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
+        [Test] public void AfterInvokedOnNonRenderableImage_SelectedObjectShouldHaveSoftMask() {
+            var go = CreateObjectWithNonRenderableMask();
             SelectObjects(go);
             ConvertMaskMenu.Convert();
             var softMask = go.GetComponent<SoftMask>();
-            Assert.AreEqual(standardSprite, softMask.sprite);
+            Assert.IsNotNull(softMask);
+            Assert.AreEqual(standardUISprite, softMask.sprite);
             Assert.AreEqual(SoftMask.BorderMode.Sliced, softMask.spriteBorderMode);
-            // TODO check standard mask is removed (here or a seprate test?)
+        }
+
+        GameObject CreateObjectWithNonRenderableMask() {
+            var go = CreateGameObject();
+            var image = go.AddComponent<Image>();
+            image.sprite = standardUISprite;
+            image.type = Image.Type.Sliced;
+            var mask = go.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+            return go;
+        }
+
+        static Sprite _standardUISprite;
+        static Sprite standardUISprite {
+            get {
+                return _standardUISprite
+                    ? _standardUISprite
+                    : (_standardUISprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd"));
+            }
+        }
+
+        [Test] public void AfterInvokedOnNonRenderableImage_SelectedObjectShouldHaveNoStandardMask() {
+            var go = CreateObjectWithNonRenderableMask();
+            SelectObjects(go);
+            ConvertMaskMenu.Convert();
+            Assert.IsNull(go.GetComponent<Mask>());
         }
     }
 }

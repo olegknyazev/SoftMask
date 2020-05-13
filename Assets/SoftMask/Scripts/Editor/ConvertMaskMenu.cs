@@ -48,7 +48,7 @@ namespace SoftMasking.Editor {
                 #if UNITY_2019_2_OR_NEWER
                     softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
                 #endif
-                    // TODO remove standard mask
+                    UnityEngine.Object.DestroyImmediate(mask);
                 } else if (graphic is RawImage) {
                     var rawImage = (RawImage)graphic;
                     softMask.source = SoftMask.MaskSource.Texture;
