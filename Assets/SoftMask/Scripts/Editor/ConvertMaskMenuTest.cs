@@ -44,22 +44,31 @@ namespace SoftMasking.Editor {
         }
 
         [Test] public void AfterInvokedOnNonRenderableImage_SelectedObjectShouldHaveSoftMask() {
-            var go = CreateObjectWithNonRenderableMask();
-            SelectObjects(go);
-            ConvertMaskMenu.Convert();
+            var go = CreateAndConvertImageMask(renderable: false);
             var softMask = go.GetComponent<SoftMask>();
             Assert.IsNotNull(softMask);
             Assert.AreEqual(standardUISprite, softMask.sprite);
             Assert.AreEqual(SoftMask.BorderMode.Sliced, softMask.spriteBorderMode);
         }
 
+        GameObject CreateAndConvertImageMask(bool renderable) {
+            var go = CreateObjectWithImageMask(renderable);
+            SelectObjects(go);
+            ConvertMaskMenu.Convert();
+            return go;
+        }
+
         GameObject CreateObjectWithNonRenderableMask() {
+            return CreateObjectWithImageMask(renderable: false);
+        }
+        
+        GameObject CreateObjectWithImageMask(bool renderable) {
             var go = CreateGameObject();
             var image = go.AddComponent<Image>();
             image.sprite = standardUISprite;
             image.type = Image.Type.Sliced;
             var mask = go.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
+            mask.showMaskGraphic = renderable;
             return go;
         }
 
@@ -73,9 +82,17 @@ namespace SoftMasking.Editor {
         }
 
         [Test] public void AfterInvokedOnNonRenderableImage_SelectedObjectShouldHaveNoStandardMask() {
-            var go = CreateObjectWithNonRenderableMask();
-            SelectObjects(go);
-            ConvertMaskMenu.Convert();
+            var go = CreateAndConvertImageMask(renderable: false);
+            Assert.IsNull(go.GetComponent<Mask>());
+        }
+
+        [Test] public void AfterInvokedOnNonRenderableImage_SelectedObjectShouldHaveNoImage() {
+            var go = CreateAndConvertImageMask(renderable: false);
+            Assert.IsNull(go.GetComponent<Image>());
+        }
+
+        [Test] public void AfterInvokedOnRenderableImage_SelectedObjectShouldHaveNoStandardMask() {
+            var go = CreateAndConvertImageMask(renderable: true);
             Assert.IsNull(go.GetComponent<Mask>());
         }
     }
