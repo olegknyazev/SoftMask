@@ -52,13 +52,13 @@ namespace SoftMasking.Editor {
             };
             SelectObjects(gos);
             ConvertMaskMenu.Convert();
-            AssertConvertedProperty(gos[0], renderable: true, raw: false);
-            AssertConvertedProperty(gos[1], renderable: false, raw: false);
-            AssertConvertedProperty(gos[2], renderable: true, raw: true);
-            AssertConvertedProperty(gos[3], renderable: false, raw: true);
+            AssertConvertedProperly(gos[0], renderable: true, raw: false);
+            AssertConvertedProperly(gos[1], renderable: false, raw: false);
+            AssertConvertedProperly(gos[2], renderable: true, raw: true);
+            AssertConvertedProperly(gos[3], renderable: false, raw: true);
         }
 
-        void AssertConvertedProperty(GameObject go, bool renderable, bool raw) {
+        void AssertConvertedProperly(GameObject go, bool renderable, bool raw) {
             var softMask = go.GetComponent<SoftMask>();
             Assert.IsNotNull(softMask);
             Assert.IsNull(go.GetComponent<Mask>());
@@ -66,16 +66,31 @@ namespace SoftMasking.Editor {
                 Assert.AreEqual(SoftMask.MaskSource.Graphic, softMask.source);
             else {
                 if (raw) {
-                    Assert.IsNull(go.GetComponent<RawImage>());
-                    Assert.AreEqual(standardUISprite.texture, softMask.texture);
-                    Assert.AreEqual(standardRect, softMask.textureUVRect);
+                    AssertHasNoRawImage(go);
+                    AssertRawImageConvertedProperly(softMask);
                 } else {
-                    Assert.IsNull(go.GetComponent<Image>());
-                    Assert.AreEqual(standardUISprite, softMask.sprite);
-                    Assert.AreEqual(SoftMask.BorderMode.Sliced, softMask.spriteBorderMode);
-                    // TODO check pixelsPerUnitMultiplier in 2019.2
+                    AssertHasNoImage(go);
+                    AssertImageConvertedProperly(softMask);
                 }
             }
+        }
+        
+        static void AssertHasNoRawImage(GameObject go) {
+            Assert.IsNull(go.GetComponent<RawImage>());
+        }
+
+        static void AssertRawImageConvertedProperly(SoftMask softMask) {
+            Assert.AreEqual(standardUISprite.texture, softMask.texture);
+            Assert.AreEqual(standardRect, softMask.textureUVRect);
+        }
+        
+        static void AssertHasNoImage(GameObject go) {
+            Assert.IsNull(go.GetComponent<Image>());
+        }
+        static void AssertImageConvertedProperly(SoftMask softMask) {
+            Assert.AreEqual(standardUISprite, softMask.sprite);
+            Assert.AreEqual(SoftMask.BorderMode.Sliced, softMask.spriteBorderMode);
+            // TODO check pixelsPerUnitMultiplier in 2019.2
         }
 
         GameObject CreateObjectWithImageMask(bool renderable) {
