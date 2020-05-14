@@ -42,20 +42,40 @@ namespace SoftMasking.Editor {
             SelectObjects(go);
             Assert.IsTrue(ConvertMaskMenu.CanConvert());
         }
-
-        [Test] public void AfterInvokedOnNonRenderableImage_SelectedObjectShouldHaveSoftMask() {
-            var go = CreateAndConvertImageMask(renderable: false);
-            var softMask = go.GetComponent<SoftMask>();
-            Assert.IsNotNull(softMask);
-            Assert.AreEqual(standardUISprite, softMask.sprite);
-            Assert.AreEqual(SoftMask.BorderMode.Sliced, softMask.spriteBorderMode);
+        
+        [Test] public void WhenInvokedOnSeveralObjects_TheyAllShouldBeConverted() {
+            var gos = new [] {
+                CreateObjectWithImageMask(renderable: true),
+                CreateObjectWithImageMask(renderable: false),
+                CreateObjectWithRawImageMask(renderable: true),
+                CreateObjectWithRawImageMask(renderable: false),
+            };
+            SelectObjects(gos);
+            ConvertMaskMenu.Convert();
+            AssertConvertedProperty(gos[0], renderable: true, raw: false);
+            AssertConvertedProperty(gos[1], renderable: false, raw: false);
+            AssertConvertedProperty(gos[2], renderable: true, raw: true);
+            AssertConvertedProperty(gos[3], renderable: false, raw: true);
         }
 
-        GameObject CreateAndConvertImageMask(bool renderable) {
-            var go = CreateObjectWithImageMask(renderable);
-            SelectObjects(go);
-            ConvertMaskMenu.Convert();
-            return go;
+        void AssertConvertedProperty(GameObject go, bool renderable, bool raw) {
+            var softMask = go.GetComponent<SoftMask>();
+            Assert.IsNotNull(softMask);
+            Assert.IsNull(go.GetComponent<Mask>());
+            if (renderable)
+                Assert.AreEqual(SoftMask.MaskSource.Graphic, softMask.source);
+            else {
+                if (raw) {
+                    Assert.IsNull(go.GetComponent<RawImage>());
+                    Assert.AreEqual(standardUISprite.texture, softMask.texture);
+                    Assert.AreEqual(standardRect, softMask.textureUVRect);
+                } else {
+                    Assert.IsNull(go.GetComponent<Image>());
+                    Assert.AreEqual(standardUISprite, softMask.sprite);
+                    Assert.AreEqual(SoftMask.BorderMode.Sliced, softMask.spriteBorderMode);
+                    // TODO check pixelsPerUnitMultiplier in 2019.2
+                }
+            }
         }
 
         GameObject CreateObjectWithImageMask(bool renderable) {
@@ -77,50 +97,6 @@ namespace SoftMasking.Editor {
             }
         }
 
-        [Test] public void AfterInvokedOnNonRenderableImage_SelectedObjectShouldHaveNoStandardMask() {
-            var go = CreateAndConvertImageMask(renderable: false);
-            Assert.IsNull(go.GetComponent<Mask>());
-        }
-
-        [Test] public void AfterInvokedOnNonRenderableImage_SelectedObjectShouldHaveNoImage() {
-            var go = CreateAndConvertImageMask(renderable: false);
-            Assert.IsNull(go.GetComponent<Image>());
-        }
-
-        [Test] public void AfterInvokedOnRenderableImage_SelectedObjectShouldHaveSoftMask() {
-            var go = CreateAndConvertImageMask(renderable: true);
-            var softMask = go.GetComponent<SoftMask>();
-            Assert.IsNotNull(softMask);
-            Assert.AreEqual(SoftMask.MaskSource.Graphic, softMask.source);
-        }
-
-        [Test] public void AfterInvokedOnRenderableImage_SelectedObjectShouldStillHaveImage() {
-            var go = CreateAndConvertImageMask(renderable: true);
-            Assert.IsNotNull(go.GetComponent<Image>());
-        }
-
-        [Test] public void AfterInvokedOnRenderableImage_SelectedObjectShouldHaveNoStandardMask() {
-            var go = CreateAndConvertImageMask(renderable: true);
-            Assert.IsNull(go.GetComponent<Mask>());
-        }
-
-        [Test] public void AfterInvokedOnNonRenderableRawImage_SelectedObjectShouldHaveSoftMask() {
-            var go = CreateAndConvertRawImageMask(renderable: false);
-            var softMask = go.GetComponent<SoftMask>();
-            Assert.IsNotNull(softMask);
-            Assert.AreEqual(standardUISprite.texture, softMask.texture);
-            Assert.AreEqual(standardRect, softMask.textureUVRect);
-        }
-        
-        GameObject CreateAndConvertRawImageMask(bool renderable) {
-            var go = CreateObjectWithRawImageMask(renderable);
-            SelectObjects(go);
-            ConvertMaskMenu.Convert();
-            return go;
-        }
-
-        static readonly Rect standardRect = new Rect(0.2f, 0.1f, 0.7f, 0.6f);
-
         GameObject CreateObjectWithRawImageMask(bool renderable) {
             var go = CreateGameObject();
             var image = go.AddComponent<RawImage>();
@@ -131,14 +107,6 @@ namespace SoftMasking.Editor {
             return go;
         }
 
-        [Test] public void AfterInvokedOnNonRenderableRawImage_SelectedObjectShouldHaveNoStandardMask() {
-            var go = CreateAndConvertRawImageMask(renderable: false);
-            Assert.IsNull(go.GetComponent<Mask>());
-        }
-
-        [Test] public void AfterInvokedOnNonRenderableRawImage_SelectedObjectShouldHaveNoRawImage() {
-            var go = CreateAndConvertRawImageMask(renderable: false);
-            Assert.IsNull(go.GetComponent<RawImage>());
-        }
+        static readonly Rect standardRect = new Rect(0.2f, 0.1f, 0.7f, 0.6f);
     }
 }
