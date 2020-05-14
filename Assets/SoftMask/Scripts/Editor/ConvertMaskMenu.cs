@@ -61,7 +61,8 @@ namespace SoftMasking.Editor {
                     else
                         ; // TODO report error
                     softMask.textureUVRect = rawImage.uvRect;
-                    // TODO remove standard mask
+                    UnityEngine.Object.DestroyImmediate(mask);
+                    UnityEngine.Object.DestroyImmediate(rawImage);
                 } else {
                     Debug.LogAssertionFormat("Converted Game Object should have an Image or Raw Image component");
                 }

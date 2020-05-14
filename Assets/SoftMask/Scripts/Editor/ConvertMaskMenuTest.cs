@@ -58,10 +58,6 @@ namespace SoftMasking.Editor {
             return go;
         }
 
-        GameObject CreateObjectWithNonRenderableMask() {
-            return CreateObjectWithImageMask(renderable: false);
-        }
-        
         GameObject CreateObjectWithImageMask(bool renderable) {
             var go = CreateGameObject();
             var image = go.AddComponent<Image>();
@@ -91,9 +87,58 @@ namespace SoftMasking.Editor {
             Assert.IsNull(go.GetComponent<Image>());
         }
 
+        [Test] public void AfterInvokedOnRenderableImage_SelectedObjectShouldHaveSoftMask() {
+            var go = CreateAndConvertImageMask(renderable: true);
+            var softMask = go.GetComponent<SoftMask>();
+            Assert.IsNotNull(softMask);
+            Assert.AreEqual(SoftMask.MaskSource.Graphic, softMask.source);
+        }
+
+        [Test] public void AfterInvokedOnRenderableImage_SelectedObjectShouldStillHaveImage() {
+            var go = CreateAndConvertImageMask(renderable: true);
+            Assert.IsNotNull(go.GetComponent<Image>());
+        }
+
         [Test] public void AfterInvokedOnRenderableImage_SelectedObjectShouldHaveNoStandardMask() {
             var go = CreateAndConvertImageMask(renderable: true);
             Assert.IsNull(go.GetComponent<Mask>());
+        }
+
+        [Test] public void AfterInvokedOnNonRenderableRawImage_SelectedObjectShouldHaveSoftMask() {
+            var go = CreateAndConvertRawImageMask(renderable: false);
+            var softMask = go.GetComponent<SoftMask>();
+            Assert.IsNotNull(softMask);
+            Assert.AreEqual(standardUISprite.texture, softMask.texture);
+            Assert.AreEqual(standardRect, softMask.textureUVRect);
+        }
+        
+        GameObject CreateAndConvertRawImageMask(bool renderable) {
+            var go = CreateObjectWithRawImageMask(renderable);
+            SelectObjects(go);
+            ConvertMaskMenu.Convert();
+            return go;
+        }
+
+        static readonly Rect standardRect = new Rect(0.2f, 0.1f, 0.7f, 0.6f);
+
+        GameObject CreateObjectWithRawImageMask(bool renderable) {
+            var go = CreateGameObject();
+            var image = go.AddComponent<RawImage>();
+            image.texture = standardUISprite.texture;
+            image.uvRect = standardRect;
+            var mask = go.AddComponent<Mask>();
+            mask.showMaskGraphic = renderable;
+            return go;
+        }
+
+        [Test] public void AfterInvokedOnNonRenderableRawImage_SelectedObjectShouldHaveNoStandardMask() {
+            var go = CreateAndConvertRawImageMask(renderable: false);
+            Assert.IsNull(go.GetComponent<Mask>());
+        }
+
+        [Test] public void AfterInvokedOnNonRenderableRawImage_SelectedObjectShouldHaveNoRawImage() {
+            var go = CreateAndConvertRawImageMask(renderable: false);
+            Assert.IsNull(go.GetComponent<RawImage>());
         }
     }
 }
