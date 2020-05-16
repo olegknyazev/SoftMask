@@ -22,11 +22,27 @@ namespace SoftMasking.Editor {
         }
 
         [Test] public void WhenEmptyObjectSelected_ShouldBeNotAvailable() {
-            var go = CreateGameObject();
+            AssertObjectIsNotConvertible();
+        }
+
+        [Test] public void WhenObjectWithMaskButWithoutGraphicSelected_ShouldBeNotAvailable() {
+            AssertObjectIsNotConvertible(typeof(Mask));
+        }
+
+        [Test] public void WhenObjectWithGraphicButWithoutMaskSelected_ShouldBeNotAvailable() {
+            AssertObjectIsNotConvertible(typeof(Image));
+        }
+
+        [Test] public void WhenObjectWithWrongTypeOfGraphicSelected_ShouldBeNotAvailable() {
+            AssertObjectIsNotConvertible(typeof(Text), typeof(Mask));
+        }
+        
+        void AssertObjectIsNotConvertible(params Type[] componentTypes) {
+            var go = CreateGameObject(componentTypes);
             SelectObjects(go);
             Assert.IsFalse(ConvertMaskMenu.CanConvert());
         }
-
+        
         GameObject CreateGameObject(params Type[] componentTypes) {
             var go = new GameObject("TestObject", componentTypes);
             objectsToDestroy.Add(go);
@@ -35,6 +51,13 @@ namespace SoftMasking.Editor {
 
         void SelectObjects(params GameObject[] objects) {
             Selection.objects = objects.Cast<Object>().ToArray();
+        }
+
+        [Test] public void WhenNotAllOfSelectedObjectsConvertible_ShouldBeNotAvailable() {
+            var good = CreateGameObject(typeof(Mask), typeof(Image));
+            var bad = CreateGameObject(typeof(Mask), typeof(Text));
+            SelectObjects(good, bad);
+            Assert.IsFalse(ConvertMaskMenu.CanConvert());
         }
 
         [Test] public void WhenConvertibleObjectsSelected_ShouldBeAvailable() {
