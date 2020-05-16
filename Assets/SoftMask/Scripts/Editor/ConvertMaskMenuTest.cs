@@ -121,10 +121,10 @@ namespace SoftMasking.Editor {
             // TODO check pixelsPerUnitMultiplier in 2019.2
         }
 
-        GameObject CreateObjectWithImageMask(bool renderable) {
+        GameObject CreateObjectWithImageMask(bool renderable, Sprite sprite = null) {
             var go = CreateGameObject();
             var image = go.AddComponent<Image>();
-            image.sprite = standardUISprite;
+            image.sprite = sprite ? sprite : standardUISprite;
             image.type = Image.Type.Sliced;
             var mask = go.AddComponent<Mask>();
             mask.showMaskGraphic = renderable;
@@ -152,13 +152,29 @@ namespace SoftMasking.Editor {
 
         static readonly Rect standardRect = new Rect(0.2f, 0.1f, 0.7f, 0.6f);
 
-        [Test] public void WhenNonRenderableImageWithStandardUIMaskSpriteConverted_SoftMaskShouldHaveAdaptedSprite() {
-            var go = CreateObjectWithImageMask(renderable: false);
-            go.GetComponent<Image>().sprite = ConvertMaskMenu.standardUIMaskSprite;
+        [Test] public void WhenImageWithStandardUIMaskSpriteConverted_SoftMaskShouldHaveAdaptedSprite() {
+            foreach (var renderable in new [] { true, false }) {
+                var go = CreateAndConvertObjectWithImageMask(renderable, sprite: ConvertMaskMenu.standardUIMaskSprite);
+                AssertMaskHaveAdaptedSprite(go);
+            }
+        }
+
+        GameObject CreateAndConvertObjectWithImageMask(bool renderable, Sprite sprite = null) {
+            var go = CreateObjectWithImageMask(renderable, sprite: sprite);
             SelectObjects(go);
             ConvertMaskMenu.Convert();
+            return go;
+        }
+        
+        void AssertMaskHaveAdaptedSprite(GameObject go) {
             var softMask = go.GetComponent<SoftMask>();
             Assert.AreEqual(ConvertMaskMenu.adaptedUIMaskSprite, softMask.sprite);
+        }
+
+        [Test] public void WhenRenderableImageWithStandardUIMaskSpriteConverted_ImageShouldSkillHaveStandardSprite() {
+            var go = CreateAndConvertObjectWithImageMask(renderable: true, sprite: ConvertMaskMenu.standardUIMaskSprite);
+            var image = go.GetComponent<Image>();
+            Assert.AreEqual(ConvertMaskMenu.standardUIMaskSprite, image.sprite);
         }
     }
 }

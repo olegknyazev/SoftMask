@@ -37,7 +37,10 @@ namespace SoftMasking.Editor {
             var mask = gameObject.GetComponent<Mask>();
             var graphic = gameObject.GetComponent<Graphic>();
             var softMask = gameObject.AddComponent<SoftMask>();
-            if (mask.showMaskGraphic) {
+            var isSpecialSprite = false;
+            if (graphic is Image)
+                isSpecialSprite = ((Image)graphic).sprite == standardUIMaskSprite;
+            if (mask.showMaskGraphic && !isSpecialSprite) {
                 softMask.source = SoftMask.MaskSource.Graphic;
                 UnityEngine.Object.DestroyImmediate(mask);
             } else {
@@ -50,7 +53,8 @@ namespace SoftMasking.Editor {
                     softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
                 #endif
                     UnityEngine.Object.DestroyImmediate(mask);
-                    UnityEngine.Object.DestroyImmediate(image);
+                    if (!isSpecialSprite)
+                        UnityEngine.Object.DestroyImmediate(image);
                 } else if (graphic is RawImage) {
                     var rawImage = (RawImage)graphic;
                     softMask.source = SoftMask.MaskSource.Texture;
