@@ -151,5 +151,14 @@ namespace SoftMasking.Editor {
         }
 
         static readonly Rect standardRect = new Rect(0.2f, 0.1f, 0.7f, 0.6f);
+
+        [Test] public void WhenNonRenderableImageWithStandardUIMaskSpriteConverted_SoftMaskShouldHaveAdaptedSprite() {
+            var go = CreateObjectWithImageMask(renderable: false);
+            go.GetComponent<Image>().sprite = ConvertMaskMenu.standardUIMaskSprite;
+            SelectObjects(go);
+            ConvertMaskMenu.Convert();
+            var softMask = go.GetComponent<SoftMask>();
+            Assert.AreEqual(ConvertMaskMenu.adaptedUIMaskSprite, softMask.sprite);
+        }
     }
 }

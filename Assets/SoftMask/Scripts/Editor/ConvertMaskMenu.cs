@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -44,7 +44,7 @@ namespace SoftMasking.Editor {
                 if (graphic is Image) {
                     var image = (Image)graphic;
                     softMask.source = SoftMask.MaskSource.Sprite;
-                    softMask.sprite = image.sprite;
+                    softMask.sprite = SoftMaskCompatibleVersionOf(image.sprite);
                     softMask.spriteBorderMode = BorderModeOf(image); // TODO check unsupported borderMode
                 #if UNITY_2019_2_OR_NEWER
                     softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
@@ -70,6 +70,12 @@ namespace SoftMasking.Editor {
             //Undo.RecordObjects();
         }
 
+        static Sprite SoftMaskCompatibleVersionOf(Sprite original) {
+            return original == standardUIMaskSprite
+                ? adaptedUIMaskSprite
+                : original;
+        }
+
         // TODO copied from SoftMask.cs
         static SoftMask.BorderMode BorderModeOf(Image image) {
             switch (image.type) {
@@ -78,6 +84,26 @@ namespace SoftMasking.Editor {
                 case Image.Type.Tiled: return SoftMask.BorderMode.Tiled;
                 default:
                     return SoftMask.BorderMode.Simple;
+            }
+        }
+        
+        static Sprite _standardUIMaskSprite;
+        public static Sprite standardUIMaskSprite {
+            get {
+                if (!_standardUIMaskSprite)
+                    _standardUIMaskSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UIMask.psd");
+                return _standardUIMaskSprite;
+            }
+        }
+
+        static Sprite _adaptedUIMaskSprite;
+        public static Sprite adaptedUIMaskSprite {
+            get {
+                if (!_adaptedUIMaskSprite)
+                    _adaptedUIMaskSprite =
+                        AssetDatabase.LoadAssetAtPath<Sprite>(
+                            Path.Combine(PackageResources.packagePath, "Sprites/UIMask-FullAlpha.png"));
+                return _adaptedUIMaskSprite;
             }
         }
     }
