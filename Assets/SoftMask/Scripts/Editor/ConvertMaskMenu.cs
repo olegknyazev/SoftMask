@@ -42,32 +42,15 @@ namespace SoftMasking.Editor {
                 Object.DestroyImmediate(mask);
             } else {
                 var graphic = gameObject.GetComponent<Graphic>();
-                if (graphic is Image) {
-                    var image = (Image)graphic;
-                    softMask.source = SoftMask.MaskSource.Sprite;
-                    softMask.sprite = SoftMaskCompatibleVersionOf(image.sprite);
-                    softMask.spriteBorderMode = BorderModeOf(image); // TODO check unsupported borderMode
-                #if UNITY_2019_2_OR_NEWER
-                    softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
-                #endif
-                    Object.DestroyImmediate(mask);
-                    if (!mask.showMaskGraphic)
-                        Object.DestroyImmediate(image);
-                } else if (graphic is RawImage) {
-                    var rawImage = (RawImage)graphic;
-                    softMask.source = SoftMask.MaskSource.Texture;
-                    if (rawImage.texture is Texture2D)
-                        softMask.texture = (Texture2D)rawImage.texture;
-                    else if (rawImage.texture is RenderTexture)
-                        softMask.renderTexture = (RenderTexture)rawImage.texture;
-                    else
-                        ; // TODO report error
-                    softMask.textureUVRect = rawImage.uvRect;
-                    Object.DestroyImmediate(mask);
-                    Object.DestroyImmediate(rawImage);
-                } else {
+                if (graphic is Image)
+                    SetUpFromImage(softMask, (Image)graphic);
+                else if (graphic is RawImage)
+                    SetUpFromRawImage(softMask, (RawImage)graphic);
+                else
                     Debug.LogAssertionFormat("Converted Game Object should have an Image or Raw Image component");
-                }
+                Object.DestroyImmediate(mask);
+                if (!mask.showMaskGraphic)
+                    Object.DestroyImmediate(graphic);
             }
             //Undo.RecordObjects();
         }
@@ -87,6 +70,26 @@ namespace SoftMasking.Editor {
             return IsStandardUIMaskSprite(original)
                 ? adaptedUIMaskSprite
                 : original;
+        }
+
+        static void SetUpFromImage(SoftMask softMask, Image image) {
+            softMask.source = SoftMask.MaskSource.Sprite;
+            softMask.sprite = SoftMaskCompatibleVersionOf(image.sprite);
+            softMask.spriteBorderMode = BorderModeOf(image); // TODO check unsupported borderMode
+        #if UNITY_2019_2_OR_NEWER
+            softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
+        #endif
+        }
+
+        static void SetUpFromRawImage(SoftMask softMask, RawImage rawImage) {
+            softMask.source = SoftMask.MaskSource.Texture;
+            if (rawImage.texture is Texture2D)
+                softMask.texture = (Texture2D)rawImage.texture;
+            else if (rawImage.texture is RenderTexture)
+                softMask.renderTexture = (RenderTexture)rawImage.texture;
+            else
+                ; // TODO report error
+            softMask.textureUVRect = rawImage.uvRect;
         }
 
         // TODO copied from SoftMask.cs
