@@ -62,21 +62,29 @@ namespace SoftMasking.Editor {
             var softMask = go.GetComponent<SoftMask>();
             Assert.IsNotNull(softMask);
             Assert.IsNull(go.GetComponent<Mask>());
-            if (renderable)
+            if (renderable) {
                 Assert.AreEqual(SoftMask.MaskSource.Graphic, softMask.source);
-            else {
+                if (raw)
+                    AssertHasComponent<RawImage>(go);
+                else
+                    AssertHasComponent<Image>(go);
+            } else {
                 if (raw) {
-                    AssertHasNoRawImage(go);
+                    AssertHasNoComponent<RawImage>(go);
                     AssertRawImageConvertedProperly(softMask);
                 } else {
-                    AssertHasNoImage(go);
+                    AssertHasNoComponent<Image>(go);
                     AssertImageConvertedProperly(softMask);
                 }
             }
         }
-        
-        static void AssertHasNoRawImage(GameObject go) {
-            Assert.IsNull(go.GetComponent<RawImage>());
+
+        void AssertHasComponent<T>(GameObject go) where T : Component {
+            Assert.IsNotNull(go.GetComponent<T>());
+        }
+
+        void AssertHasNoComponent<T>(GameObject go) where T : Component {
+            Assert.IsNull(go.GetComponent<T>());
         }
 
         static void AssertRawImageConvertedProperly(SoftMask softMask) {
@@ -84,9 +92,6 @@ namespace SoftMasking.Editor {
             Assert.AreEqual(standardRect, softMask.textureUVRect);
         }
         
-        static void AssertHasNoImage(GameObject go) {
-            Assert.IsNull(go.GetComponent<Image>());
-        }
         static void AssertImageConvertedProperly(SoftMask softMask) {
             Assert.AreEqual(standardUISprite, softMask.sprite);
             Assert.AreEqual(SoftMask.BorderMode.Sliced, softMask.spriteBorderMode);
