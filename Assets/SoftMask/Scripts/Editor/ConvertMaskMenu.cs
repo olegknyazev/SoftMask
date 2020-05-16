@@ -35,15 +35,13 @@ namespace SoftMasking.Editor {
         static void Convert(GameObject gameObject) {
             Assert.IsTrue(IsConvertibleMask(gameObject));
             var mask = gameObject.GetComponent<Mask>();
-            var graphic = gameObject.GetComponent<Graphic>();
             var softMask = gameObject.AddComponent<SoftMask>();
-            var isSpecialSprite = false;
-            if (graphic is Image)
-                isSpecialSprite = ((Image)graphic).sprite == standardUIMaskSprite;
-            if (mask.showMaskGraphic && !isSpecialSprite) {
+            var mayUseGraphic = MayUseGraphicSource(mask);
+            if (mayUseGraphic) {
                 softMask.source = SoftMask.MaskSource.Graphic;
-                UnityEngine.Object.DestroyImmediate(mask);
+                Object.DestroyImmediate(mask);
             } else {
+                var graphic = gameObject.GetComponent<Graphic>();
                 if (graphic is Image) {
                     var image = (Image)graphic;
                     softMask.source = SoftMask.MaskSource.Sprite;
@@ -52,9 +50,9 @@ namespace SoftMasking.Editor {
                 #if UNITY_2019_2_OR_NEWER
                     softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
                 #endif
-                    UnityEngine.Object.DestroyImmediate(mask);
-                    if (!isSpecialSprite)
-                        UnityEngine.Object.DestroyImmediate(image);
+                    Object.DestroyImmediate(mask);
+                    if (!mask.showMaskGraphic)
+                        Object.DestroyImmediate(image);
                 } else if (graphic is RawImage) {
                     var rawImage = (RawImage)graphic;
                     softMask.source = SoftMask.MaskSource.Texture;
@@ -65,8 +63,8 @@ namespace SoftMasking.Editor {
                     else
                         ; // TODO report error
                     softMask.textureUVRect = rawImage.uvRect;
-                    UnityEngine.Object.DestroyImmediate(mask);
-                    UnityEngine.Object.DestroyImmediate(rawImage);
+                    Object.DestroyImmediate(mask);
+                    Object.DestroyImmediate(rawImage);
                 } else {
                     Debug.LogAssertionFormat("Converted Game Object should have an Image or Raw Image component");
                 }
@@ -74,8 +72,19 @@ namespace SoftMasking.Editor {
             //Undo.RecordObjects();
         }
 
+        static bool MayUseGraphicSource(Mask mask) {
+            var image = mask.GetComponent<Image>();
+            var usesStandardUIMaskSprite = image && IsStandardUIMaskSprite(image.sprite);
+            return mask.showMaskGraphic
+                && !usesStandardUIMaskSprite;
+        }
+
+        static bool IsStandardUIMaskSprite(Sprite sprite) {
+            return sprite == standardUIMaskSprite;
+        }
+
         static Sprite SoftMaskCompatibleVersionOf(Sprite original) {
-            return original == standardUIMaskSprite
+            return IsStandardUIMaskSprite(original)
                 ? adaptedUIMaskSprite
                 : original;
         }
