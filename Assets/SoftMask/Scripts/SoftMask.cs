@@ -606,7 +606,7 @@ namespace SoftMasking {
                         var sprite = image.sprite;
                         result.image = image;
                         result.sprite = sprite;
-                        result.spriteBorderMode = BorderModeOf(image);
+                        result.spriteBorderMode = ImageTypeToBorderMode(image.type);
                         if (sprite) {
                         #if UNITY_2019_2_OR_NEWER
                             result.spritePixelsPerUnit = sprite.pixelsPerUnit * image.pixelsPerUnitMultiplier;
@@ -642,14 +642,20 @@ namespace SoftMasking {
             return result;
         }
 
-        BorderMode BorderModeOf(Image image) {
-            switch (image.type) {
+        public static BorderMode ImageTypeToBorderMode(Image.Type type) {
+            switch (type) {
                 case Image.Type.Simple: return BorderMode.Simple;
                 case Image.Type.Sliced: return BorderMode.Sliced;
                 case Image.Type.Tiled: return BorderMode.Tiled;
                 default:
                     return BorderMode.Simple;
             }
+        }
+        
+        public static bool IsImageTypeSupported(Image.Type type) {
+            return type == Image.Type.Simple
+                || type == Image.Type.Sliced
+                || type == Image.Type.Tiled;
         }
 
         void CalculateMaskParameters() {
@@ -1001,7 +1007,7 @@ namespace SoftMasking {
             Errors CheckImage() {
                 var result = Errors.NoError;
                 if (!_softMask.isBasedOnGraphic) return result;
-                if (image && !IsSupportedImageType(image.type))
+                if (image && !IsImageTypeSupported(image.type))
                     result |= Errors.UnsupportedImageType;
                 return result;
             }
@@ -1040,12 +1046,6 @@ namespace SoftMasking {
                 } catch (UnityException) {
                     return false;
                 }
-            }
-
-            public static bool IsSupportedImageType(Image.Type type) {
-                return type == Image.Type.Simple
-                    || type == Image.Type.Sliced
-                    || type == Image.Type.Tiled;
             }
         }
 
@@ -1106,7 +1106,7 @@ namespace SoftMasking {
                 _lastUsedImageType = image.type;
                 if (!image)
                     return;
-                if (Diagnostics.IsSupportedImageType(image.type))
+                if (IsImageTypeSupported(image.type))
                     return;
                 Debug.LogErrorFormat(_owner,
                     "SoftMask doesn't support image type {0}. Image type Simple will be used.",
