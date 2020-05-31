@@ -224,5 +224,14 @@ namespace SoftMasking.Editor {
             AssertHasNoComponent<RawImage>(go);
             Assert.IsNull(go.GetComponent<SoftMask>().texture);
         }
+
+        [Test] public void WhenImageOfUnsupportedTypeConverted_ShouldThrow() {
+            foreach (var renderable in trueAndFalse) {
+                var go = CreateObjectWithImageMask(renderable);
+                go.GetComponent<Image>().type = Image.Type.Filled;
+                SelectObjects(go);
+                Assert.Throws(typeof(ConvertMaskMenu.UnsupportedImageType), ConvertMaskMenu.Convert);
+            }
+        }
     }
 }

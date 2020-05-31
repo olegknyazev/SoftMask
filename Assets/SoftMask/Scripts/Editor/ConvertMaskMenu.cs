@@ -17,9 +17,18 @@ namespace SoftMasking.Editor {
                 EditorUtility.DisplayDialog(
                     "Soft Mask",
                     string.Format(
-                        "Unable to convert object '{0}' to Soft Mask. It's Raw Image component has unsupported Texture type: {1}.",
+                        "Unable to convert object '{0}' to Soft Mask. It's Raw Image component has Texture of an unsupported type: {1}.",
                         ex.objectBeingConverted.name,
                         ex.unsupportedTexture.GetType().Name),
+                    "OK");
+                Undo.RevertAllDownToGroup(undoGroup);
+            } catch (UnsupportedImageType ex) {
+                EditorUtility.DisplayDialog(
+                    "Soft Mask",
+                    string.Format(
+                        "Unable to convert object '{0}' to SoftMask. It's Image component has unsupported type: {1}.",
+                        ex.objectBeingConverted.name,
+                        ex.unsupportedType),
                     "OK");
                 Undo.RevertAllDownToGroup(undoGroup);
             }
@@ -60,6 +69,9 @@ namespace SoftMasking.Editor {
             var rawImage = gameObject.GetComponent<RawImage>();
             if (rawImage && rawImage.texture && !(rawImage.texture is Texture2D) && !(rawImage.texture is RenderTexture))
                 throw new UnsupportedRawImageTextureType(gameObject, rawImage.texture);
+            var image = gameObject.GetComponent<Image>();
+            if (image && !IsSupportedImageType(image.type))
+                throw new UnsupportedImageType(image.gameObject, image.type);
             var mask = gameObject.GetComponent<Mask>();
             var softMask = Undo.AddComponent<SoftMask>(gameObject);
             var mayUseGraphic = MayUseGraphicSource(mask);
@@ -98,12 +110,22 @@ namespace SoftMasking.Editor {
         }
 
         static void SetUpFromImage(SoftMask softMask, Image image) {
+            Assert.IsTrue(IsSupportedImageType(image.type));
             softMask.source = SoftMask.MaskSource.Sprite;
             softMask.sprite = SoftMaskCompatibleVersionOf(image.sprite);
-            softMask.spriteBorderMode = BorderModeOf(image); // TODO check unsupported borderMode
+            softMask.spriteBorderMode = BorderModeOf(image);
         #if UNITY_2019_2_OR_NEWER
             softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
         #endif
+        }
+
+        public class UnsupportedImageType : Exception {
+            public UnsupportedImageType(GameObject objectBeingConverted, Image.Type unsupportedType) {
+                this.objectBeingConverted = objectBeingConverted;
+                this.unsupportedType = unsupportedType;
+            }
+            public GameObject objectBeingConverted { get; private set; }
+            public Image.Type unsupportedType { get; private set; }
         }
 
         static void SetUpFromRawImage(SoftMask softMask, RawImage rawImage) {
@@ -139,6 +161,13 @@ namespace SoftMasking.Editor {
             }
         }
         
+        // TODO copied from SoftMask.cs
+        static bool IsSupportedImageType(Image.Type type) {
+            return type == Image.Type.Simple
+                || type == Image.Type.Sliced
+                || type == Image.Type.Tiled;
+        }
+
         static Sprite _standardUIMaskSprite;
         public static Sprite standardUIMaskSprite {
             get {
