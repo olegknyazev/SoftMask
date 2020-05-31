@@ -29,7 +29,7 @@ namespace SoftMasking.Editor {
             }
         }
 
-        const string SoftMaskCsGUID = "0bac33ade27cf4542bd53b1b13d90941";
+        public const string SoftMaskCsGUID = "0bac33ade27cf4542bd53b1b13d90941";
 
         static string SearchForPackageRootPath() {
             var softMaskCsPath = AssetDatabase.GUIDToAssetPath(SoftMaskCsGUID);
