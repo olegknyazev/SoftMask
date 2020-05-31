@@ -65,12 +65,16 @@ namespace SoftMasking.Editor {
                 CreateObjectWithRawImageMask(renderable: true),
                 CreateObjectWithRawImageMask(renderable: false),
             };
-            SelectObjects(gos);
-            ConvertMaskMenu.Convert();
+            SelectAndConvertObjects(gos);
             AssertConvertedProperly(gos[0], renderable: true, raw: false);
             AssertConvertedProperly(gos[1], renderable: false, raw: false);
             AssertConvertedProperly(gos[2], renderable: true, raw: true);
             AssertConvertedProperly(gos[3], renderable: false, raw: true);
+        }
+
+        void SelectAndConvertObjects(params GameObject[] objects) {
+            SelectObjects(objects);
+            ConvertMaskMenu.Convert();
         }
 
         void AssertConvertedProperly(GameObject go, bool renderable, bool raw) {
@@ -155,8 +159,7 @@ namespace SoftMasking.Editor {
 
         GameObject CreateAndConvertObjectWithImageMask(bool renderable, Sprite sprite = null) {
             var go = CreateObjectWithImageMask(renderable, sprite: sprite);
-            SelectObjects(go);
-            ConvertMaskMenu.Convert();
+            SelectAndConvertObjects(go);
             return go;
         }
         
@@ -208,8 +211,7 @@ namespace SoftMasking.Editor {
         [Test] public void WhenImageWithoutSpriteConverted_ShouldConvertToSoftMaskWithoutSprite() {
             var go = CreateObjectWithImageMask(renderable: false);
             go.GetComponent<Image>().sprite = null;
-            SelectObjects(go);
-            ConvertMaskMenu.Convert();
+            SelectAndConvertObjects(go);
             AssertHasComponent<SoftMask>(go);
             AssertHasNoComponent<Image>(go);
             Assert.IsNull(go.GetComponent<SoftMask>().sprite);
@@ -218,8 +220,7 @@ namespace SoftMasking.Editor {
         [Test] public void WhenRawImageWithoutTextureConverted_ShouldConvertToSoftMaskWithoutTexture() {
             var go = CreateObjectWithRawImageMask(renderable: false);
             go.GetComponent<RawImage>().texture = null;
-            SelectObjects(go);
-            ConvertMaskMenu.Convert();
+            SelectAndConvertObjects(go);
             AssertHasComponent<SoftMask>(go);
             AssertHasNoComponent<RawImage>(go);
             Assert.IsNull(go.GetComponent<SoftMask>().texture);
