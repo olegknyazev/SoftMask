@@ -3,19 +3,11 @@ using UnityEngine.UI;
 using UnityEditor;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Object = UnityEngine.Object;
 
 namespace SoftMasking.Editor {
     public class ConvertMaskMenuTest {
-        List<GameObject> objectsToDestroy = new List<GameObject>();
-
-        [TearDown] public void TearDown() {
-            foreach (var obj in objectsToDestroy)
-                GameObject.DestroyImmediate(obj);
-        }
-
         [Test] public void WhenNoObjectSelected_ShouldBeNotAvailable() {
             SelectObjects();
             Assert.IsFalse(ConvertMaskMenu.CanConvert());
@@ -45,7 +37,7 @@ namespace SoftMasking.Editor {
         
         GameObject CreateGameObject(params Type[] componentTypes) {
             var go = new GameObject("TestObject", componentTypes);
-            objectsToDestroy.Add(go);
+            Undo.RegisterCreatedObjectUndo(go, "Undo TestObject creation");
             return go;
         }
 
@@ -153,11 +145,13 @@ namespace SoftMasking.Editor {
         static readonly Rect standardRect = new Rect(0.2f, 0.1f, 0.7f, 0.6f);
 
         [Test] public void WhenImageWithStandardUIMaskSpriteConverted_SoftMaskShouldHaveAdaptedSprite() {
-            foreach (var renderable in new [] { true, false }) {
+            foreach (var renderable in trueAndFalse) {
                 var go = CreateAndConvertObjectWithImageMask(renderable, sprite: ConvertMaskMenu.standardUIMaskSprite);
                 AssertMaskHaveAdaptedSprite(go);
             }
         }
+
+        static readonly bool[] trueAndFalse = new[] { true, false };
 
         GameObject CreateAndConvertObjectWithImageMask(bool renderable, Sprite sprite = null) {
             var go = CreateObjectWithImageMask(renderable, sprite: sprite);
@@ -175,6 +169,26 @@ namespace SoftMasking.Editor {
             var go = CreateAndConvertObjectWithImageMask(renderable: true, sprite: ConvertMaskMenu.standardUIMaskSprite);
             var image = go.GetComponent<Image>();
             Assert.AreEqual(ConvertMaskMenu.standardUIMaskSprite, image.sprite);
+        }
+
+        [Test] public void AfterConversion_AllTheChangesMayBeUndoneInSingleStep() {
+            foreach (var renderable in trueAndFalse) {
+                Undo.IncrementCurrentGroup();
+                var go = CreateAndConvertObjectWithImageMask(renderable);
+                Undo.PerformUndo();
+                AssertHasComponent<Mask>(go);
+                AssertHasComponent<Image>(go);
+                AssertHasNoComponent<SoftMask>(go);
+            }
+        }
+
+        [Test] public void AfterUndo_AllTheChangesMayBeReappliedInSingleStep() {
+            foreach (var renderable in trueAndFalse) {
+                var go = CreateAndConvertObjectWithImageMask(renderable);
+                Undo.PerformUndo();
+                Undo.PerformRedo();
+                AssertConvertedProperly(go, renderable, raw: false);
+            }
         }
     }
 }

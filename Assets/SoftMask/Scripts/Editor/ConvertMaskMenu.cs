@@ -10,6 +10,8 @@ namespace SoftMasking.Editor {
         [MenuItem("Tools/Soft Mask/Convert Mask to Soft Mask")]
         public static void Convert() {
             Assert.IsTrue(CanConvert());
+            Undo.IncrementCurrentGroup();
+            Undo.SetCurrentGroupName("Convert Mask to Soft Mask");
             var selectedTransforms = Selection.GetTransforms(SelectionMode.Editable);
             foreach (var transform in selectedTransforms)
                 Convert(transform.gameObject);
@@ -35,11 +37,11 @@ namespace SoftMasking.Editor {
         static void Convert(GameObject gameObject) {
             Assert.IsTrue(IsConvertibleMask(gameObject));
             var mask = gameObject.GetComponent<Mask>();
-            var softMask = gameObject.AddComponent<SoftMask>();
+            var softMask = Undo.AddComponent<SoftMask>(gameObject);
             var mayUseGraphic = MayUseGraphicSource(mask);
             if (mayUseGraphic) {
                 softMask.source = SoftMask.MaskSource.Graphic;
-                Object.DestroyImmediate(mask);
+                Undo.DestroyObjectImmediate(mask);
             } else {
                 var graphic = gameObject.GetComponent<Graphic>();
                 if (graphic is Image)
@@ -48,11 +50,10 @@ namespace SoftMasking.Editor {
                     SetUpFromRawImage(softMask, (RawImage)graphic);
                 else
                     Debug.LogAssertionFormat("Converted Game Object should have an Image or Raw Image component");
-                Object.DestroyImmediate(mask);
+                Undo.DestroyObjectImmediate(mask);
                 if (!mask.showMaskGraphic)
-                    Object.DestroyImmediate(graphic);
+                    Undo.DestroyObjectImmediate(graphic);
             }
-            //Undo.RecordObjects();
         }
 
         static bool MayUseGraphicSource(Mask mask) {
@@ -124,4 +125,3 @@ namespace SoftMasking.Editor {
         }
     }
 }
- 
