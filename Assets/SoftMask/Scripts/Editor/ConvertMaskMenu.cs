@@ -56,22 +56,15 @@ namespace SoftMasking.Editor {
 
         static bool IsConvertibleMask(GameObject gameObject) {
             var mask = gameObject.GetComponent<Mask>();
-            if (!mask)
-                return false;
             var graphic = gameObject.GetComponent<Graphic>();
-            if (!graphic) 
-                return false;
-            return graphic is Image || graphic is RawImage;
+            return mask
+                && graphic
+                && (graphic is Image || graphic is RawImage);
         }
 
         static void Convert(GameObject gameObject) {
             Assert.IsTrue(IsConvertibleMask(gameObject));
-            var rawImage = gameObject.GetComponent<RawImage>();
-            if (rawImage && rawImage.texture && !(rawImage.texture is Texture2D) && !(rawImage.texture is RenderTexture))
-                throw new UnsupportedRawImageTextureType(gameObject, rawImage.texture);
-            var image = gameObject.GetComponent<Image>();
-            if (image && !SoftMask.IsImageTypeSupported(image.type))
-                throw new UnsupportedImageType(image.gameObject, image.type);
+            DeepCheckConvertibility(gameObject);
             var mask = gameObject.GetComponent<Mask>();
             var softMask = Undo.AddComponent<SoftMask>(gameObject);
             var mayUseGraphic = MayUseGraphicSource(mask);
@@ -90,6 +83,36 @@ namespace SoftMasking.Editor {
                 if (!mask.showMaskGraphic)
                     Undo.DestroyObjectImmediate(graphic);
             }
+        }
+
+        static void DeepCheckConvertibility(GameObject gameObject) {
+            var rawImage = gameObject.GetComponent<RawImage>();
+            if (rawImage) {
+                var texture = rawImage.texture;
+                if (texture && !(texture is Texture2D) && !(texture is RenderTexture))
+                    throw new UnsupportedRawImageTextureType(gameObject, texture);
+            }
+            var image = gameObject.GetComponent<Image>();
+            if (image && !SoftMask.IsImageTypeSupported(image.type))
+                throw new UnsupportedImageType(image.gameObject, image.type);
+        }
+
+        public class UnsupportedImageType : Exception {
+            public UnsupportedImageType(GameObject objectBeingConverted, Image.Type unsupportedType) {
+                this.objectBeingConverted = objectBeingConverted;
+                this.unsupportedType = unsupportedType;
+            }
+            public GameObject objectBeingConverted { get; private set; }
+            public Image.Type unsupportedType { get; private set; }
+        }
+
+        public class UnsupportedRawImageTextureType : Exception {
+            public UnsupportedRawImageTextureType(GameObject objectBeingConverted, Texture unsupportedTexture) {
+                this.objectBeingConverted = objectBeingConverted;
+                this.unsupportedTexture = unsupportedTexture;
+            }
+            public GameObject objectBeingConverted { get; private set; }
+            public Texture unsupportedTexture { get; private set; }
         }
 
         static bool MayUseGraphicSource(Mask mask) {
@@ -119,15 +142,6 @@ namespace SoftMasking.Editor {
         #endif
         }
 
-        public class UnsupportedImageType : Exception {
-            public UnsupportedImageType(GameObject objectBeingConverted, Image.Type unsupportedType) {
-                this.objectBeingConverted = objectBeingConverted;
-                this.unsupportedType = unsupportedType;
-            }
-            public GameObject objectBeingConverted { get; private set; }
-            public Image.Type unsupportedType { get; private set; }
-        }
-
         static void SetUpFromRawImage(SoftMask softMask, RawImage rawImage) {
             softMask.source = SoftMask.MaskSource.Texture;
             var texture = rawImage.texture;
@@ -139,15 +153,6 @@ namespace SoftMasking.Editor {
                 else
                     Debug.LogAssertionFormat("Unsupported RawImage texture type: {0}", texture);
             softMask.textureUVRect = rawImage.uvRect;
-        }
-
-        public class UnsupportedRawImageTextureType : Exception {
-            public UnsupportedRawImageTextureType(GameObject objectBeingConverted, Texture unsupportedTexture) {
-                this.objectBeingConverted = objectBeingConverted;
-                this.unsupportedTexture = unsupportedTexture;
-            }
-            public GameObject objectBeingConverted { get; private set; }
-            public Texture unsupportedTexture { get; private set; }
         }
 
         static Sprite _standardUIMaskSprite;
