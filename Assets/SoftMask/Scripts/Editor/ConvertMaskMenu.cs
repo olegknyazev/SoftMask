@@ -70,7 +70,7 @@ namespace SoftMasking.Editor {
             if (rawImage && rawImage.texture && !(rawImage.texture is Texture2D) && !(rawImage.texture is RenderTexture))
                 throw new UnsupportedRawImageTextureType(gameObject, rawImage.texture);
             var image = gameObject.GetComponent<Image>();
-            if (image && !IsSupportedImageType(image.type))
+            if (image && !SoftMask.IsImageTypeSupported(image.type))
                 throw new UnsupportedImageType(image.gameObject, image.type);
             var mask = gameObject.GetComponent<Mask>();
             var softMask = Undo.AddComponent<SoftMask>(gameObject);
@@ -110,10 +110,10 @@ namespace SoftMasking.Editor {
         }
 
         static void SetUpFromImage(SoftMask softMask, Image image) {
-            Assert.IsTrue(IsSupportedImageType(image.type));
+            Assert.IsTrue(SoftMask.IsImageTypeSupported(image.type));
             softMask.source = SoftMask.MaskSource.Sprite;
             softMask.sprite = SoftMaskCompatibleVersionOf(image.sprite);
-            softMask.spriteBorderMode = BorderModeOf(image);
+            softMask.spriteBorderMode = SoftMask.ImageTypeToBorderMode(image.type);
         #if UNITY_2019_2_OR_NEWER
             softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
         #endif
@@ -148,24 +148,6 @@ namespace SoftMasking.Editor {
             }
             public GameObject objectBeingConverted { get; private set; }
             public Texture unsupportedTexture { get; private set; }
-        }
-
-        // TODO copied from SoftMask.cs
-        static SoftMask.BorderMode BorderModeOf(Image image) {
-            switch (image.type) {
-                case Image.Type.Simple: return SoftMask.BorderMode.Simple;
-                case Image.Type.Sliced: return SoftMask.BorderMode.Sliced;
-                case Image.Type.Tiled: return SoftMask.BorderMode.Tiled;
-                default:
-                    return SoftMask.BorderMode.Simple;
-            }
-        }
-        
-        // TODO copied from SoftMask.cs
-        static bool IsSupportedImageType(Image.Type type) {
-            return type == Image.Type.Simple
-                || type == Image.Type.Sliced
-                || type == Image.Type.Tiled;
         }
 
         static Sprite _standardUIMaskSprite;
