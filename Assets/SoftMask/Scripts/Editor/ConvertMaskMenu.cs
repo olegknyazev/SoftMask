@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -8,6 +9,27 @@ using UnityEngine.UI;
 namespace SoftMasking.Editor {
     public static class ConvertMaskMenu {
         [MenuItem("Tools/Soft Mask/Convert Mask to Soft Mask")]
+        public static void ConvertMenu() {
+            var undoGroup = Undo.GetCurrentGroup();
+            try {
+                Convert();
+            } catch (UnsupportedRawImageTextureType ex) {
+                EditorUtility.DisplayDialog(
+                    "Soft Mask",
+                    string.Format(
+                        "Unable to convert object '{0}' to Soft Mask. It's Raw Image component has unsupported Texture type: {1}.",
+                        ex.objectBeingConverted.name,
+                        ex.unsupportedTexture.GetType().Name),
+                    "OK");
+                Undo.RevertAllDownToGroup(undoGroup);
+            }
+        }
+        
+        [MenuItem("Tools/Soft Mask/Convert Mask to Soft Mask", validate = true)]
+        public static bool CanConvertMenu() {
+            return CanConvert();
+        }
+        
         public static void Convert() {
             Assert.IsTrue(CanConvert());
             Undo.IncrementCurrentGroup();
@@ -17,7 +39,6 @@ namespace SoftMasking.Editor {
                 Convert(transform.gameObject);
         }
         
-        [MenuItem("Tools/Soft Mask/Convert Mask to Soft Mask", validate = true)]
         public static bool CanConvert() {
             var selectedTransforms = Selection.GetTransforms(SelectionMode.Editable);
             return selectedTransforms.Any()
@@ -36,6 +57,9 @@ namespace SoftMasking.Editor {
 
         static void Convert(GameObject gameObject) {
             Assert.IsTrue(IsConvertibleMask(gameObject));
+            var rawImage = gameObject.GetComponent<RawImage>();
+            if (rawImage && rawImage.texture && !(rawImage.texture is Texture2D) && !(rawImage.texture is RenderTexture))
+                throw new UnsupportedRawImageTextureType(gameObject, rawImage.texture);
             var mask = gameObject.GetComponent<Mask>();
             var softMask = Undo.AddComponent<SoftMask>(gameObject);
             var mayUseGraphic = MayUseGraphicSource(mask);
@@ -84,13 +108,24 @@ namespace SoftMasking.Editor {
 
         static void SetUpFromRawImage(SoftMask softMask, RawImage rawImage) {
             softMask.source = SoftMask.MaskSource.Texture;
-            if (rawImage.texture is Texture2D)
-                softMask.texture = (Texture2D)rawImage.texture;
-            else if (rawImage.texture is RenderTexture)
-                softMask.renderTexture = (RenderTexture)rawImage.texture;
-            else
-                ; // TODO report error
+            var texture = rawImage.texture;
+            if (texture)
+                if (texture is Texture2D)
+                    softMask.texture = (Texture2D)texture;
+                else if (texture is RenderTexture)
+                    softMask.renderTexture = (RenderTexture)texture;
+                else
+                    Debug.LogAssertionFormat("Unsupported RawImage texture type: {0}", texture);
             softMask.textureUVRect = rawImage.uvRect;
+        }
+
+        public class UnsupportedRawImageTextureType : Exception {
+            public UnsupportedRawImageTextureType(GameObject objectBeingConverted, Texture unsupportedTexture) {
+                this.objectBeingConverted = objectBeingConverted;
+                this.unsupportedTexture = unsupportedTexture;
+            }
+            public GameObject objectBeingConverted { get; private set; }
+            public Texture unsupportedTexture { get; private set; }
         }
 
         // TODO copied from SoftMask.cs

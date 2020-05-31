@@ -190,5 +190,39 @@ namespace SoftMasking.Editor {
                 AssertConvertedProperly(go, renderable, raw: false);
             }
         }
+
+        [Test] public void WhenRawImageWithUnsupportedTextureTypeConverted_ShouldThrow() {
+            var unsupportedTexture = new Texture3D(4, 4, 4, TextureFormat.Alpha8, false);
+            try {
+                foreach (var renderable in trueAndFalse) {
+                    var go = CreateObjectWithRawImageMask(renderable);
+                    go.GetComponent<RawImage>().texture = unsupportedTexture;
+                    SelectObjects(go);
+                    Assert.Throws(typeof(ConvertMaskMenu.UnsupportedRawImageTextureType), ConvertMaskMenu.Convert);
+                }
+            } finally {
+                Object.DestroyImmediate(unsupportedTexture);
+            }
+        }
+
+        [Test] public void WhenImageWithoutSpriteConverted_ShouldConvertToSoftMaskWithoutSprite() {
+            var go = CreateObjectWithImageMask(renderable: false);
+            go.GetComponent<Image>().sprite = null;
+            SelectObjects(go);
+            ConvertMaskMenu.Convert();
+            AssertHasComponent<SoftMask>(go);
+            AssertHasNoComponent<Image>(go);
+            Assert.IsNull(go.GetComponent<SoftMask>().sprite);
+        }
+
+        [Test] public void WhenRawImageWithoutTextureConverted_ShouldConvertToSoftMaskWithoutTexture() {
+            var go = CreateObjectWithRawImageMask(renderable: false);
+            go.GetComponent<RawImage>().texture = null;
+            SelectObjects(go);
+            ConvertMaskMenu.Convert();
+            AssertHasComponent<SoftMask>(go);
+            AssertHasNoComponent<RawImage>(go);
+            Assert.IsNull(go.GetComponent<SoftMask>().texture);
+        }
     }
 }
