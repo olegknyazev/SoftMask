@@ -114,7 +114,9 @@ namespace SoftMasking.Editor {
         static void AssertImageConvertedProperly(SoftMask softMask) {
             Assert.AreEqual(standardUISprite, softMask.sprite);
             Assert.AreEqual(SoftMask.BorderMode.Sliced, softMask.spriteBorderMode);
-            // TODO check pixelsPerUnitMultiplier in 2019.2
+        #if UNITY_2019_2_OR_NEWER
+            Assert.AreEqual(120, softMask.spritePixelsPerUnitMultiplier);
+        #endif
         }
 
         GameObject CreateObjectWithImageMask(bool renderable, Sprite sprite = null) {
@@ -122,6 +124,9 @@ namespace SoftMasking.Editor {
             var image = go.AddComponent<Image>();
             image.sprite = sprite ? sprite : standardUISprite;
             image.type = Image.Type.Sliced;
+        #if UNITY_2019_2_OR_NEWER
+            image.pixelsPerUnitMultiplier = 120;
+        #endif
             var mask = go.AddComponent<Mask>();
             mask.showMaskGraphic = renderable;
             return go;
