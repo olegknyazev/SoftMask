@@ -22,6 +22,9 @@
         float2 texcoord : TEXCOORD0;
         float4 worldPosition : TEXCOORD1;
 #if UNITY_VERSION >= 550
+    #if UNITY_VERSION >= 202000
+        half4  mask : TEXCOORD2;
+    #endif
         UNITY_VERTEX_OUTPUT_STEREO
 #endif
         SOFTMASK_COORDS(2)
@@ -38,6 +41,10 @@
 #if UNITY_VERSION >= 201800
     float4 _MainTex_ST;
 #endif
+#if UNITY_VERSION >= 202000
+    float _MaskSoftnessX;
+    float _MaskSoftnessY;
+#endif
 
     v2f vert(appdata_t IN)
     {
@@ -47,22 +54,36 @@
         UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
 #endif
         OUT.worldPosition = IN.vertex;
-#if UNITY_VERSION >= 540
+
+#if UNITY_VERSION >= 202000
+        float4 vPosition = UnityObjectToClipPos(v.vertex);
+        OUT.vertex = vPosition;
+
+        float2 pixelSize = vPosition.w;
+        pixelSize /= float2(1, 1) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
+
+        float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
+        float2 maskUV = (v.vertex.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
+        OUT.texcoord = float4(v.texcoord.x, v.texcoord.y, maskUV.x, maskUV.y);
+        OUT.mask = half4(v.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + abs(pixelSize.xy)));
+#else
+    #if UNITY_VERSION >= 540
         OUT.vertex = UnityObjectToClipPos(IN.vertex);
-#else
+    #else
         OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
-#endif
+    #endif
 
-#if UNITY_VERSION >= 201800
+    #if UNITY_VERSION >= 201800
         OUT.texcoord = TRANSFORM_TEX(IN.texcoord, _MainTex);
-#else
+    #else
         OUT.texcoord = IN.texcoord;
-#endif
+    #endif
 
-#if UNITY_VERSION < 550
-#  ifdef UNITY_HALF_TEXEL_OFFSET
+    #if UNITY_VERSION < 550
+      #ifdef UNITY_HALF_TEXEL_OFFSET
         OUT.vertex.xy += (_ScreenParams.zw - 1.0) * float2(-1, 1);
-#  endif
+      #endif
+    #endif
 #endif
 
         OUT.color = IN.color * _Color;
@@ -81,7 +102,12 @@
         color.a *= SOFTMASK_GET_MASK(IN);
 
 #if defined(UNITY_UI_CLIP_RECT) || UNITY_VERSION < 201720
+    #if UNITY_VERSION >= 202000
+        half2 m = saturate((_ClipRect.zw - _ClipRect.xy - abs(IN.mask.xy)) * IN.mask.zw);
+        color.a *= m.x * m.y;
+    #else
         color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
+    #endif
 #endif
 
 #if defined(UNITY_UI_ALPHACLIP)
