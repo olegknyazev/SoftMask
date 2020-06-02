@@ -10,9 +10,9 @@
         float4 vertex : POSITION;
         float4 color : COLOR;
         float2 texcoord : TEXCOORD0;
-#if UNITY_VERSION >= 550
+    #if UNITY_VERSION >= 550
         UNITY_VERTEX_INPUT_INSTANCE_ID
-#endif
+    #endif
     };
 
     struct v2f
@@ -21,12 +21,12 @@
         fixed4 color : COLOR;
         float2 texcoord : TEXCOORD0;
         float4 worldPosition : TEXCOORD1;
-#if UNITY_VERSION >= 550
     #if UNITY_VERSION >= 202000
         half4  mask : TEXCOORD2;
     #endif
+    #if UNITY_VERSION >= 550
         UNITY_VERTEX_OUTPUT_STEREO
-#endif
+    #endif
         SOFTMASK_COORDS(2)
     };
 
@@ -49,10 +49,11 @@
     v2f vert(appdata_t IN)
     {
         v2f OUT;
-#if UNITY_VERSION >= 550
+
+    #if UNITY_VERSION >= 550
         UNITY_SETUP_INSTANCE_ID(IN);
         UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
-#endif
+    #endif
         OUT.worldPosition = IN.vertex;
 
 #if UNITY_VERSION >= 202000
@@ -93,11 +94,11 @@
 
     fixed4 frag(v2f IN) : SV_Target
     {
-#ifdef SOFTMASK_ETC1
+    #ifdef SOFTMASK_ETC1
         half4 color = UnityGetUIDiffuseColor(IN.texcoord, _MainTex, _AlphaTex, _TextureSampleAdd) * IN.color;
-#else
+    #else
         half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
-#endif
+    #endif
 
         color.a *= SOFTMASK_GET_MASK(IN);
 
@@ -110,9 +111,9 @@
     #endif
 #endif
 
-#if defined(UNITY_UI_ALPHACLIP)
+    #if defined(UNITY_UI_ALPHACLIP)
         clip(color.a - 0.001);
-#endif
+    #endif
 
         return color;
     }
