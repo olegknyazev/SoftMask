@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using SoftMasking.Editor;
+using UnityEngine.Assertions;
 
 namespace SoftMasking.TextMeshPro.Editor {
     public static class ShaderGenerator {
@@ -80,11 +81,30 @@ namespace SoftMasking.TextMeshPro.Editor {
             "cf81c85f95fe47e1a27f6ae460cf182c"  // TMP_Sprite
         };
 
+        static readonly Dictionary<string, List<string>> KnownIncludeGUIDs = new Dictionary<string, List<string>> {
+            { "TMPro_Properties.cginc", new List<string> { 
+                "bc2d34f37efcbdf429ed46cb34aa2ad5",
+                "3997e2241185407d80309a82f9148466"} },
+            { "TMPro.cginc", new List<string> { 
+                "438defe6a2827704f90bdf852732bc11",
+                "407bc68d299748449bbf7f48ee690f8d"} },
+            // We do not have to use absolute path for SoftMask.cginc because patched shaders
+            // reside in a subfolder but it's convenient to reuse mechanism made for TMPro includes.
+            { "SoftMask.cginc", new List<string> {
+                "2731380563bbb5a4aa4d3c9f57966cce" } }
+        };
+
         static Dictionary<string, string> s_knownIncludes;
         static Dictionary<string, string> knownIncludes {
             get {
                 if (s_knownIncludes == null)
-                    s_knownIncludes = CollectIncludes().ToDictionary(x => Path.GetFileName(x));
+                    s_knownIncludes = 
+                        KnownIncludeGUIDs
+                            .ToDictionary(
+                                kv => kv.Key,
+                                kv => kv.Value
+                                    .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                                    .First(x => !string.IsNullOrEmpty(x)));
                 return s_knownIncludes;
             }
         }
@@ -106,22 +126,7 @@ namespace SoftMasking.TextMeshPro.Editor {
                         "#include \"{0}\"",
                         UpdateInclude(match.Groups[1].Value)));
         }
-
-        static IEnumerable<string> CollectIncludes() {
-            return CollectTMProIncludes().Concat(CollectSoftMaskIncludes());
-        }
-
-        static IEnumerable<string> CollectTMProIncludes() { return FindIncludes("TMPro"); }
-        static IEnumerable<string> CollectSoftMaskIncludes() { return FindIncludes("SoftMask"); }
-
-        static IEnumerable<string> FindIncludes(string filter) {
-            return FindAssets(filter).Where(x => x.EndsWith(".cginc"));
-        }
-
-        static IEnumerable<string> FindAssets(string filter) {
-            return AssetDatabase.FindAssets(filter).Select(x => AssetDatabase.GUIDToAssetPath(x));
-        }
-
+        
         static bool CheckIsUIShader(Shader shader) {
             var material = new Material(shader) {
                 hideFlags = HideFlags.HideAndDontSave
@@ -134,9 +139,9 @@ namespace SoftMasking.TextMeshPro.Editor {
         static string ReadResource(string path) { return File.ReadAllText(path); }
 
         static void InvalidateSoftMasks() {
-            var softMaskPath = FindAssets("t:script SoftMask").FirstOrDefault();
-            if (!string.IsNullOrEmpty(softMaskPath))
-                AssetDatabase.ImportAsset(softMaskPath);
+            var softMaskPath = AssetDatabase.GUIDToAssetPath(PackageResources.SoftMaskCsGUID);
+            Assert.IsFalse(string.IsNullOrEmpty(softMaskPath));
+            AssetDatabase.ImportAsset(softMaskPath);
         }
 
         static class Ids {
