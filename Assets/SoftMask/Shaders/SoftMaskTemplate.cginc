@@ -23,11 +23,14 @@
         float4 worldPosition : TEXCOORD1;
     #if UNITY_VERSION >= 202000
         half4  mask : TEXCOORD2;
+        SOFTMASK_COORDS(3)
     #endif
     #if UNITY_VERSION >= 550
         UNITY_VERTEX_OUTPUT_STEREO
     #endif
+    #if UNITY_VERSION < 202000
         SOFTMASK_COORDS(2)
+    #endif
     };
 
     fixed4 _Color;
@@ -57,16 +60,16 @@
         OUT.worldPosition = IN.vertex;
 
 #if UNITY_VERSION >= 202000
-        float4 vPosition = UnityObjectToClipPos(v.vertex);
+        float4 vPosition = UnityObjectToClipPos(IN.vertex);
         OUT.vertex = vPosition;
 
         float2 pixelSize = vPosition.w;
         pixelSize /= float2(1, 1) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
 
         float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
-        float2 maskUV = (v.vertex.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
-        OUT.texcoord = float4(v.texcoord.x, v.texcoord.y, maskUV.x, maskUV.y);
-        OUT.mask = half4(v.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + abs(pixelSize.xy)));
+        float2 maskUV = (IN.vertex.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
+        OUT.texcoord = float4(IN.texcoord.x, IN.texcoord.y, maskUV.x, maskUV.y);
+        OUT.mask = half4(IN.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + abs(pixelSize.xy)));
 #else
     #if UNITY_VERSION >= 540
         OUT.vertex = UnityObjectToClipPos(IN.vertex);
