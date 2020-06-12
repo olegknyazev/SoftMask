@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System;
 using UnityEngine;
-using UnityEditor;
 
 namespace SoftMasking.Tests {
     [ExecuteInEditMode]
