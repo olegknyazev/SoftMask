@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using System;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace SoftMasking.Tests {
     [ExecuteInEditMode]
@@ -222,7 +225,7 @@ namespace SoftMasking.Tests {
             _lastExecutionSteps.Clear();
             if (Application.isPlaying) {
                 ResolutionUtility.SetTestResolution();
-            #if UNITY_2019_1_OR_NEWER
+            #if UNITY_2019_1_OR_NEWER && UNITY_EDITOR
                 EditorSettings.asyncShaderCompilation = false;
             #endif
             }
