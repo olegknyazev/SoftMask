@@ -80,6 +80,7 @@ namespace SoftMasking {
         bool _maskingWasEnabled;
         bool _destroyed;
         bool _dirty;
+        Transform _maskablesDirtyIn;
 
         // Cached components
         RectTransform _maskTransform;
@@ -412,7 +413,7 @@ namespace SoftMasking {
         protected virtual void LateUpdate() {
             var maskingEnabled = isMaskingEnabled;
             if (maskingEnabled) {
-                if (_maskingWasEnabled != maskingEnabled)
+                if (_maskingWasEnabled != maskingEnabled || _maskablesDirtyIn != null)
                     SpawnMaskablesInChildren(transform);
                 var prevGraphic = _graphic;
                 FindGraphic();
@@ -461,7 +462,7 @@ namespace SoftMasking {
         }
 
         void OnTransformChildrenChanged() {
-            SpawnMaskablesInChildren(transform);
+            _maskablesDirtyIn = transform;
         }
          
         void SubscribeOnWillRenderCanvases() {
@@ -515,7 +516,7 @@ namespace SoftMasking {
         }
 
         void ISoftMask.UpdateTransformChildren(Transform transform) {
-            SpawnMaskablesInChildren(transform);
+            _maskablesDirtyIn = _maskablesDirtyIn != null ? this.transform : transform;
         }
 
         void OnGraphicDirty() {
@@ -561,6 +562,7 @@ namespace SoftMasking {
                     if (s_maskables.TrueForAll(x => x.isDestroyed))
                         child.gameObject.AddComponent<SoftMaskable>();
                 }
+            _maskablesDirtyIn = null;
         }
 
         void InvalidateChildren() {
