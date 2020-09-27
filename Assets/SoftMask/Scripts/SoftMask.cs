@@ -80,7 +80,7 @@ namespace SoftMasking {
         bool _maskingWasEnabled;
         bool _destroyed;
         bool _dirty;
-        Transform _maskablesDirtyIn;
+        Queue<Transform> _transformsToSpawnMaskablesIn = new Queue<Transform>();
 
         // Cached components
         RectTransform _maskTransform;
@@ -385,7 +385,7 @@ namespace SoftMasking {
         protected override void OnEnable() {
             base.OnEnable();
             SubscribeOnWillRenderCanvases();
-            SpawnMaskablesInChildren(transform);
+            MarkTransformForMaskablesSpawn(transform);
             FindGraphic();
             if (isMaskingEnabled)
                 UpdateMaskParameters();
@@ -413,8 +413,8 @@ namespace SoftMasking {
         protected virtual void LateUpdate() {
             var maskingEnabled = isMaskingEnabled;
             if (maskingEnabled) {
-                if (_maskingWasEnabled != maskingEnabled || _maskablesDirtyIn != null)
-                    SpawnMaskablesInChildren(transform);
+                if (_maskingWasEnabled != maskingEnabled)
+                    MarkTransformForMaskablesSpawn(transform);
                 var prevGraphic = _graphic;
                 FindGraphic();
                 if (_lastMaskRect != maskTransform.rect
@@ -462,9 +462,14 @@ namespace SoftMasking {
         }
 
         void OnTransformChildrenChanged() {
-            _maskablesDirtyIn = transform;
+            MarkTransformForMaskablesSpawn(transform);
         }
-         
+
+        void MarkTransformForMaskablesSpawn(Transform transform) {
+            if (!_transformsToSpawnMaskablesIn.Contains(transform))
+                _transformsToSpawnMaskablesIn.Enqueue(transform);
+        }
+
         void SubscribeOnWillRenderCanvases() {
             // To get called when layout and graphics update is finished we should
             // subscribe after CanvasUpdateRegistry. CanvasUpdateRegistry subscribes
@@ -478,6 +483,8 @@ namespace SoftMasking {
         }
 
         void OnWillRenderCanvases() {
+            while (_transformsToSpawnMaskablesIn.Count > 0)
+                SpawnMaskablesInChildren(_transformsToSpawnMaskablesIn.Dequeue());
             // To be sure that mask will match the state of another drawn UI elements,
             // we update material parameters when layout and graphic update is done,
             // just before actual rendering.
@@ -516,7 +523,7 @@ namespace SoftMasking {
         }
 
         void ISoftMask.UpdateTransformChildren(Transform transform) {
-            _maskablesDirtyIn = _maskablesDirtyIn != null ? this.transform : transform;
+            MarkTransformForMaskablesSpawn(transform);
         }
 
         void OnGraphicDirty() {
@@ -562,7 +569,6 @@ namespace SoftMasking {
                     if (s_maskables.TrueForAll(x => x.isDestroyed))
                         child.gameObject.AddComponent<SoftMaskable>();
                 }
-            _maskablesDirtyIn = null;
         }
 
         void InvalidateChildren() {
