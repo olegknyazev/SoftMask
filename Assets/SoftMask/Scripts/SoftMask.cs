@@ -483,8 +483,11 @@ namespace SoftMasking {
         }
 
         void OnWillRenderCanvases() {
-            while (_transformsToSpawnMaskablesIn.Count > 0)
-                SpawnMaskablesInChildren(_transformsToSpawnMaskablesIn.Dequeue());
+            while (_transformsToSpawnMaskablesIn.Count > 0) {
+                var transformForSpawn = _transformsToSpawnMaskablesIn.Dequeue();
+                if (transformForSpawn)
+                    SpawnMaskablesInChildren(transformForSpawn);
+            }
             // To be sure that mask will match the state of another drawn UI elements,
             // we update material parameters when layout and graphic update is done,
             // just before actual rendering.
