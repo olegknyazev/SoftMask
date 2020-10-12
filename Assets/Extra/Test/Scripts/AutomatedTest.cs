@@ -248,13 +248,13 @@ namespace SoftMasking.Tests {
         }
 
         void InjectLogHandler() {
-            Debug.logger.logHandler = new LogHandler(_currentStepRecords, Debug.logger.logHandler);
+            Debug.unityLogger.logHandler = new LogHandler(_currentStepRecords, Debug.unityLogger.logHandler);
         }
 
         void EjectLogHandler() {
-            var injectedHandler = Debug.logger.logHandler as LogHandler;
+            var injectedHandler = Debug.unityLogger.logHandler as LogHandler;
             if (injectedHandler != null)
-                Debug.logger.logHandler = injectedHandler.originalHandler;
+                Debug.unityLogger.logHandler = injectedHandler.originalHandler;
         }
 
         string currentSceneRelativeDir {
