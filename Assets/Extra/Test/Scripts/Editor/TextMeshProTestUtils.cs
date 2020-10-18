@@ -12,7 +12,7 @@ namespace SoftMasking.Tests {
     // TextMesh Pro package has methods for this:
     //   - TMPro.TMP_PackageUtilities.ConvertProjectGUIDsMenu
     //   - TMPro.TMP_ProjectConversionUtility.UpdateProjectFiles
-    // But these methods shows up dialog boxes and wants user input which isn't
+    // But these methods show up dialog boxes and want user input which isn't
     // acceptable in batch mode. So we've copied some disassembled code from
     // TextMesh Pro with minor changes and put it into this static class.
     static class TextMeshProTestUtils {

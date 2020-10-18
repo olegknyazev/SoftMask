@@ -19,6 +19,7 @@ namespace SoftMasking.Tests {
         public bool speedRun = false;
         public bool stopOnFirstFail = true;
         public bool exitOnFinish = false;
+        public bool replaceReferenceOnFail = false;
         
         public AutomatedTestResults testResults { get; private set; }
         public bool isFinished { get { return testResults != null; } }
@@ -33,10 +34,11 @@ namespace SoftMasking.Tests {
             try {
                 foreach (var sceneKey in GetTestSceneKeys()) {
                     var testResult = new Ref<AutomatedTestResult>();
-                    yield return LoadAndTestScene(sceneKey, testResult);
+                    LoadScene(sceneKey);
+                    yield return TestAndUnloadScene(testResult);
                     testResultList.Add(testResult.value);
-                    if (stopOnFirstFail)
-                        if (testResult.value.isFail)
+                    if (testResult.value.isFail)
+                        if (stopOnFirstFail)
                             break;
                 }
             } finally {
@@ -61,12 +63,12 @@ namespace SoftMasking.Tests {
         }
 
         IEnumerable<string> GetTestSceneKeys() {
-            return 
+            return
                 AssetDatabase
                     .FindAssets("t: Scene", new [] { testScenesPath })
-                    .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                    .Select(AssetDatabase.GUIDToAssetPath)
                     .Where(path => !string.IsNullOrEmpty(path))
-                    .Where(path => IsTestScene(path));
+                    .Where(IsTestScene);
         }
 
         bool IsTestScene(string scenePath) {
@@ -104,9 +106,8 @@ namespace SoftMasking.Tests {
             get { return int.Parse(Application.unityVersion.Split('.').First()); }
         }
 
-        IEnumerator LoadAndTestScene(string sceneKey, Ref<AutomatedTestResult> outResult) {
+        void LoadScene(string sceneKey) {
             EditorApplication.LoadLevelAdditiveInPlayMode(sceneKey);
-            yield return LoadAndTestSceneImpl(outResult);
         }
     #else
         IEnumerable<int> GetTestSceneKeys() {
@@ -114,13 +115,12 @@ namespace SoftMasking.Tests {
             return Enumerable.Range(1, SceneManager.sceneCountInBuildSettings - 1);
         }
         
-        IEnumerator LoadAndTestScene(int sceneKey, Ref<AutomatedTestResult> outResult) {
+        void LoadScene(int sceneKey) {
             SceneManager.LoadScene(sceneKey, LoadSceneMode.Additive);
-            yield return LoadAndTestSceneImpl(outResult);
         }
     #endif
 
-        IEnumerator LoadAndTestSceneImpl(Ref<AutomatedTestResult> outResult) {
+        IEnumerator TestAndUnloadScene(Ref<AutomatedTestResult> outResult) {
             var scene = SceneManager.GetSceneAt(1);
             try {
                 yield return ActivateScene(scene);
@@ -143,6 +143,8 @@ namespace SoftMasking.Tests {
             if (test != null) {
                 test.speedUp = speedRun;
                 yield return StartCoroutine(test.WaitFinish());
+                if (test.result.isFail && replaceReferenceOnFail)
+                    test.ReplaceReference();
                 outResult.value = test.result;
                 changed.InvokeSafe(this);
             }
@@ -173,6 +175,10 @@ namespace SoftMasking.Tests {
             public IEnumerator WaitFinish() {
                 while (!_automatedTest.isFinished)
                     yield return null;
+            }
+
+            public void ReplaceReference() {
+                _automatedTest.SaveLastRecordAsReference();
             }
         }
 

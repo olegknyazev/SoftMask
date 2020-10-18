@@ -106,10 +106,10 @@ namespace SoftMasking.Tests {
         }
 
         static AutomatedTestsRunner FindTestRunner(Scene scene) {
-            return scene.GetRootGameObjects()
+            return scene
+                .GetRootGameObjects()
                 .Select(x => x.GetComponent<AutomatedTestsRunner>())
-                .Where(x => x != null)
-                .First();
+                .First(x => x != null);
         }
     }
 }

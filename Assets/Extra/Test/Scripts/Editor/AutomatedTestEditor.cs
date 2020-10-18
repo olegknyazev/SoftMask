@@ -41,7 +41,7 @@ namespace SoftMasking.Editor {
             StateGUI();
             using (new EditorGUI.DisabledGroupScope(targetTest.isLastExecutionEmpty))
                 if (GUILayout.Button("Accept Last Execution as Reference"))
-                    targetTest.SaveLastRecordAsExample();
+                    targetTest.SaveLastRecordAsReference();
             using (new EditorGUI.DisabledGroupScope(targetTest.isReferenceEmpty || Application.isPlaying))
                 if (GUILayout.Button("Delete Reference"))
                     targetTest.DeleteReference();

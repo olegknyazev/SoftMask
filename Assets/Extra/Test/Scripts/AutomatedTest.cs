@@ -48,7 +48,7 @@ namespace SoftMasking.Tests {
         public event Action<AutomatedTest> changed;
 
     #if UNITY_EDITOR
-        public void SaveLastRecordAsExample() {
+        public void SaveLastRecordAsReference() {
             _referenceSteps.ReplaceBy(_lastExecutionSteps);
             NotifyChanged();
         }
