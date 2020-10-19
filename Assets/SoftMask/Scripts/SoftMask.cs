@@ -415,6 +415,7 @@ namespace SoftMasking {
             if (maskingEnabled) {
                 if (_maskingWasEnabled != maskingEnabled)
                     MarkTransformForMaskablesSpawn(transform);
+                SpawnMaskables();
                 var prevGraphic = _graphic;
                 FindGraphic();
                 if (_lastMaskRect != maskTransform.rect
@@ -466,8 +467,24 @@ namespace SoftMasking {
         }
 
         void MarkTransformForMaskablesSpawn(Transform transform) {
+            // We defer SoftMaskables spawning to LateUpdate. It lets us work around
+            // the problem that MaskableGraphic doesn't respect IMaterialModifiers
+            // which stay before above it in the component stack in case of creation
+            // a new object. Particularly, it "solves" an issue with multiline
+            // TextMesh Pro text: TMPro creates SubMesh objects and then adds a
+            // Graphic component in a separate step. Deferring SoftMaskable spawning
+            // to LateUpdate allows us to be sure that SoftMaskable will be spawned
+            // after the Graphic is spawned.
             if (!_transformsToSpawnMaskablesIn.Contains(transform))
                 _transformsToSpawnMaskablesIn.Enqueue(transform);
+        }
+
+        void SpawnMaskables() {
+            while (_transformsToSpawnMaskablesIn.Count > 0) {
+                var transformForSpawn = _transformsToSpawnMaskablesIn.Dequeue();
+                if (transformForSpawn)
+                    SpawnMaskablesInChildren(transformForSpawn);
+            }
         }
 
         void SubscribeOnWillRenderCanvases() {
@@ -483,18 +500,13 @@ namespace SoftMasking {
         }
 
         void OnWillRenderCanvases() {
-            while (_transformsToSpawnMaskablesIn.Count > 0) {
-                var transformForSpawn = _transformsToSpawnMaskablesIn.Dequeue();
-                if (transformForSpawn)
-                    SpawnMaskablesInChildren(transformForSpawn);
-            }
             // To be sure that mask will match the state of another drawn UI elements,
             // we update material parameters when layout and graphic update is done,
             // just before actual rendering.
             if (isMaskingEnabled)
                 UpdateMaskParameters();
         }
-        
+
         static T Touch<T>(T obj) { return obj; }
 
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
