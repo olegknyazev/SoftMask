@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System;
 using UnityEngine;
+using UnityEngine.Assertions;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -188,32 +189,56 @@ namespace SoftMasking.Tests {
         }
 
         class LogHandler : ILogHandler, IDisposable {
-            readonly List<LogRecord> _log = new List<LogRecord>();
+            readonly List<LogRecord> _logHandlerRecords = new List<LogRecord>();
+            readonly List<LogRecord> _applicationRecords = new List<LogRecord>();
             readonly ILogHandler _originalHandler;
 
             public LogHandler() {
                 _originalHandler = Debug.unityLogger.logHandler;
+                // We use both logHandler and logMessageReceived ways here because
+                // the former doesn't catch Unity's "system" messages ("DestroyImmediate
+                // should not be called from physics callback") while the latter
+                // does not provide context object which is crucial for some test cases.
                 Debug.unityLogger.logHandler = this;
+                Application.logMessageReceived += OnLogMessageReceived;
+            }
+
+            void OnLogMessageReceived(string condition, string stacktrace, LogType type) {
+                _applicationRecords.Add(new LogRecord(condition, type, null));
             }
 
             void ILogHandler.LogException(Exception exception, UnityEngine.Object context) {
-                _log.Add(new LogRecord(exception.Message, LogType.Exception, context));
+                _logHandlerRecords.Add(new LogRecord(exception.Message, LogType.Exception, context));
                 _originalHandler.LogException(exception, context);
             }
 
             void ILogHandler.LogFormat(LogType logType, UnityEngine.Object context, string format, params object[] args) {
-                _log.Add(new LogRecord(string.Format(format, args), logType, context));
+                _logHandlerRecords.Add(new LogRecord(string.Format(format, args), logType, context));
                 _originalHandler.LogFormat(logType, context, format, args);
             }
 
             public List<LogRecord> TakeRecords() {
-                var result = new List<LogRecord>(_log);
-                _log.Clear();
+                Assert.IsTrue(_logHandlerRecords.Count <= _applicationRecords.Count);
+                var result = new List<LogRecord>();
+                for (int appIdx = 0, handlerIdx = 0; appIdx < _applicationRecords.Count; ++appIdx) {
+                    var applicationRecord = _applicationRecords[appIdx];
+                    var handlerRecord = handlerIdx < _logHandlerRecords.Count ? _logHandlerRecords[handlerIdx] : null;
+                    if (handlerRecord != null 
+                            && handlerRecord.message == applicationRecord.message
+                            && handlerRecord.logType == applicationRecord.logType) {
+                        result.Add(handlerRecord);
+                        ++handlerIdx;
+                    } else
+                        result.Add(applicationRecord);
+                }
+                _logHandlerRecords.Clear();
+                _applicationRecords.Clear();
                 return result;
             }
 
             public void Dispose() {
                 Debug.unityLogger.logHandler = _originalHandler;
+                Application.logMessageReceived -= OnLogMessageReceived;
             }
         }
 
