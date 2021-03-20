@@ -283,8 +283,10 @@ namespace SoftMasking.Tests {
         }
 
         void EjectLogHandler() {
-            _logHandler.Dispose();
-            _logHandler = null;
+            if (_logHandler != null) {
+                _logHandler.Dispose();
+                _logHandler = null;
+            }
         }
 
         string currentSceneRelativeDir {

@@ -133,7 +133,7 @@ namespace SoftMasking {
                 ?? NearestMask(transform, out _affectedByMask, enabledOnly: false);
             if (mask == null) {
                 _destroyed = true;
-                DestroyImmediate(this);
+                DestroySelf();
                 return false;
             }
             return true;
@@ -154,6 +154,13 @@ namespace SoftMasking {
                     processedByThisMask = false;
                 current = current.parent;
             }
+        }
+
+        void DestroySelf() {
+            if (Application.isPlaying)
+                Destroy(this);
+            else
+                DestroyImmediate(this);
         }
 
         static List<ISoftMask> s_softMasks = new List<ISoftMask>();
