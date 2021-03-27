@@ -712,6 +712,12 @@ namespace SoftMasking {
             if (borderMode == BorderMode.Simple) {
                 var normalizedPadding = Mathr.Div(padding, sprite.rect.size);
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(normalizedPadding, Mathr.Size(fullMaskRect)));
+                if (isBasedOnGraphic) {
+                    var image = _graphic as Image;
+                    Assert.IsNotNull(image);
+                    if (image.preserveAspect)
+                        _parameters.maskRect = PreserveSpriteAspectRatio(_parameters.maskRect, sprite.rect.size);
+                }
             } else {
                 var spriteToCanvasScale = SpriteToCanvasScale(spritePixelsPerUnit);
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, padding * spriteToCanvasScale);
@@ -740,6 +746,18 @@ namespace SoftMasking {
                 }
             }
             return border;
+        }
+        
+        Vector4 PreserveSpriteAspectRatio(Vector4 rect, Vector2 spriteSize) {
+            var spriteRatio = spriteSize.x / spriteSize.y;
+            var rectRatio = (rect.z - rect.x) / (rect.w - rect.y);
+            if (spriteRatio > rectRatio) {
+                var scale = rectRatio / spriteRatio;
+                return new Vector4(rect.x, rect.y * scale, rect.z, rect.w * scale);
+            } else {
+                var scale = spriteRatio / rectRatio;
+                return new Vector4(rect.x * scale, rect.y, rect.z * scale, rect.w);
+            }
         }
 
         void CalculateTextureBased(Texture texture, Rect uvRect) {
