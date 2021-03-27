@@ -94,9 +94,8 @@ namespace SoftMasking.Tests {
         IEnumerator PlayAnimatorUpTo(Animator animator, float normalizedTime) {
             if (!_updatedAtLeastOnce)
                 yield return null; // to prevent execution before Update
-            if (!speedUp)
-                while (GetAnimationTime(animator) < normalizedTime)
-                    yield return null;
+            while (GetAnimationTime(animator) < normalizedTime)
+                yield return null;
             var state = animator.GetCurrentAnimatorStateInfo(0);
             animator.Play(state.shortNameHash, 0, normalizedTime);            
             yield return StartCoroutine(CaptureStep());
