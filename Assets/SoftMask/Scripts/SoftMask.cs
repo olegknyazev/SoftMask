@@ -558,8 +558,7 @@ namespace SoftMasking {
                 for (int i = 0; i < root.childCount; ++i) {
                     var child = root.GetChild(i);
                     child.GetComponents(s_maskables);
-                    Assert.IsTrue(s_maskables.Count <= 1);
-                    if (s_maskables.Count == 0)
+                    if (s_maskables.TrueForAll(x => x.isDestroyed))
                         child.gameObject.AddComponent<SoftMaskable>();
                 }
         }

@@ -6,7 +6,6 @@ using SoftMasking.Extensions;
 
 namespace SoftMasking {
     [ExecuteInEditMode]
-    [DisallowMultipleComponent]
     [AddComponentMenu("")]
     public class SoftMaskable : UIBehaviour, IMaterialModifier {
         ISoftMask _mask;
@@ -36,6 +35,10 @@ namespace SoftMasking {
                     Invalidate();
                 }
             }
+        }
+
+        public bool isDestroyed {
+            get { return _destroyed; }
         }
 
         public Material GetModifiedMaterial(Material baseMaterial) {
