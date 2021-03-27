@@ -61,12 +61,12 @@ namespace SoftMasking.Tests {
     #endif
     
         public YieldInstruction Proceed(float delaySeconds = 0f) {
-            return StartCoroutine(WaitAll(
+            return StartCoroutine(WaitInOrder(
                 StartCoroutine(CaptureStep()),
                 new WaitForSeconds(speedUp ? 0 : delaySeconds)));
         }
        
-        static IEnumerator WaitAll(params YieldInstruction[] instructions) {
+        static IEnumerator WaitInOrder(params YieldInstruction[] instructions) {
             foreach (var i in instructions)
                 yield return i;
         }
