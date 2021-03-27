@@ -712,8 +712,11 @@ namespace SoftMasking {
             if (borderMode == BorderMode.Simple) {
                 var normalizedPadding = Mathr.Div(padding, sprite.rect.size);
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(normalizedPadding, Mathr.Size(fullMaskRect)));
-                if (isBasedOnGraphic && ((Image)_graphic).preserveAspect) {
-                    _parameters.maskRect = PreserveSpriteAspectRatio(_parameters.maskRect, sprite.rect.size);
+                if (isBasedOnGraphic) {
+                    var image = _graphic as Image;
+                    Assert.IsNotNull(image);
+                    if (image.preserveAspect)
+                        _parameters.maskRect = PreserveSpriteAspectRatio(_parameters.maskRect, sprite.rect.size);
                 }
             } else {
                 var spriteToCanvasScale = SpriteToCanvasScale(spritePixelsPerUnit);
