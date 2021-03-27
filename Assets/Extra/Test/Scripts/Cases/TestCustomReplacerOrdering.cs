@@ -14,6 +14,7 @@ namespace SoftMasking.Tests {
             if (output)
                 output.text = "Last calls: " +
                     string.Join(", ", CustomReplacer.lastCalls.Select(x => x.ToString()).ToArray());
+            yield return new WaitForEndOfFrame();
             yield return automatedTest.Proceed();
             yield return automatedTest.Finish();
         }
