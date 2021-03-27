@@ -80,6 +80,7 @@ namespace SoftMasking {
         bool _maskingWasEnabled;
         bool _destroyed;
         bool _dirty;
+        Queue<Transform> _transformsToSpawnMaskablesIn = new Queue<Transform>();
 
         // Cached components
         RectTransform _maskTransform;
@@ -384,7 +385,7 @@ namespace SoftMasking {
         protected override void OnEnable() {
             base.OnEnable();
             SubscribeOnWillRenderCanvases();
-            SpawnMaskablesInChildren(transform);
+            MarkTransformForMaskablesSpawn(transform);
             FindGraphic();
             if (isMaskingEnabled)
                 UpdateMaskParameters();
@@ -413,7 +414,8 @@ namespace SoftMasking {
             var maskingEnabled = isMaskingEnabled;
             if (maskingEnabled) {
                 if (_maskingWasEnabled != maskingEnabled)
-                    SpawnMaskablesInChildren(transform);
+                    MarkTransformForMaskablesSpawn(transform);
+                SpawnMaskables();
                 var prevGraphic = _graphic;
                 FindGraphic();
                 if (_lastMaskRect != maskTransform.rect
@@ -461,9 +463,30 @@ namespace SoftMasking {
         }
 
         void OnTransformChildrenChanged() {
-            SpawnMaskablesInChildren(transform);
+            MarkTransformForMaskablesSpawn(transform);
         }
-         
+
+        void MarkTransformForMaskablesSpawn(Transform transform) {
+            // We defer SoftMaskables spawning to LateUpdate. It lets us work around
+            // the problem that MaskableGraphic doesn't respect IMaterialModifiers
+            // which stay before above it in the component stack in case of creation
+            // a new object. Particularly, it "solves" an issue with multiline
+            // TextMesh Pro text: TMPro creates SubMesh objects and then adds a
+            // Graphic component in a separate step. Deferring SoftMaskable spawning
+            // to LateUpdate allows us to be sure that SoftMaskable will be spawned
+            // after the Graphic is spawned.
+            if (!_transformsToSpawnMaskablesIn.Contains(transform))
+                _transformsToSpawnMaskablesIn.Enqueue(transform);
+        }
+
+        void SpawnMaskables() {
+            while (_transformsToSpawnMaskablesIn.Count > 0) {
+                var transformForSpawn = _transformsToSpawnMaskablesIn.Dequeue();
+                if (transformForSpawn)
+                    SpawnMaskablesInChildren(transformForSpawn);
+            }
+        }
+
         void SubscribeOnWillRenderCanvases() {
             // To get called when layout and graphics update is finished we should
             // subscribe after CanvasUpdateRegistry. CanvasUpdateRegistry subscribes
@@ -483,7 +506,7 @@ namespace SoftMasking {
             if (isMaskingEnabled)
                 UpdateMaskParameters();
         }
-        
+
         static T Touch<T>(T obj) { return obj; }
 
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
@@ -515,7 +538,7 @@ namespace SoftMasking {
         }
 
         void ISoftMask.UpdateTransformChildren(Transform transform) {
-            SpawnMaskablesInChildren(transform);
+            MarkTransformForMaskablesSpawn(transform);
         }
 
         void OnGraphicDirty() {
