@@ -6,7 +6,6 @@ using SoftMasking.Extensions;
 
 namespace SoftMasking {
     [ExecuteInEditMode]
-    [DisallowMultipleComponent]
     [AddComponentMenu("")]
     public class SoftMaskable : UIBehaviour, IMaterialModifier {
         ISoftMask _mask;
@@ -36,6 +35,10 @@ namespace SoftMasking {
                     Invalidate();
                 }
             }
+        }
+
+        public bool isDestroyed {
+            get { return _destroyed; }
         }
 
         public Material GetModifiedMaterial(Material baseMaterial) {
@@ -133,7 +136,7 @@ namespace SoftMasking {
                 ?? NearestMask(transform, out _affectedByMask, enabledOnly: false);
             if (mask == null) {
                 _destroyed = true;
-                DestroyImmediate(this);
+                DestroySelf();
                 return false;
             }
             return true;
@@ -154,6 +157,13 @@ namespace SoftMasking {
                     processedByThisMask = false;
                 current = current.parent;
             }
+        }
+
+        void DestroySelf() {
+            if (Application.isPlaying)
+                Destroy(this);
+            else
+                DestroyImmediate(this);
         }
 
         static List<ISoftMask> s_softMasks = new List<ISoftMask>();
