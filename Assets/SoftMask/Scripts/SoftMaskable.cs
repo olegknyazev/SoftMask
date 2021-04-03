@@ -21,10 +21,11 @@ namespace SoftMasking {
                 return mask != null 
                     && mask.isAlive 
                     && mask.isMaskingEnabled 
-                    && _affectedByMask;
+                    && _affectedByMask
+                    && isGraphicMaskable;
             }
         }
-
+        
         public ISoftMask mask {
             get { return _mask; }
             private set {
@@ -116,7 +117,24 @@ namespace SoftMasking {
                 mask.UpdateTransformChildren(transform);
         }
 
-        Graphic graphic { get { return _graphic ? _graphic : (_graphic = GetComponent<Graphic>()); } }
+        Graphic graphic {
+            get { return _graphic ? _graphic : (_graphic = GetComponent<Graphic>()); }
+        }
+
+        bool isGraphicMaskable {
+            get {
+                if (!graphic)
+                    return false;
+            #if UNITY_2020_1_OR_NEWER
+                var maskableGraphic = graphic as MaskableGraphic;
+                if (!maskableGraphic)
+                    return true;
+                return maskableGraphic.maskable;
+            #else
+                return true;
+            #endif
+            }
+        }
 
         Material replacement {
             get { return _replacement; }
