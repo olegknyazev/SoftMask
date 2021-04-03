@@ -29,15 +29,27 @@ namespace SoftMasking.Tests {
         }
 
         string AppendVersionSpecificFolderIfPresent(string sceneRelativePath) {
-        #if UNITY_2019_1_OR_NEWER // Currently we support only 2019+ specific screens
-            var relativeScenePath2019 = Path.Combine(sceneRelativePath, "2019");
-            var scenePath2019 = Path.Combine(ReferenceScreensFolder, relativeScenePath2019);
-            if (!string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(scenePath2019)))
-                return relativeScenePath2019;
+    #if UNITY_2019_1_OR_NEWER
+        #if UNITY_2020_1_OR_NEWER
+            var sceneRelativePath2020 = VersionSpecificScenePath(sceneRelativePath, "2020");
+            if (sceneRelativePath2020 != null)
+                return sceneRelativePath2020;
         #endif
+            var sceneRelativePath2019 = VersionSpecificScenePath(sceneRelativePath, "2019");
+            if (sceneRelativePath2019 != null)
+                return sceneRelativePath2019;
+    #endif
             return sceneRelativePath;
         }
-        
+
+        static string VersionSpecificScenePath(string sceneRelativePath, string unityVersion) {
+            var versionSceneRelativePath = Path.Combine(sceneRelativePath, unityVersion);
+            var versionScenePath = Path.Combine(ReferenceScreensFolder, versionSceneRelativePath);
+            if (!string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(versionScenePath)))
+                return versionSceneRelativePath;
+            return null;
+        }
+
         void LoadSteps() {
             _steps.Clear();
             for (int i = 0;; ++i) {
