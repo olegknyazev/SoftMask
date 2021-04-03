@@ -1,0 +1,10 @@
+{
+    "name": "SoftMask-Editor",
+    "references": [
+        "SoftMask"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

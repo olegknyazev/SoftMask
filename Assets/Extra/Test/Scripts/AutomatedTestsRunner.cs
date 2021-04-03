@@ -178,7 +178,11 @@ namespace SoftMasking.Tests {
             }
 
             public void ReplaceReference() {
+            #if UNITY_EDITOR
                 _automatedTest.SaveLastRecordAsReference();
+            #else
+                Debug.LogAssertion("ReplaceReference should not be called from non-editor");
+            #endif
             }
         }
 
