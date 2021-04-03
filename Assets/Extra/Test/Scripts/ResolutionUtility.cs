@@ -72,13 +72,13 @@ namespace SoftMasking.Tests {
                 int width,
                 int height,
                 string text) {
-            // This method reflectively does following:
+            // This method reflectively does the following:
             //  GameViewSizes group = gameViewSizesInstance.GetGroup(sizeGroupTyge);
             //  group.AddCustomSize(new GameViewSize(viewSizeType, width, height, text);
             var group = GetGroup(sizeGroupType);
             var addCustomSize = getGroup.ReturnType.GetMethod("AddCustomSize");
             var getTotalCount = getGroup.ReturnType.GetMethod("GetTotalCount");
-            var gvsType = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSize");
+            var gvsType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameViewSize");
         #if UNITY_2019_1_OR_NEWER
             // Not sure in which exactly version they've changed signature, but I know that in 2019 it is
             var gvstType = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSizeType");
@@ -103,7 +103,7 @@ namespace SoftMasking.Tests {
         }
          
         static void SetSize(int sizeIndex) {
-            var gameViewType = typeof(Editor).Assembly.GetType("UnityEditor.GameView");
+            var gameViewType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
             var gameView = EditorWindow.GetWindow(gameViewType);
             var selectedSizeIndexProp =
                 gameViewType.GetProperty("selectedSizeIndex",
