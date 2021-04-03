@@ -4,7 +4,6 @@ using UnityEngine.EventSystems;
 namespace SoftMasking.Samples {
     [RequireComponent(typeof(RectTransform))]
     public class PaintedMask : UIBehaviour {
-        public Canvas renderCanvas;
         public Camera renderCamera;
         public SoftMask targetMask;
 
