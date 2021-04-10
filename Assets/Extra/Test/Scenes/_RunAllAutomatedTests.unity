@@ -599,8 +599,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bac33ade27cf4542bd53b1b13d90941, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _defaultShader: {fileID: 4800000, guid: 8d19bf0a0d7a69643b050c159096b413, type: 3}
-  _defaultETC1Shader: {fileID: 4800000, guid: 9734f2045a9c1f74d956d0573ac8a2f3, type: 3}
   _source: 0
   _separateMask: {fileID: 0}
   _sprite: {fileID: 21300000, guid: d0ce7b63f1c8d0c47b4c47799b580d40, type: 3}
@@ -692,8 +690,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1933537342}
   m_HandleRect: {fileID: 1933537341}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.9999999
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -809,7 +807,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 165445406}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9998538
+  m_Size: 0.661349
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1101,7 +1099,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.0000047366034}
+  m_AnchoredPosition: {x: 0, y: 0.000019117355}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1334635402
@@ -2176,7 +2174,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 202379801}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9999809
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

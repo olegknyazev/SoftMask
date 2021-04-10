@@ -30,6 +30,7 @@ namespace SoftMasking.Tests {
 
         public IEnumerator Start() {
             ResolutionUtility.SetTestResolution();
+            yield return new WaitForSeconds(1f);
             var testResultList = new List<AutomatedTestResult>();
             try {
                 foreach (var sceneKey in GetTestSceneKeys()) {
@@ -57,8 +58,8 @@ namespace SoftMasking.Tests {
                     .Where(x => !standaloneSkipScenes.Any(pat => Regex.IsMatch(x, pat)));
             BuildPipeline.BuildPlayer(
                 new [] { currentScene }.Concat(testScenes).ToArray(),
-                "Build/AutomatedTests/SoftMaskTests.exe",
-                BuildTarget.StandaloneWindows,
+                "Build/AutomatedTests/SoftMaskTests",
+                BuildTarget.StandaloneOSX,
                 BuildOptions.AllowDebugging | BuildOptions.ForceEnableAssertions | additionalOptions);
         }
 
