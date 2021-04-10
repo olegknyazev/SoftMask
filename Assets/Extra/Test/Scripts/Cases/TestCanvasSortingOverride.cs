@@ -17,9 +17,6 @@ namespace SoftMasking.Tests {
         public PushToggle nestedCanvasToggle;
 
         [Space]
-        public Shader shader;
-
-        [Space]
         public AutomatedTest automatedTest;
 
         static readonly object[] SORTING_OVERRIDES = { false, true };
@@ -71,10 +68,8 @@ namespace SoftMasking.Tests {
         void AddMask(GameObject obj, Type type) {
             var mask = obj.GetComponent(type) ?? obj.AddComponent(type);
             var softMask = mask as SoftMask;
-            if (softMask) {
-                softMask.defaultShader = shader;
+            if (softMask)
                 softMask.enabled = true; // might been disabled in case of nested SoftMasks
-            }
         }
     }
 }

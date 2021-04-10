@@ -6,7 +6,6 @@ using UnityEngine;
 namespace SoftMasking.Tests {
     public class TestDynamicAssemblies : MonoBehaviour {
         public GameObject maskPlaceholder;
-        public Shader defaultMaskShader;
 
         [Space]
         public bool createType;
@@ -17,18 +16,17 @@ namespace SoftMasking.Tests {
         }
 
         void CreateSoftMask() {
-            var sm = maskPlaceholder.AddComponent<SoftMask>();
-            sm.defaultShader = defaultMaskShader;
-            sm.channelWeights = MaskChannel.gray;
+            var softMask = maskPlaceholder.AddComponent<SoftMask>();
+            softMask.channelWeights = MaskChannel.gray;
         }
 
         void CreateAssembly() {
-            var name = new AssemblyName("TestDynamicAssemblies");
-            var asm =
+            var assemblyName = new AssemblyName("TestDynamicAssemblies");
+            var assembly =
                 AppDomain.CurrentDomain.DefineDynamicAssembly(
-                    name,
+                    assemblyName,
                     AssemblyBuilderAccess.Save);
-            var module = asm.DefineDynamicModule(name.Name);
+            var module = assembly.DefineDynamicModule(assemblyName.Name);
             var type =
                 module.DefineType(
                     "TestType",

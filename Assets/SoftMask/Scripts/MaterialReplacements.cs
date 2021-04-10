@@ -29,7 +29,7 @@ namespace SoftMasking {
             }
             var replacement = _replacer.Replace(original);
             if (replacement) {
-                Assert.AreNotEqual(original, replacement, "IMaterialRepalcer should not return the original material");
+                Assert.AreNotEqual(original, replacement, "IMaterialReplacer should not return the original material");
                 replacement.hideFlags = HideFlags.HideAndDontSave;
                 _applyParameters(replacement);
             }
