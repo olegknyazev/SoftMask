@@ -63,9 +63,7 @@
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
             #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 
-            #if UNITY_VERSION >= 540
-                #define SOFTMASK_ETC1
-            #endif
+            #define SOFTMASK_ETC1
             #include "SoftMaskTemplate.cginc"
         ENDCG
         }

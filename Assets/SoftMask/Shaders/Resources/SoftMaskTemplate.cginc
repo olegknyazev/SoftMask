@@ -10,9 +10,7 @@
         float4 vertex : POSITION;
         float4 color : COLOR;
         float2 texcoord : TEXCOORD0;
-    #if UNITY_VERSION >= 550
         UNITY_VERTEX_INPUT_INSTANCE_ID
-    #endif
     };
 
     struct v2f
@@ -25,9 +23,7 @@
         half4  mask : TEXCOORD2;
         SOFTMASK_COORDS(3)
     #endif
-    #if UNITY_VERSION >= 550
         UNITY_VERTEX_OUTPUT_STEREO
-    #endif
     #if UNITY_VERSION < 202000
         SOFTMASK_COORDS(2)
     #endif
@@ -53,10 +49,8 @@
     {
         v2f OUT;
 
-    #if UNITY_VERSION >= 550
         UNITY_SETUP_INSTANCE_ID(IN);
         UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
-    #endif
         OUT.worldPosition = IN.vertex;
 
 #if UNITY_VERSION >= 202000
@@ -71,22 +65,12 @@
         OUT.texcoord = float4(IN.texcoord.x, IN.texcoord.y, maskUV.x, maskUV.y);
         OUT.mask = half4(IN.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + abs(pixelSize.xy)));
 #else
-    #if UNITY_VERSION >= 540
         OUT.vertex = UnityObjectToClipPos(IN.vertex);
-    #else
-        OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
-    #endif
 
     #if UNITY_VERSION >= 201800
         OUT.texcoord = TRANSFORM_TEX(IN.texcoord, _MainTex);
     #else
         OUT.texcoord = IN.texcoord;
-    #endif
-
-    #if UNITY_VERSION < 550
-      #ifdef UNITY_HALF_TEXEL_OFFSET
-        OUT.vertex.xy += (_ScreenParams.zw - 1.0) * float2(-1, 1);
-      #endif
     #endif
 #endif
 

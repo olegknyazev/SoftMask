@@ -800,10 +800,8 @@ namespace SoftMasking {
             public Material Replace(Material original) {
                 if (original == null || original.HasDefaultUIShader())
                     return Replace(original, Resources.Load<Shader>(DefaultUIShaderReplacement));
-            #if UNITY_5_4_OR_NEWER
                 else if (original.HasDefaultETC1UIShader())
                     return Replace(original, Resources.Load<Shader>(DefaultUIETC1ShaderReplacement));
-            #endif
                 else if (original.SupportsSoftMask())
                     return new Material(original);
                 else
