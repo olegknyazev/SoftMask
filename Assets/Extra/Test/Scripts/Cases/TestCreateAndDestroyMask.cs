@@ -4,7 +4,6 @@ using UnityEngine;
 namespace SoftMasking.Tests {
     public class TestCreateAndDestroyMask : MonoBehaviour {
         public GameObject panel;
-        public Shader shader;
         public AutomatedTest automatedTest;
 
         public IEnumerator Start() {
@@ -14,10 +13,8 @@ namespace SoftMasking.Tests {
                 if (mask) {
                     DestroyImmediate(mask);
                     mask = null;
-                } else {
+                } else
                     mask = panel.AddComponent<SoftMask>();
-                    mask.defaultShader = shader;
-                }
                 yield return automatedTest.Proceed(1f);
                 if (++steps == 2)
                     yield return automatedTest.Finish();

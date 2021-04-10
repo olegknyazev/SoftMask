@@ -59,8 +59,6 @@ namespace SoftMasking {
         // so, SoftMask creates a relatively small number of overrides.
         //
 
-        [SerializeField] Shader _defaultShader = null;
-        [SerializeField] Shader _defaultETC1Shader = null;
         [SerializeField] MaskSource _source = MaskSource.Graphic;
         [SerializeField] RectTransform _separateMask = null;
         [SerializeField] Sprite _sprite = null;
@@ -163,26 +161,6 @@ namespace SoftMasking {
             UnsupportedImageType    = 1 << 4,
             UnreadableTexture       = 1 << 5,
             UnreadableRenderTexture = 1 << 6
-        }
-
-        /// <summary>
-        /// Specifies a Shader that should be used as a replacement of the Unity's default UI
-        /// shader. If you add SoftMask in play-time by AddComponent(), you should set 
-        /// this property manually.
-        /// </summary>
-        public Shader defaultShader {
-            get { return _defaultShader; }
-            set { SetShader(ref _defaultShader, value); }
-        }
-
-        /// <summary>
-        /// Specifies a Shader that should be used as a replacement of the Unity's default UI
-        /// shader with ETC1 (alpha-split) support. If you use ETC1 textures in UI and
-        /// add SoftMask in play-time by AddComponent(), you should set this property manually.
-        /// </summary>
-        public Shader defaultETC1Shader {
-            get { return _defaultETC1Shader; }
-            set { SetShader(ref _defaultETC1Shader, value, warnIfNotSet: false); }
         }
 
         /// <summary>
@@ -375,11 +353,6 @@ namespace SoftMasking {
             if (_invertMask)
                 mask = 1 - mask;
             return mask >= _raycastThreshold;
-        }
-
-        protected override void Start() {
-            base.Start();
-            WarnIfDefaultShaderIsNotSet();
         }
 
         protected override void OnEnable() {
@@ -797,22 +770,15 @@ namespace SoftMasking {
             return Mathr.Div(Mathr.Size(centralPart) * SpriteToCanvasScale(spritePixelsPerUnit), Mathr.Size(textureCenter));
         }
 
-        void WarnIfDefaultShaderIsNotSet() {
-            if (!_defaultShader)
-                Debug.LogWarning("SoftMask may not work because its defaultShader is not set", this);
-        }
-
 
         void Set<T>(ref T field, T value) {
             field = value;
             _dirty = true;
         }
 
-        void SetShader(ref Shader field, Shader value, bool warnIfNotSet = true) {
+        void SetShader(ref Shader field, Shader value) {
             if (field != value) {
                 field = value;
-                if (warnIfNotSet)
-                    WarnIfDefaultShaderIsNotSet();
                 DestroyMaterials();
                 InvalidateChildren();
             }
@@ -833,15 +799,33 @@ namespace SoftMasking {
 
             public Material Replace(Material original) {
                 if (original == null || original.HasDefaultUIShader())
-                    return Replace(original, _owner._defaultShader);
-            #if UNITY_5_4_OR_NEWER
+                    return Replace(original, Resources.Load<Shader>(DefaultUIShaderReplacement));
                 else if (original.HasDefaultETC1UIShader())
-                    return Replace(original, _owner._defaultETC1Shader);
-            #endif
+                    return Replace(original, Resources.Load<Shader>(DefaultUIETC1ShaderReplacement));
                 else if (original.SupportsSoftMask())
                     return new Material(original);
                 else
                     return null;
+            }
+
+            static string DefaultUIETC1ShaderReplacement {
+                get {
+                #if UNITY_2021_OR_NEWER
+                    return "SoftMaskETC1PremultipliedAlpha";
+                #else
+                    return "SoftMaskETC1";
+                #endif
+                }
+            }
+
+            static string DefaultUIShaderReplacement {
+                get {
+                #if UNITY_2021_OR_NEWER
+                    return "SoftMaskPremultipliedAlpha";
+                #else
+                    return "SoftMask";
+                #endif
+                }
             }
 
             static Material Replace(Material original, Shader defaultReplacementShader) {
@@ -861,11 +845,6 @@ namespace SoftMasking {
             public static Vector2 Div(Vector2 v, Vector2 s) { return new Vector2(v.x / s.x, v.y / s.y); }
             public static Vector4 Mul(Vector4 v, Vector2 s) { return new Vector4(v.x * s.x, v.y * s.y, v.z * s.x, v.w * s.y); }
             public static Vector2 Size(Vector4 r) { return new Vector2(r.z - r.x, r.w - r.y); }
-            public static Vector4 Move(Vector4 v, Vector2 o) { return new Vector4(v.x + o.x, v.y + o.y, v.z + o.x, v.w + o.y); }
-
-            public static Vector4 BorderOf(Vector4 outer, Vector4 inner) {
-                return new Vector4(inner.x - outer.x, inner.y - outer.y, outer.z - inner.z, outer.w - inner.w);
-            }
 
             public static Vector4 ApplyBorder(Vector4 v, Vector4 b) {
                 return new Vector4(v.x + b.x, v.y + b.y, v.z - b.z, v.w - b.w);

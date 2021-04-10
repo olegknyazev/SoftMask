@@ -29,16 +29,21 @@ namespace SoftMasking.Tests {
         }
 
         string AppendVersionSpecificFolderIfPresent(string sceneRelativePath) {
-    #if UNITY_2019_1_OR_NEWER
-        #if UNITY_2020_1_OR_NEWER
+#if UNITY_2019_1_OR_NEWER
+    #if UNITY_2020_1_OR_NEWER
+        #if UNITY_2021_1_OR_NEWER
+            var sceneRelativePath2021 = VersionSpecificScenePath(sceneRelativePath, "2021");
+            if (sceneRelativePath2021 != null)
+                return sceneRelativePath2021;
+        #endif
             var sceneRelativePath2020 = VersionSpecificScenePath(sceneRelativePath, "2020");
             if (sceneRelativePath2020 != null)
                 return sceneRelativePath2020;
-        #endif
+    #endif
             var sceneRelativePath2019 = VersionSpecificScenePath(sceneRelativePath, "2019");
             if (sceneRelativePath2019 != null)
                 return sceneRelativePath2019;
-    #endif
+#endif
             return sceneRelativePath;
         }
 
