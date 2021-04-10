@@ -1,4 +1,4 @@
-﻿Shader "Hidden/UI Default ETC1 (Soft Masked)"
+﻿Shader "Hidden/UI Default ETC1 with Premultiplied Alpha (Soft Masked)"
 {
     // ETC1-version (with alpha split texture) of SoftMask.shader.
     // In Unity 5.3 this shader is the same as SoftMask.shader and it's never used.
@@ -46,7 +46,7 @@
         Lighting Off
         ZWrite Off
         ZTest[unity_GUIZTestMode]
-        Blend SrcAlpha OneMinusSrcAlpha
+        Blend One OneMinusSrcAlpha
         ColorMask[_ColorMask]
 
         Pass
@@ -66,6 +66,7 @@
             #if UNITY_VERSION >= 540
                 #define SOFTMASK_ETC1
             #endif
+            #define SOFTMASK_PREMULTIPLIED_ALPHA
             #include "SoftMaskTemplate.cginc"
         ENDCG
         }

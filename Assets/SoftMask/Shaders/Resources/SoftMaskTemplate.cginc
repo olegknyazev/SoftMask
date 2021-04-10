@@ -117,6 +117,9 @@
     #if defined(UNITY_UI_ALPHACLIP)
         clip(color.a - 0.001);
     #endif
+    #if defined(SOFTMASK_PREMULTIPLIED_ALPHA)
+        color.rgb *= color.a;
+    #endif
 
         return color;
     }

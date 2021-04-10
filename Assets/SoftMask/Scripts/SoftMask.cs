@@ -799,15 +799,35 @@ namespace SoftMasking {
 
             public Material Replace(Material original) {
                 if (original == null || original.HasDefaultUIShader())
-                    return Replace(original, Resources.Load<Shader>("SoftMask"));
+                    return Replace(original, Resources.Load<Shader>(DefaultUIShaderReplacement));
             #if UNITY_5_4_OR_NEWER
                 else if (original.HasDefaultETC1UIShader())
-                    return Replace(original, Resources.Load<Shader>("SoftMaskETC1"));
+                    return Replace(original, Resources.Load<Shader>(DefaultUIETC1ShaderReplacement));
             #endif
                 else if (original.SupportsSoftMask())
                     return new Material(original);
                 else
                     return null;
+            }
+
+            static string DefaultUIETC1ShaderReplacement {
+                get {
+                #if UNITY_2021_OR_NEWER
+                    return "SoftMaskETC1PremultipliedAlpha";
+                #else
+                    return "SoftMaskETC1";
+                #endif
+                }
+            }
+
+            static string DefaultUIShaderReplacement {
+                get {
+                #if UNITY_2021_OR_NEWER
+                    return "SoftMaskPremultipliedAlpha";
+                #else
+                    return "SoftMask";
+                #endif
+                }
             }
 
             static Material Replace(Material original, Shader defaultReplacementShader) {

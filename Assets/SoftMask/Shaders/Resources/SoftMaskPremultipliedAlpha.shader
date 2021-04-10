@@ -1,12 +1,14 @@
-﻿Shader "Hidden/UI Default ETC1 (Soft Masked)"
+﻿Shader "Hidden/UI Default with Premultiplied Alpha (Soft Masked)"
 {
-    // ETC1-version (with alpha split texture) of SoftMask.shader.
-    // In Unity 5.3 this shader is the same as SoftMask.shader and it's never used.
+    // This is a shader that replaces the Unity's Default UI shader. It has all capabilities
+    // of the Default UI and also supports Soft Mask. It is a bit complicated because it
+    // reflects changes of the Default UI shader between Unity versions. If you're searching
+    // for an example of how to add Soft Mask support, you may check CustomWithSoftMask.shader
+    // that's included in the package.
 
     Properties
     {
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
-        [PerRendererData] _AlphaTex("Sprite Alpha Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
 
         [PerRendererData] _SoftMask("Mask", 2D) = "white" {}
@@ -46,7 +48,7 @@
         Lighting Off
         ZWrite Off
         ZTest[unity_GUIZTestMode]
-        Blend SrcAlpha OneMinusSrcAlpha
+        Blend One OneMinusSrcAlpha
         ColorMask[_ColorMask]
 
         Pass
@@ -63,9 +65,7 @@
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
             #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 
-            #if UNITY_VERSION >= 540
-                #define SOFTMASK_ETC1
-            #endif
+            #define SOFTMASK_PREMULTIPLIED_ALPHA
             #include "SoftMaskTemplate.cginc"
         ENDCG
         }
