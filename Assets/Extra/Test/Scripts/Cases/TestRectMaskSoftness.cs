@@ -17,7 +17,8 @@ namespace SoftMasking.Tests {
                 yield return automatedTest.Finish();
             }
         #else
-                Debug.LogAssertion("This test should not be run in Unity prior to 2020");
+            Debug.LogAssertion("This test should not be run in Unity prior to 2020");
+            yield break;
         #endif
         }
     }
