@@ -40,7 +40,10 @@
 #if UNITY_VERSION >= 201800
     float4 _MainTex_ST;
 #endif
-#if UNITY_VERSION >= 202000
+#if UNITY_VERSION >= 202100
+    float _UIMaskSoftnessX;
+    float _UIMaskSoftnessY;
+#elif UNITY_VERSION >= 202000
     float _MaskSoftnessX;
     float _MaskSoftnessY;
 #endif
@@ -63,7 +66,12 @@
         float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
         float2 maskUV = (IN.vertex.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
         OUT.texcoord = float4(IN.texcoord.x, IN.texcoord.y, maskUV.x, maskUV.y);
-        OUT.mask = half4(IN.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + abs(pixelSize.xy)));
+    #if UNITY_VERSION >= 202100
+        half2 maskSoftness = half2(_UIMaskSoftnessX, _UIMaskSoftnessY);
+    #else
+        half2 maskSoftness = half2(_MaskSoftnessX, _MaskSoftnessY);
+    #endif
+        OUT.mask = half4(IN.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * maskSoftness + abs(pixelSize.xy)));
 #else
         OUT.vertex = UnityObjectToClipPos(IN.vertex);
 
