@@ -1,13 +1,10 @@
 fileFormatVersion: 2
 guid: 0bac33ade27cf4542bd53b1b13d90941
-timeCreated: 1483913846
-licenseType: Free
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - _defaultShader: {fileID: 4800000, guid: 8d19bf0a0d7a69643b050c159096b413, type: 3}
-  - _defaultETC1Shader: {fileID: 4800000, guid: 9734f2045a9c1f74d956d0573ac8a2f3,
-      type: 3}
+  - _separateMask: {instanceID: 0}
   - _sprite: {instanceID: 0}
   - _texture: {instanceID: 0}
   executionOrder: 0
