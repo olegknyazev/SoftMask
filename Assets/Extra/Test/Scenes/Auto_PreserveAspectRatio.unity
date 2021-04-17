@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641275, b: 0.5748172, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -303,8 +303,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bac33ade27cf4542bd53b1b13d90941, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _defaultShader: {fileID: 4800000, guid: 8d19bf0a0d7a69643b050c159096b413, type: 3}
-  _defaultETC1Shader: {fileID: 4800000, guid: 9734f2045a9c1f74d956d0573ac8a2f3, type: 3}
   _source: 0
   _separateMask: {fileID: 0}
   _sprite: {fileID: 0}
@@ -510,7 +508,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1634190929}
   - component: {fileID: 1634190928}
-  - component: {fileID: 1634190927}
   - component: {fileID: 1634190926}
   - component: {fileID: 1634190925}
   m_Layer: 0
@@ -528,13 +525,6 @@ AudioListener:
   m_GameObject: {fileID: 1634190924}
   m_Enabled: 1
 --- !u!124 &1634190926
-Behaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1634190924}
-  m_Enabled: 1
---- !u!92 &1634190927
 Behaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -768,7 +758,15 @@ MonoBehaviour:
       tolerance: 0
   _lastExecutionSteps: []
   _referenceSteps:
-    _steps: []
+    _steps:
+    - _texture: {fileID: 2800000, guid: 0d05bff456af8458098ac6c53bbd52da, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: a7eaef99ab2564d0a8d022acae0df419, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: 612c5a1f8345a4924a032856fa910bee, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: b7de7428f862644e9b7f14e75cece928, type: 3}
+      _logRecords: []
     _sceneRelativePath: Auto_PreserveAspectRatio
 --- !u!1 &1913143925
 GameObject:
