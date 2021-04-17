@@ -91,7 +91,7 @@ namespace SoftMasking.TextMeshPro.Editor {
             // We do not have to use absolute path for SoftMask.cginc because patched shaders
             // reside in a subfolder but it's convenient to reuse mechanism made for TMPro includes.
             { "SoftMask.cginc", new List<string> {
-                "2731380563bbb5a4aa4d3c9f57966cce" } }
+                "0f47072ab362848c2b950a1cdd7c45e5" } }
         };
 
         static Dictionary<string, string> s_knownIncludes;
