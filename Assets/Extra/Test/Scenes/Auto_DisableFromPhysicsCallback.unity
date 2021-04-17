@@ -322,8 +322,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bac33ade27cf4542bd53b1b13d90941, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _defaultShader: {fileID: 4800000, guid: 8d19bf0a0d7a69643b050c159096b413, type: 3}
-  _defaultETC1Shader: {fileID: 4800000, guid: 9734f2045a9c1f74d956d0573ac8a2f3, type: 3}
   _source: 0
   _separateMask: {fileID: 0}
   _sprite: {fileID: 0}
@@ -799,7 +797,7 @@ MonoBehaviour:
         width: 300
         height: 300
       validationRectAnchor: 0
-      tolerance: 0
+      tolerance: 0.01
   _lastExecutionSteps: []
   _referenceSteps:
     _steps:
@@ -933,6 +931,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 702a2783e6fc94a0dacdaca9a2e68385, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rigidbodyToEnable: {fileID: 1721522334}
   childToUnparent: {fileID: 1754425776}
   automatedTest: {fileID: 1538987899}
 --- !u!1 &1754425775

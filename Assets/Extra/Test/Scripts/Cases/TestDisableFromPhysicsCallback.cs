@@ -7,12 +7,14 @@ namespace SoftMasking.Tests {
     // should not be called from physics callbacks.
     // See SoftMaskable.FindMaskOrDie.
     public class TestDisableFromPhysicsCallback : MonoBehaviour {
+        public Rigidbody rigidbodyToEnable;
         public Transform childToUnparent;
 
         public AutomatedTest automatedTest;
 
-        public void Start() {
-            automatedTest.Proceed();
+        public IEnumerator Start() {
+            yield return automatedTest.Proceed();
+            rigidbodyToEnable.useGravity = true;
         }
 
         void OnCollisionEnter(Collision other) {
@@ -21,7 +23,7 @@ namespace SoftMasking.Tests {
         }
 
         IEnumerator ProceedAndFinish() {
-            yield return automatedTest.Proceed(0.5f);
+            yield return automatedTest.Proceed();
             yield return automatedTest.Finish();
         }
     }
