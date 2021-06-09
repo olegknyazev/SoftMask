@@ -237,11 +237,11 @@ MonoBehaviour:
     lineCount: 3
     pageCount: 1
     materialCount: 1
-  m_havePropertiesChanged: 1
+  m_havePropertiesChanged: 0
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
-  m_isInputParsingRequired: 1
+  m_isInputParsingRequired: 0
   m_inputSource: 0
   m_hasFontAssetChanged: 0
   m_subTextObjects:
@@ -323,7 +323,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 561374673}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
@@ -336,7 +336,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 21300000, guid: e139b18a6601f3a43a1059d962f891cb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: fda7797792262401b9d2553e42203a07, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -361,9 +361,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bac33ade27cf4542bd53b1b13d90941, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _source: 0
+  _source: 1
   _separateMask: {fileID: 0}
-  _sprite: {fileID: 0}
+  _sprite: {fileID: 21300000, guid: fda7797792262401b9d2553e42203a07, type: 3}
   _spriteBorderMode: 0
   _spritePixelsPerUnitMultiplier: 1
   _texture: {fileID: 0}
@@ -373,7 +373,7 @@ MonoBehaviour:
     y: 0
     width: 1
     height: 1
-  _channelWeights: {r: 0, g: 0, b: 0, a: 1}
+  _channelWeights: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 0}
   _raycastThreshold: 0
   _invertMask: 0
   _invertOutsides: 0
