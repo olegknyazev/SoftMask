@@ -12,15 +12,13 @@ namespace SoftMasking.TextMeshPro.Editor {
     public static class ShaderGenerator {
         public class ShaderResource {
             public readonly Shader shader;
-            public readonly string path;
             public readonly string text;
             public readonly string name;
 
             public ShaderResource(string path) {
-                this.path = path;
-                this.shader = AssetDatabase.LoadAssetAtPath<Shader>(path);
-                this.text = ReadResource(path);
-                this.name = Path.GetFileNameWithoutExtension(path);
+                shader = AssetDatabase.LoadAssetAtPath<Shader>(path);
+                text = ReadResource(path);
+                name = Path.GetFileNameWithoutExtension(path);
             }
         }
 
@@ -54,10 +52,10 @@ namespace SoftMasking.TextMeshPro.Editor {
             InvalidateSoftMasks();
         }
 
-        public static IEnumerable<ShaderResource> CollectTMProShaders() {
+        static IEnumerable<ShaderResource> CollectTMProShaders() {
             return
                 TMProShaderGUIDs.Concat(TMProShaderPackageGUIDs)
-                    .Select(x => AssetDatabase.GUIDToAssetPath(x))
+                    .Select(AssetDatabase.GUIDToAssetPath)
                     .Where(x => !string.IsNullOrEmpty(x))
                     .Select(x => new ShaderResource(x))
                     .Where(x => CheckIsUIShader(x.shader));

@@ -10,57 +10,57 @@ namespace SoftMasking.TextMeshPro.Editor {
 
     public static class ShaderPatcher {
         public static string Patch(string shader) {
-            var names = Analyze(shader);
+            var names = DetectNames(shader);
             var result = shader;
             result = UpdateShaderName(result);
             result = InjectProperty(result);
             result = InjectPragma(result);
             result = InjectInclude(result);
             result = InjectV2FFields(result, names.v2fStruct);
-            result = InjectVertexInstructions(result, names.v2fStruct, names.v2fPositionField, names.vertShader);
-            result = InjectFragmentInstructions(result, names.fragShader);
+            result = InjectVertexInstructions(result, names.v2fStruct, names.v2fPositionField, names.vertexShader);
+            result = InjectFragmentInstructions(result, names.fragmentShader);
             result = FixVertexInitialization(result, names.v2fStruct);
             return result;
         }
 
         struct Names {
-            public string vertShader;
-            public string fragShader;
+            public string vertexShader;
+            public string fragmentShader;
             public string v2fStruct;
             public string v2fPositionField;
         }
 
-        static readonly Regex VERTEX_PRAMGA_PATTERN = new Regex(@"#pragma\s+vertex\s+(\w+)");
-        static readonly Regex FRAGMENT_PRAMGA_PATTERN = new Regex(@"#pragma\s+fragment\s+(\w+)");
+        static readonly Regex VertexPragmaPattern = new Regex(@"#pragma\s+vertex\s+(\w+)");
+        static readonly Regex FragmentPragmaPattern = new Regex(@"#pragma\s+fragment\s+(\w+)");
 
-        static Names Analyze(string shader) {
-            var vertShader =
-                EnsureMatch(VERTEX_PRAMGA_PATTERN, shader, "Unable to find vertex shader #pragma")
+        static Names DetectNames(string shader) {
+            var vertexShader =
+                EnsureMatch(VertexPragmaPattern, shader, "Unable to find vertex shader #pragma")
                     .Groups[1].Value;
-            var fragShader =
-                EnsureMatch(FRAGMENT_PRAMGA_PATTERN, shader, "Unable to find fragment shader #pragma")
+            var fragmentShader =
+                EnsureMatch(FragmentPragmaPattern, shader, "Unable to find fragment shader #pragma")
                     .Groups[1].Value;
-            var vertReturnTypePattern = new Regex(@"(\w*)\s*" + vertShader + @"\s*\([^)]*\)");
-            var match = EnsureMatch(vertReturnTypePattern, shader, "Unable to find V2F struct declaration");
+            var vertexShaderReturnTypePattern = new Regex(@"(\w*)\s*" + vertexShader + @"\s*\([^)]*\)");
+            var match = EnsureMatch(vertexShaderReturnTypePattern, shader, "Unable to find V2F struct declaration");
             var v2fStruct = match.Groups[1].Value;
             var v2fPositionFieldPattern = new Regex(@"struct\s+" + v2fStruct + @"\s*\{[^}]*float\d\s*(\w+)\s*:\s*(?:SV_)?POSITION;[^}]*\}");
             var v2fPositionField = EnsureMatch(v2fPositionFieldPattern, shader, "Unable to determine V2F position field").Groups[1].Value;
             return new Names {
-                vertShader = vertShader,
-                fragShader = fragShader,
+                vertexShader = vertexShader,
+                fragmentShader = fragmentShader,
                 v2fStruct = v2fStruct,
                 v2fPositionField = v2fPositionField
             };
         }
 
-        static readonly Regex SHADER_NAME_PATTERN = new Regex(@"Shader\s+""([^""]+)""");
+        static readonly Regex ShaderNamePattern = new Regex(@"Shader\s+""([^""]+)""");
 
         static string UpdateShaderName(string shader) {
-            var match = EnsureMatch(SHADER_NAME_PATTERN, shader, "Unable to find shader declaration");
+            var match = EnsureMatch(ShaderNamePattern, shader, "Unable to find shader declaration");
             return shader.Insert(match.Groups[1].Index, "Soft Mask/");
         }
 
-        static readonly Regex PROPERTIES_PATTERN = new Regex(
+        static readonly Regex PropertiesPattern = new Regex(
             @"Properties\s*\{" +
                 @"(?:[^{}]|(?<open>\{)|(?<-open>\}))*" + // Swallow all the content with balancing
                 @"(?(open)(?!))" + // Match only if braces are balanced
@@ -69,15 +69,15 @@ namespace SoftMasking.TextMeshPro.Editor {
             RegexOptions.Multiline);
 
         static string InjectProperty(string shader) {
-            var match = EnsureMatch(PROPERTIES_PATTERN, shader, "Unable to inject Soft Mask property");
+            var match = EnsureMatch(PropertiesPattern, shader, "Unable to inject Soft Mask property");
             var endOfLastProperty = match.Groups[1].Index;
             var padding = match.Groups[2].Value;
             return shader.Insert(endOfLastProperty,
                 "\n" + padding + "\t_SoftMask(\"Mask\", 2D) = \"white\" {} // Soft Mask");
         }
 
-        static readonly Regex LAST_PRAGMA_PATTERN = LastDirectivePattern("pragma");
-        static readonly Regex LAST_INCLUDE_PATTERN = LastDirectivePattern("include");
+        static readonly Regex LastPragmaPattern = LastDirectivePattern("pragma");
+        static readonly Regex LastIncludePattern = LastDirectivePattern("include");
 
         static Regex LastDirectivePattern(string directive) {
             return new Regex(
@@ -86,7 +86,7 @@ namespace SoftMasking.TextMeshPro.Editor {
         }
 
         static string InjectPragma(string shader) {
-            var match = EnsureLastMatch(LAST_PRAGMA_PATTERN, shader, "Unable to inject Soft Mask #pragma");
+            var match = EnsureLastMatch(LastPragmaPattern, shader, "Unable to inject Soft Mask #pragma");
             var padding = match.Groups[1].Value;
             return shader.Insert(match.Groups[2].Index,
                 "\n" +
@@ -95,31 +95,27 @@ namespace SoftMasking.TextMeshPro.Editor {
         }
 
         static string InjectInclude(string shader) {
-            var match = EnsureLastMatch(LAST_INCLUDE_PATTERN, shader, "Unable to inject Soft Mask #include");
+            var match = EnsureLastMatch(LastIncludePattern, shader, "Unable to inject Soft Mask #include");
             var padding = match.Groups[1].Value;
             return shader.Insert(match.Groups[2].Index,
                 "\n" + padding + "#include \"SoftMask.cginc\" // Soft Mask");
         }
 
-        static readonly Regex TEXCOORD_PATTERN = new Regex(@"TEXCOORD(\d+)");
+        static readonly Regex TexcoordPattern = new Regex(@"TEXCOORD(\d+)");
 
         static string InjectV2FFields(string shader, string v2fStructName) {
             var pattern = new Regex(
                 @"struct\s+" + v2fStructName + @"\s*\{[^}]*()$(\s*)\}",  // Do not balance braces -
                 RegexOptions.Multiline);                                 // expecting no braces inside struct
             var match = EnsureMatch(pattern, shader, "Unable to inject Soft Mask V2F signature");
-            var texcoords = TEXCOORD_PATTERN.Matches(match.Value);
-            var maxUsedTexcoord =
-                texcoords.OfType<Match>()
+            var texCoords = TexcoordPattern.Matches(match.Value);
+            var maxUsedTexCoord =
+                texCoords.OfType<Match>()
                     .Where(m => m.Success)
                     .Max(m => int.Parse(m.Groups[1].Value));
             var padding = match.Groups[2].Value;
             return shader.Insert(match.Groups[1].Index,
-                "\n" + padding + "\tSOFTMASK_COORDS(" + (maxUsedTexcoord + 1) + ") // Soft Mask");
-        }
-
-        static Regex VertexFunctionPattern(string v2fStruct, string function) {
-            return FunctionPattern(v2fStruct, function);
+                "\n" + padding + "\tSOFTMASK_COORDS(" + (maxUsedTexCoord + 1) + ") // Soft Mask");
         }
 
         static Regex FunctionPattern(string returnType, string function) {
@@ -132,7 +128,7 @@ namespace SoftMasking.TextMeshPro.Editor {
                 @"(\s*)\}", RegexOptions.Multiline);
         }
 
-        static readonly Regex RETURN_PATTERN = new Regex(@"^([^\n]*)return\s+([^;]+);\s*$", RegexOptions.Multiline);
+        static readonly Regex ReturnPattern = new Regex(@"^([^\n]*)return\s+([^;]+);\s*$", RegexOptions.Multiline);
 
         static string InjectVertexInstructions(string shader, string v2fStruct, string v2fPositionField, string function) {
             return ModifyFunctionReturn(shader, v2fStruct, function, (varName, inputName) =>
@@ -158,7 +154,7 @@ namespace SoftMasking.TextMeshPro.Editor {
                     "Unable to locate vertex shader function");
             var functionBody = functionMatch.Value;
             var inputName = functionMatch.Groups[1].Value;
-            var returnMatch = EnsureMatch(RETURN_PATTERN, functionBody, "Unable to find vertex shader's return statement");
+            var returnMatch = EnsureMatch(ReturnPattern, functionBody, "Unable to find vertex shader's return statement");
             var variableName = returnMatch.Groups[2].Value;
             var padding = returnMatch.Groups[1].Value;
             var sb = new StringBuilder(shader);
