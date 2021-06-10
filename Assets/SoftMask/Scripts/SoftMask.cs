@@ -89,7 +89,7 @@ namespace SoftMasking {
             var materialReplacer = 
                 new MaterialReplacerChain(
                     MaterialReplacer.globalReplacers,
-                    new MaterialReplacerImpl(this));
+                    new MaterialReplacerImpl());
             _materials = new MaterialReplacements(materialReplacer, m => _parameters.Apply(m));
             _warningReporter = new WarningReporter(this);
         }
@@ -788,13 +788,6 @@ namespace SoftMasking {
         static readonly List<SoftMaskable> s_maskables = new List<SoftMaskable>();
 
         class MaterialReplacerImpl : IMaterialReplacer {
-            readonly SoftMask _owner;
-
-            public MaterialReplacerImpl(SoftMask owner) {
-                // Pass whole owner instead of just shaders because they can be changed dynamically.
-                _owner = owner;
-            }
-
             public int order { get { return 0; } }
 
             public Material Replace(Material original) {
