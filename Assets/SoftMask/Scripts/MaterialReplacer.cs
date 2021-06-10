@@ -15,10 +15,14 @@ namespace SoftMasking {
     ///
     /// Globally registered replacers are called in order of ascending of their `order`
     /// value. The traversal is stopped on the first IMaterialReplacer which returns a
-    /// non-null value and this returned value is then used as a replacement.
+    /// non-null value and the returned value is the replacement being used.
     ///
     /// Implementation of IMaterialReplacer marked by this attribute should have a
     /// default constructor.
+    ///
+    /// NOTE You may also need to mark global IMaterialReplacer by Unity's
+    /// <see cref="UnityEngine.Scripting.PreserveAttribute"/> if you're using IL2CPP to
+    /// prevent code stripping.
     /// </summary>
     /// <seealso cref="IMaterialReplacer"/>
     /// <seealso cref="MaterialReplacer.globalReplacers"/>
@@ -64,8 +68,8 @@ namespace SoftMasking {
         static IEnumerable<IMaterialReplacer> CollectGlobalReplacers() {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypesSafe())
-                .Where(t => IsMaterialReplacerType(t))
-                .Select(t => TryCreateInstance(t))
+                .Where(IsMaterialReplacerType)
+                .Select(TryCreateInstance)
                 .Where(t => t != null);
         }
 

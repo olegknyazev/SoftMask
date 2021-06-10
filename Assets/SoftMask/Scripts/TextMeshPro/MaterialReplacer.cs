@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace SoftMasking.TextMeshPro {
+    [Preserve]
     [GlobalMaterialReplacer]
     public class MaterialReplacer : IMaterialReplacer {
-        // SoftMaskTMPro's replacer is called after the standard one.
+        // SoftMask's TMPro replacer is called after the standard one.
         public int order { get { return 10; } }
 
         public Material Replace(Material material) {
