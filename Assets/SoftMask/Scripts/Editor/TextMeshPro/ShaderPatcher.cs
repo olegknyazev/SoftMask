@@ -11,6 +11,7 @@ namespace SoftMasking.TextMeshPro.Editor {
     public static class ShaderPatcher {
         public static string Patch(string shader) {
             var names = DetectNames(shader);
+            var blendingMode = DetectBlendingMode(shader);
             var result = shader;
             result = UpdateShaderName(result);
             result = InjectProperty(result);
@@ -18,7 +19,7 @@ namespace SoftMasking.TextMeshPro.Editor {
             result = InjectInclude(result);
             result = InjectV2FFields(result, names.v2fStruct);
             result = InjectVertexInstructions(result, names.v2fStruct, names.v2fPositionField, names.vertexShader);
-            result = InjectFragmentInstructions(result, names.fragmentShader);
+            result = InjectFragmentInstructions(result, blendingMode, names.fragmentShader);
             result = FixVertexInitialization(result, names.v2fStruct);
             return result;
         }
@@ -52,7 +53,20 @@ namespace SoftMasking.TextMeshPro.Editor {
                 v2fPositionField = v2fPositionField
             };
         }
+        
+        enum BlendingMode { PremultipliedAlpha, Classic }
 
+        static readonly Regex BlendingPattern = new Regex(@"^\s*Blend\s+(\w+)\s+(\w+)", RegexOptions.Multiline);
+        
+        static BlendingMode DetectBlendingMode(string shader) {
+            var match = EnsureMatch(BlendingPattern, shader, "Unable to determine shader blending mode");
+            var sourceBlend = match.Groups[1].Value.ToLowerInvariant();
+            var destinationBlend = match.Groups[2].Value.ToLowerInvariant();
+            return sourceBlend == "one" && destinationBlend == "oneminussrcalpha"
+                ? BlendingMode.PremultipliedAlpha
+                : BlendingMode.Classic;
+        }
+        
         static readonly Regex ShaderNamePattern = new Regex(@"Shader\s+""([^""]+)""");
 
         static string UpdateShaderName(string shader) {
@@ -136,9 +150,10 @@ namespace SoftMasking.TextMeshPro.Editor {
             );
         }
 
-        static string InjectFragmentInstructions(string shader, string function) {
+        static string InjectFragmentInstructions(string shader, BlendingMode blendingMode, string function) {
+            var maskedComponent = blendingMode == BlendingMode.Classic ? ".a" : "";
             return ModifyFunctionReturn(shader, @"fixed4", function, (varName, inputName) =>
-                varName + " *= SOFTMASK_GET_MASK(" + inputName + ");"
+                varName + maskedComponent + " *= SOFTMASK_GET_MASK(" + inputName + ");"
             );
         }
 
