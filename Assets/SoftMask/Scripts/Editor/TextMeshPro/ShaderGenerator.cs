@@ -71,6 +71,7 @@ namespace SoftMasking.TextMeshPro.Editor {
         };
 
         static readonly List<string> TMProShaderPackageGUIDs = new List<string> {
+            "48bb5f55d8670e349b6e614913f9d910", // TMP_Bitmap-Mobile-Custom-Atlas
             "1e3b057af24249748ff873be7fafee47", // TMP_Bitmap-Mobile
             "128e987d567d4e2c824d754223b3f3b0", // TMP_Bitmap
             "bc1ede39bf3643ee8e493720e4259791", // TMP_SDF-Mobile Masking
