@@ -37,9 +37,7 @@
 #ifdef SOFTMASK_ETC1
     sampler2D _AlphaTex;
 #endif
-#if UNITY_VERSION >= 201800
     float4 _MainTex_ST;
-#endif
 #if UNITY_VERSION >= 202100
     float _UIMaskSoftnessX;
     float _UIMaskSoftnessY;
@@ -75,11 +73,7 @@
 #else
         OUT.vertex = UnityObjectToClipPos(IN.vertex);
 
-    #if UNITY_VERSION >= 201800
         OUT.texcoord = TRANSFORM_TEX(IN.texcoord, _MainTex);
-    #else
-        OUT.texcoord = IN.texcoord;
-    #endif
 #endif
 
         OUT.color = IN.color * _Color;
@@ -97,7 +91,7 @@
 
         color.a *= SOFTMASK_GET_MASK(IN);
 
-#if defined(UNITY_UI_CLIP_RECT) || UNITY_VERSION < 201720
+#if defined(UNITY_UI_CLIP_RECT)
     #if UNITY_VERSION >= 202000
         half2 m = saturate((_ClipRect.zw - _ClipRect.xy - abs(IN.mask.xy)) * IN.mask.zw);
         color.a *= m.x * m.y;

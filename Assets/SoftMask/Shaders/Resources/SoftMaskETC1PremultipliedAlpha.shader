@@ -57,9 +57,7 @@
             #pragma fragment frag
             #pragma target 2.0
 
-        #if UNITY_VERSION >= 201720
             #pragma multi_compile __ UNITY_UI_CLIP_RECT
-        #endif
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
             #pragma multi_compile __ SOFTMASK_SIMPLE SOFTMASK_SLICED SOFTMASK_TILED
 

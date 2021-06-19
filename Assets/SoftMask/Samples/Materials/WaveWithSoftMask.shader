@@ -114,18 +114,11 @@
             {
                 v2f OUT;
                 OUT.worldPosition = IN.vertex;
-            #if UNITY_VERSION >= 540
                 OUT.vertex = UnityObjectToClipPos(IN.vertex);
-            #else
-                OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
-            #endif
-
                 OUT.texcoord = IN.texcoord;
-
             #ifdef UNITY_HALF_TEXEL_OFFSET
                 OUT.vertex.xy += (_ScreenParams.zw - 1.0) * float2(-1, 1);
             #endif
-
                 OUT.color = IN.color * _Color;
                 SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex) // Soft Mask Support
                 return OUT;
