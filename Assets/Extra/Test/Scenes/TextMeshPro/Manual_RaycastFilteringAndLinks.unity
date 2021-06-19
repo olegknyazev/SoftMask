@@ -1066,7 +1066,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1767744558}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48a2fdbd95acd794caf78a85a0b6926a, type: 3}
+  m_Script: {fileID: 11500000, guid: 1312ae25639a4bae8e25ae223209cc50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_OnCharacterSelection:
@@ -1135,7 +1135,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1767744558}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 496f2e385b0c62542b5c739ccfafd8da, type: 3}
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -1149,8 +1149,8 @@ MonoBehaviour:
   m_text: See the <link="ID_01"><u><#40A0FF>online documentation</color></u></link>
     for more information <u><link="ID_02">about this product</link></u>.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 715b80e429c437e40867928a4e1fc975, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 33db60c37b63f08448ded4b385e74e38, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
