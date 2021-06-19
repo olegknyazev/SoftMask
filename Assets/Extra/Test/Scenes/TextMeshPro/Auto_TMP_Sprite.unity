@@ -191,7 +191,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 323282589}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 496f2e385b0c62542b5c739ccfafd8da, type: 3}
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -220,7 +220,7 @@ MonoBehaviour:
     bottomLeft: {r: 1, g: 1, b: 1, a: 1}
     bottomRight: {r: 1, g: 1, b: 1, a: 1}
   m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 11400000, guid: 273ca6c80b4b5d746b5e548f532bffd8, type: 2}
+  m_spriteAsset: {fileID: 11400000, guid: fbef3c704dce48f08a44612d6c856c8d, type: 2}
   m_tintAllSprites: 0
   m_overrideHtmlColors: 0
   m_faceColor:
@@ -650,10 +650,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1464317155}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5378e1f14d974d419f811d6b0861f20, type: 3}
+  m_Script: {fileID: 11500000, guid: 058cba836c1846c3aa1c5fd2e28aea77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2102322, guid: 273ca6c80b4b5d746b5e548f532bffd8, type: 2}
+  m_Material: {fileID: 2102322, guid: fbef3c704dce48f08a44612d6c856c8d, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
@@ -662,9 +662,9 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_fontAsset: {fileID: 0}
-  m_spriteAsset: {fileID: 11400000, guid: 273ca6c80b4b5d746b5e548f532bffd8, type: 2}
+  m_spriteAsset: {fileID: 11400000, guid: fbef3c704dce48f08a44612d6c856c8d, type: 2}
   m_material: {fileID: 0}
-  m_sharedMaterial: {fileID: 2102322, guid: 273ca6c80b4b5d746b5e548f532bffd8, type: 2}
+  m_sharedMaterial: {fileID: 2102322, guid: fbef3c704dce48f08a44612d6c856c8d, type: 2}
   m_isDefaultMaterial: 1
   m_padding: 0
   m_canvasRenderer: {fileID: 1464317158}

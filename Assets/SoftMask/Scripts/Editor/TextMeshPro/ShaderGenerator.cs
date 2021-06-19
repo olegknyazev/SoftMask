@@ -28,9 +28,8 @@ namespace SoftMasking.TextMeshPro.Editor {
             if (tmproShaders.Count == 0) {
                 Debug.LogError(
                     "Could not update integration because TextMesh Pro shaders are not found. " +
-                    "Make sure that TextMesh Pro package is installed. If you're using " +
-                    "the Package Manager version of TextMesh Pro, import TextMesh Pro " +
-                    "essentials first.");
+                    "Make sure that TextMesh Pro package is installed and its essential " +
+                    "resources are imported (Window / TextMeshPro / Import TMP Essential Resources).");
                 return;
             }
             foreach (var shader in tmproShaders) {

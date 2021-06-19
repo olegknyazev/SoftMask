@@ -4,299 +4,114 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: ReducedCharsetFont Material
-  m_Shader: {fileID: 4800000, guid: dca26082f9cb439469295791d9f76fe5, type: 3}
+  m_Shader: {fileID: 4800000, guid: 68e6db2ebdc24f95958faec2be5558d6, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 5
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
+  disabledShaderPasses: []
   m_SavedProperties:
-    serializedVersion: 2
+    serializedVersion: 3
     m_TexEnvs:
-      data:
-        first:
-          name: _MainTex
-        second:
-          m_Texture: {fileID: 2896852}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _BumpMap
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _FaceTex
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _OutlineTex
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _Cube
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Cube:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FaceTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2896852}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OutlineTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
-      data:
-        first:
-          name: _Stencil
-        second: 0
-      data:
-        first:
-          name: _StencilComp
-        second: 8
-      data:
-        first:
-          name: _StencilOp
-        second: 0
-      data:
-        first:
-          name: _StencilReadMask
-        second: 255
-      data:
-        first:
-          name: _StencilWriteMask
-        second: 255
-      data:
-        first:
-          name: _ColorMask
-        second: 15
-      data:
-        first:
-          name: _FaceDilate
-        second: 0
-      data:
-        first:
-          name: _OutlineWidth
-        second: 0
-      data:
-        first:
-          name: _OutlineSoftness
-        second: 0
-      data:
-        first:
-          name: _GlowOffset
-        second: 0
-      data:
-        first:
-          name: _GlowInner
-        second: 0.05
-      data:
-        first:
-          name: _GlowOuter
-        second: 0.05
-      data:
-        first:
-          name: _GlowPower
-        second: 0.75
-      data:
-        first:
-          name: _WeightNormal
-        second: 0
-      data:
-        first:
-          name: _WeightBold
-        second: 0.75
-      data:
-        first:
-          name: _ShaderFlags
-        second: 0
-      data:
-        first:
-          name: _ScaleRatioA
-        second: 0.8333333
-      data:
-        first:
-          name: _ScaleRatioB
-        second: 0.6770833
-      data:
-        first:
-          name: _ScaleRatioC
-        second: 0.6770833
-      data:
-        first:
-          name: _TextureWidth
-        second: 256
-      data:
-        first:
-          name: _TextureHeight
-        second: 128
-      data:
-        first:
-          name: _GradientScale
-        second: 6
-      data:
-        first:
-          name: _ScaleX
-        second: 1
-      data:
-        first:
-          name: _ScaleY
-        second: 1
-      data:
-        first:
-          name: _PerspectiveFilter
-        second: 0.875
-      data:
-        first:
-          name: _VertexOffsetX
-        second: 0
-      data:
-        first:
-          name: _VertexOffsetY
-        second: 0
-      data:
-        first:
-          name: _FaceUVSpeedX
-        second: 0
-      data:
-        first:
-          name: _FaceUVSpeedY
-        second: 0
-      data:
-        first:
-          name: _OutlineUVSpeedX
-        second: 0
-      data:
-        first:
-          name: _OutlineUVSpeedY
-        second: 0
-      data:
-        first:
-          name: _Bevel
-        second: 0.5
-      data:
-        first:
-          name: _BevelOffset
-        second: 0
-      data:
-        first:
-          name: _BevelWidth
-        second: 0
-      data:
-        first:
-          name: _BevelClamp
-        second: 0
-      data:
-        first:
-          name: _BevelRoundness
-        second: 0
-      data:
-        first:
-          name: _LightAngle
-        second: 3.1416
-      data:
-        first:
-          name: _SpecularPower
-        second: 2
-      data:
-        first:
-          name: _Reflectivity
-        second: 10
-      data:
-        first:
-          name: _Diffuse
-        second: 0.5
-      data:
-        first:
-          name: _Ambient
-        second: 0.5
-      data:
-        first:
-          name: _BumpOutline
-        second: 0
-      data:
-        first:
-          name: _BumpFace
-        second: 0
-      data:
-        first:
-          name: _UnderlayOffsetX
-        second: 0
-      data:
-        first:
-          name: _UnderlayOffsetY
-        second: 0
-      data:
-        first:
-          name: _UnderlayDilate
-        second: 0
-      data:
-        first:
-          name: _UnderlaySoftness
-        second: 0
-      data:
-        first:
-          name: _MaskSoftnessX
-        second: 0
-      data:
-        first:
-          name: _MaskSoftnessY
-        second: 0
+    - _Ambient: 0.5
+    - _Bevel: 0.5
+    - _BevelClamp: 0
+    - _BevelOffset: 0
+    - _BevelRoundness: 0
+    - _BevelWidth: 0
+    - _BumpFace: 0
+    - _BumpOutline: 0
+    - _ColorMask: 15
+    - _Diffuse: 0.5
+    - _FaceDilate: 0
+    - _FaceUVSpeedX: 0
+    - _FaceUVSpeedY: 0
+    - _GlowInner: 0.05
+    - _GlowOffset: 0
+    - _GlowOuter: 0.05
+    - _GlowPower: 0.75
+    - _GradientScale: 6
+    - _LightAngle: 3.1416
+    - _MaskSoftnessX: 0
+    - _MaskSoftnessY: 0
+    - _OutlineSoftness: 0
+    - _OutlineUVSpeedX: 0
+    - _OutlineUVSpeedY: 0
+    - _OutlineWidth: 0
+    - _PerspectiveFilter: 0.875
+    - _Reflectivity: 10
+    - _ScaleRatioA: 0.8333333
+    - _ScaleRatioB: 0.6770833
+    - _ScaleRatioC: 0.6770833
+    - _ScaleX: 1
+    - _ScaleY: 1
+    - _ShaderFlags: 0
+    - _SpecularPower: 2
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _TextureHeight: 128
+    - _TextureWidth: 256
+    - _UnderlayDilate: 0
+    - _UnderlayOffsetX: 0
+    - _UnderlayOffsetY: 0
+    - _UnderlaySoftness: 0
+    - _VertexOffsetX: 0
+    - _VertexOffsetY: 0
+    - _WeightBold: 0.75
+    - _WeightNormal: 0
     m_Colors:
-      data:
-        first:
-          name: _ClipRect
-        second: {r: -32767, g: -32767, b: 32767, a: 32767}
-      data:
-        first:
-          name: _FaceColor
-        second: {r: 1, g: 1, b: 1, a: 1}
-      data:
-        first:
-          name: _OutlineColor
-        second: {r: 0, g: 0, b: 0, a: 1}
-      data:
-        first:
-          name: _GlowColor
-        second: {r: 0, g: 1, b: 0, a: 0.5}
-      data:
-        first:
-          name: _SpecularColor
-        second: {r: 1, g: 1, b: 1, a: 1}
-      data:
-        first:
-          name: _ReflectFaceColor
-        second: {r: 0, g: 0, b: 0, a: 1}
-      data:
-        first:
-          name: _ReflectOutlineColor
-        second: {r: 0, g: 0, b: 0, a: 1}
-      data:
-        first:
-          name: _EnvMatrixRotation
-        second: {r: 0, g: 0, b: 0, a: 0}
-      data:
-        first:
-          name: _UnderlayColor
-        second: {r: 0, g: 0, b: 0, a: 0.5}
-      data:
-        first:
-          name: _MaskCoord
-        second: {r: 0, g: 0, b: 32767, a: 32767}
+    - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
+    - _EnvMatrixRotation: {r: 0, g: 0, b: 0, a: 0}
+    - _FaceColor: {r: 1, g: 1, b: 1, a: 1}
+    - _GlowColor: {r: 0, g: 1, b: 0, a: 0.5}
+    - _MaskCoord: {r: 0, g: 0, b: 32767, a: 32767}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _ReflectFaceColor: {r: 0, g: 0, b: 0, a: 1}
+    - _ReflectOutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
+    - _UnderlayColor: {r: 0, g: 0, b: 0, a: 0.5}
 --- !u!28 &2896852
 Texture2D:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: ReducedCharsetFont Atlas
   m_ImageContentsHash:
     serializedVersion: 2
     Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
   serializedVersion: 2
   m_Width: 256
   m_Height: 128
@@ -304,15 +119,19 @@ Texture2D:
   m_TextureFormat: 1
   m_MipCount: 1
   m_IsReadable: 0
-  m_ReadAllowed: 1
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
   m_AlphaIsTransparency: 0
   m_ImageCount: 1
   m_TextureDimension: 2
   m_TextureSettings:
+    serializedVersion: 2
     m_FilterMode: 1
     m_Aniso: 1
     m_MipBias: 0
-    m_WrapMode: 0
+    m_WrapU: 0
+    m_WrapV: 0
+    m_WrapW: 0
   m_LightmapFormat: 0
   m_ColorSpace: 0
   image data: 32768
@@ -324,18 +143,284 @@ Texture2D:
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74dfce233ddb29b4294c3e23c1d3650d, type: 3}
+  m_Script: {fileID: 11500000, guid: 71c1514a6bd24e1e882cebbe1904ce04, type: 3}
   m_Name: ReducedCharsetFont
   m_EditorClassIdentifier: 
   hashCode: 745983405
   material: {fileID: 2181106}
   materialHashCode: -228600698
-  fontAssetType: 1
+  m_Version: 1.1.0
+  m_SourceFontFileGUID: 
+  m_SourceFontFile_EditorRef: {fileID: 0}
+  m_SourceFontFile: {fileID: 0}
+  m_AtlasPopulationMode: 0
+  m_FaceInfo:
+    m_FamilyName: Oswald
+    m_StyleName: 
+    m_PointSize: 59
+    m_Scale: 1
+    m_LineHeight: 87.4375
+    m_AscentLine: 70.4375
+    m_CapLine: 0
+    m_MeanLine: 0
+    m_Baseline: 0
+    m_DescentLine: -17
+    m_SuperscriptOffset: 70.4375
+    m_SuperscriptSize: 0.5
+    m_SubscriptOffset: -8.844238
+    m_SubscriptSize: 0.5
+    m_UnderlineOffset: -8.844238
+    m_UnderlineThickness: 2.9384766
+    m_StrikethroughOffset: 19.431818
+    m_StrikethroughThickness: 2.9384766
+    m_TabWidth: 147.5
+  m_GlyphTable:
+  - m_Index: 1
+    m_Metrics:
+      m_Width: 31.6875
+      m_Height: 51.875
+      m_HorizontalBearingX: 0.25
+      m_HorizontalBearingY: 51.875
+      m_HorizontalAdvance: 32.1875
+    m_GlyphRect:
+      m_X: 71
+      m_Y: 70
+      m_Width: 32
+      m_Height: 52
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 2
+    m_Metrics:
+      m_Width: 28
+      m_Height: 51.875
+      m_HorizontalBearingX: 3.0625
+      m_HorizontalBearingY: 51.875
+      m_HorizontalAdvance: 32.8125
+    m_GlyphRect:
+      m_X: 117
+      m_Y: 6
+      m_Width: 28
+      m_Height: 52
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 3
+    m_Metrics:
+      m_Width: 29.5625
+      m_Height: 53.875
+      m_HorizontalBearingX: 2.375
+      m_HorizontalBearingY: 52.875
+      m_HorizontalAdvance: 33.8125
+    m_GlyphRect:
+      m_X: 6
+      m_Y: 6
+      m_Width: 30
+      m_Height: 54
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 4
+    m_Metrics:
+      m_Width: 28.0625
+      m_Height: 51.875
+      m_HorizontalBearingX: 3.0625
+      m_HorizontalBearingY: 51.875
+      m_HorizontalAdvance: 33.5625
+    m_GlyphRect:
+      m_X: 114
+      m_Y: 70
+      m_Width: 28
+      m_Height: 52
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 5
+    m_Metrics:
+      m_Width: 21.625
+      m_Height: 51.875
+      m_HorizontalBearingX: 3.0625
+      m_HorizontalBearingY: 51.875
+      m_HorizontalAdvance: 25.375
+    m_GlyphRect:
+      m_X: 154
+      m_Y: 69
+      m_Width: 22
+      m_Height: 52
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 6
+    m_Metrics:
+      m_Width: 21.625
+      m_Height: 51.875
+      m_HorizontalBearingX: 3.0625
+      m_HorizontalBearingY: 51.875
+      m_HorizontalAdvance: 24.6875
+    m_GlyphRect:
+      m_X: 156
+      m_Y: 6
+      m_Width: 22
+      m_Height: 52
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 7
+    m_Metrics:
+      m_Width: 25.0625
+      m_Height: 39.25
+      m_HorizontalBearingX: 1.625
+      m_HorizontalBearingY: 38.5
+      m_HorizontalAdvance: 28.125
+    m_GlyphRect:
+      m_X: 34
+      m_Y: 72
+      m_Width: 25
+      m_Height: 39
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 8
+    m_Metrics:
+      m_Width: 23.75
+      m_Height: 52.6875
+      m_HorizontalBearingX: 2.6875
+      m_HorizontalBearingY: 51.875
+      m_HorizontalAdvance: 28.75
+    m_GlyphRect:
+      m_X: 47
+      m_Y: 6
+      m_Width: 24
+      m_Height: 53
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 9
+    m_Metrics:
+      m_Width: 23.125
+      m_Height: 39.25
+      m_HorizontalBearingX: 2.1875
+      m_HorizontalBearingY: 38.5
+      m_HorizontalAdvance: 26.75
+    m_GlyphRect:
+      m_X: 187
+      m_Y: 70
+      m_Width: 23
+      m_Height: 39
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 10
+    m_Metrics:
+      m_Width: 23.8125
+      m_Height: 52.6875
+      m_HorizontalBearingX: 2.25
+      m_HorizontalBearingY: 51.875
+      m_HorizontalAdvance: 28.75
+    m_GlyphRect:
+      m_X: 82
+      m_Y: 6
+      m_Width: 24
+      m_Height: 53
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 11
+    m_Metrics:
+      m_Width: 23.125
+      m_Height: 39.25
+      m_HorizontalBearingX: 2.1875
+      m_HorizontalBearingY: 38.5
+      m_HorizontalAdvance: 27.0625
+    m_GlyphRect:
+      m_X: 222
+      m_Y: 7
+      m_Width: 23
+      m_Height: 39
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 12
+    m_Metrics:
+      m_Width: 16.6875
+      m_Height: 50
+      m_HorizontalBearingX: 1.8125
+      m_HorizontalBearingY: 50
+      m_HorizontalAdvance: 18.625
+    m_GlyphRect:
+      m_X: 6
+      m_Y: 71
+      m_Width: 17
+      m_Height: 50
+    m_Scale: 1
+    m_AtlasIndex: 0
+  - m_Index: 0
+    m_Metrics:
+      m_Width: 0
+      m_Height: 0
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 0
+      m_HorizontalAdvance: 14.0875
+    m_GlyphRect:
+      m_X: 0
+      m_Y: 0
+      m_Width: 0
+      m_Height: 0
+    m_Scale: 1
+    m_AtlasIndex: 0
+  m_CharacterTable:
+  - m_ElementType: 1
+    m_Unicode: 65
+    m_GlyphIndex: 1
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 66
+    m_GlyphIndex: 2
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 67
+    m_GlyphIndex: 3
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 68
+    m_GlyphIndex: 4
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 69
+    m_GlyphIndex: 5
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 70
+    m_GlyphIndex: 6
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 97
+    m_GlyphIndex: 7
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 98
+    m_GlyphIndex: 8
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 99
+    m_GlyphIndex: 9
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 100
+    m_GlyphIndex: 10
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 101
+    m_GlyphIndex: 11
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 102
+    m_GlyphIndex: 12
+    m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 32
+    m_GlyphIndex: 0
+    m_Scale: 1
+  m_AtlasTextures:
+  - {fileID: 2896852}
+  m_AtlasTextureIndex: 0
+  m_UsedGlyphRects: []
+  m_FreeGlyphRects: []
   m_fontInfo:
     Name: Oswald
     PointSize: 59
@@ -359,6 +444,10 @@ MonoBehaviour:
     AtlasWidth: 256
     AtlasHeight: 128
   atlas: {fileID: 2896852}
+  m_AtlasWidth: 256
+  m_AtlasHeight: 128
+  m_AtlasPadding: 5
+  m_AtlasRenderMode: 4121
   m_glyphInfoList:
   - id: 65
     x: 71
@@ -468,26 +557,50 @@ MonoBehaviour:
     yOffset: 50
     xAdvance: 18.625
     scale: 1
-  m_kerningInfo:
+  m_KerningTable:
     kerningPairs: []
-  m_kerningPair:
-    AscII_Left: 0
-    AscII_Right: 0
-    XadvanceOffset: 0
+  m_FontFeatureTable:
+    m_GlyphPairAdjustmentRecords: []
   fallbackFontAssets: []
-  fontCreationSettings:
-    fontSourcePath: 
-    fontSizingMode: 0
-    fontSize: 0
-    fontPadding: 0
-    fontPackingMode: 0
-    fontAtlasWidth: 0
-    fontAtlasHeight: 0
-    fontCharacterSet: 0
+  m_FallbackFontAssetTable: []
+  m_CreationSettings:
+    sourceFontFileName: 
+    sourceFontFileGUID: 
+    pointSizeSamplingMode: 0
+    pointSize: 0
+    padding: 0
+    packingMode: 0
+    atlasWidth: 0
+    atlasHeight: 0
+    characterSetSelectionMode: 0
+    characterSequence: 
+    referencedFontAssetGUID: 
+    referencedTextAssetGUID: 
     fontStyle: 0
-    fontStlyeModifier: 0
-    fontRenderMode: 0
-    fontKerning: 0
+    fontStyleModifier: 0
+    renderMode: 0
+    includeFontFeatures: 0
+  m_FontWeightTable:
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
+  - regularTypeface: {fileID: 0}
+    italicTypeface: {fileID: 0}
   fontWeights:
   - regularTypeface: {fileID: 0}
     italicTypeface: {fileID: 0}
