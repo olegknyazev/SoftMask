@@ -40,19 +40,19 @@ namespace SoftMasking {
         // inspector is left untouched.
         //
         // Management of SoftMaskables is fully automated. SoftMaskables are kept on the child
-        // objects while any SoftMask parent present. When something changes and SoftMask parent
+        // objects while any SoftMask parent present. When something changes and the parent
         // no longer exists, SoftMaskable is destroyed automatically. So, a user of SoftMask
         // doesn't have to worry about any component changes in the hierarchy.
         //
         // The replacement shader samples the mask texture and multiply the resulted color 
         // accordingly. SoftMask has the predefined replacement for Unity's default UI shader 
-        // (and its ETC1-version in Unity 5.4+). So, when SoftMask 'sees' a material that uses a
+        // (and its ETC1-version). So, when SoftMask 'sees' a material that uses a
         // known shader, it overrides shader by the predefined one. If SoftMask encounters a
         // material with an unknown shader, it can't do anything reasonable (because it doesn't know
         // what that shader should do). In such a case, SoftMask will not work and a warning will
 		// be displayed in Console. If you want SoftMask to work with a custom shader, you can
 		// manually add support to this shader. For reference how to do it, see
-		// CustomWithSoftMask.shader from included samples.
+		// CustomWithSoftMask.shader from the included samples.
         //
         // All replacements are cached in SoftMask instances. By default Unity draws UI with a
         // very small number of material instances (they are spawned one per masking/clipping layer),
@@ -71,14 +71,14 @@ namespace SoftMasking {
         [SerializeField] bool _invertMask = false;
         [SerializeField] bool _invertOutsides = false;
 
-        MaterialReplacements _materials;
+        readonly MaterialReplacements _materials;
         MaterialParameters _parameters;
         WarningReporter _warningReporter;
         Rect _lastMaskRect;
         bool _maskingWasEnabled;
         bool _destroyed;
         bool _dirty;
-        Queue<Transform> _transformsToSpawnMaskablesIn = new Queue<Transform>();
+        readonly Queue<Transform> _transformsToSpawnMaskablesIn = new Queue<Transform>();
 
         // Cached components
         RectTransform _maskTransform;
@@ -573,13 +573,13 @@ namespace SoftMasking {
             ForEachChildMaskable(x => x.MaskMightChanged());
         }
 
-        void ForEachChildMaskable(Action<SoftMaskable> f) {
+        void ForEachChildMaskable(Action<SoftMaskable> action) {
             transform.GetComponentsInChildren(s_maskables);
             using (new ClearListAtExit<SoftMaskable>(s_maskables))
                 for (int i = 0; i < s_maskables.Count; ++i) {
                     var maskable = s_maskables[i];
                     if (maskable && maskable.gameObject != gameObject)
-                        f(maskable);
+                        action(maskable);
                 }
         }
 
@@ -1068,7 +1068,7 @@ namespace SoftMasking {
         }
 
         struct WarningReporter {
-            UnityEngine.Object _owner;
+            readonly UnityEngine.Object _owner;
             Texture _lastReadTexture;
             Sprite _lastUsedSprite;
             Sprite _lastUsedImageSprite;
