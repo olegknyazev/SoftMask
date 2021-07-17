@@ -680,16 +680,12 @@ namespace SoftMasking {
             var inner = DataUtility.GetInnerUV(sprite);
             var outer = DataUtility.GetOuterUV(sprite);
             var padding = DataUtility.GetPadding(sprite);
-            var fullMaskRect = LocalMaskRect(Vector4.zero);            
+            var fullMaskRect = LocalMaskRect(Vector4.zero);
             _parameters.maskRectUV = outer;
             if (borderMode == BorderMode.Simple) {
+                if (ShouldPreserveAspect())
+                    fullMaskRect = PreserveSpriteAspectRatio(fullMaskRect, sprite.rect.size);
                 var normalizedPadding = Mathr.Div(padding, sprite.rect.size);
-                if (isBasedOnGraphic) {
-                    var image = _graphic as Image;
-                    Assert.IsNotNull(image);
-                    if (image.preserveAspect)
-                        fullMaskRect = PreserveSpriteAspectRatio(fullMaskRect, sprite.rect.size);
-                }
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(normalizedPadding, Mathr.Size(fullMaskRect)));
             } else {
                 var spriteToCanvasScale = SpriteToCanvasScale(spritePixelsPerUnit);
@@ -719,6 +715,15 @@ namespace SoftMasking {
                 }
             }
             return border;
+        }
+
+        bool ShouldPreserveAspect() {
+            if (isBasedOnGraphic) {
+                var image = _graphic as Image;
+                Assert.IsNotNull(image);
+                return image.preserveAspect;
+            }
+            return false;
         }
         
         Vector4 PreserveSpriteAspectRatio(Vector4 rect, Vector2 spriteSize) {
