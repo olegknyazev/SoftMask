@@ -684,13 +684,13 @@ namespace SoftMasking {
             _parameters.maskRectUV = outer;
             if (borderMode == BorderMode.Simple) {
                 var normalizedPadding = Mathr.Div(padding, sprite.rect.size);
-                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(normalizedPadding, Mathr.Size(fullMaskRect)));
                 if (isBasedOnGraphic) {
                     var image = _graphic as Image;
                     Assert.IsNotNull(image);
                     if (image.preserveAspect)
-                        _parameters.maskRect = PreserveSpriteAspectRatio(_parameters.maskRect, sprite.rect.size);
+                        fullMaskRect = PreserveSpriteAspectRatio(fullMaskRect, sprite.rect.size);
                 }
+                _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, Mathr.Mul(normalizedPadding, Mathr.Size(fullMaskRect)));
             } else {
                 var spriteToCanvasScale = SpriteToCanvasScale(spritePixelsPerUnit);
                 _parameters.maskRect = Mathr.ApplyBorder(fullMaskRect, padding * spriteToCanvasScale);
