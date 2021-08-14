@@ -83,6 +83,12 @@
 
     fixed4 frag(v2f IN) : SV_Target
     {
+    #if UNITY_VERSION >= 202120
+        const half alphaPrecision = half(0xff);
+        const half invAlphaPrecision = half(1.0 / alphaPrecision);
+        IN.color.a = round(IN.color.a * alphaPrecision) * invAlphaPrecision;
+    #endif
+        
     #ifdef SOFTMASK_ETC1
         half4 color = UnityGetUIDiffuseColor(IN.texcoord, _MainTex, _AlphaTex, _TextureSampleAdd) * IN.color;
     #else
