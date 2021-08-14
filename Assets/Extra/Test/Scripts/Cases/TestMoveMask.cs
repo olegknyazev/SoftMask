@@ -10,12 +10,14 @@ namespace SoftMasking.Tests {
         public AutomatedTest automatedTest;
 
         public IEnumerator Start() {
+            // TODO looks like it takes two frames to change resolution. See a comment in AutomatedTest.CaptureStep()
+            yield return null;
             yield return null;
             var originalImmovablePositions = immovables.Select(x => x.position).ToArray();
             Action<float> updatePositions = (angle) => {
                 mask.anchoredPosition = new Vector2(Mathf.Cos(angle) * 100.0f, Mathf.Sin(angle) * 100.0f);
                 for (int i = 0; i < immovables.Length; ++i)
-                    immovables[i].transform.position = originalImmovablePositions[i];
+                    immovables[i].position = originalImmovablePositions[i];
             };
             while (true) {
                 var angle = 0.0f;

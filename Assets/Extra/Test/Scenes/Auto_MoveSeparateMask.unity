@@ -587,7 +587,7 @@ MonoBehaviour:
         width: 600
         height: 500
       validationRectAnchor: 0
-      tolerance: 0
+      tolerance: 0.01
   _lastExecutionSteps: []
   _referenceSteps:
     _steps:
