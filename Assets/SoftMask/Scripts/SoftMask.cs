@@ -28,7 +28,7 @@ namespace SoftMasking {
     [DisallowMultipleComponent]
     [AddComponentMenu("UI/Soft Mask", 14)]
     [RequireComponent(typeof(RectTransform))]
-    [HelpURL("https://docs.google.com/document/d/14payfsJ-A29j2YaHHdLQXcvweTXaFc9CZI09XSdcstg")]
+    [HelpURL("https://docs.google.com/document/d/1CvbXXneUueU63N3HBw4dhEoqYnbXiD-pFvdKRrVyZ3c")]
     public class SoftMask : UIBehaviour, ISoftMask, ICanvasRaycastFilter {
         //
         // How it works:
