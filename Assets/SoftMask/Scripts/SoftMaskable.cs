@@ -2,9 +2,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using SoftMasking.Extensions;
 
 namespace SoftMasking {
@@ -21,7 +18,7 @@ namespace SoftMasking {
 
         public bool isMaskingEnabled {
             get {
-                return mask != null
+                return mask != null 
                     && mask.isAlive 
                     && mask.isMaskingEnabled 
                     && _affectedByMask
