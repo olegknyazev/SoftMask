@@ -21,7 +21,7 @@ namespace SoftMasking {
 
         public bool isMaskingEnabled {
             get {
-                return mask != null 
+                return mask != null
                     && mask.isAlive 
                     && mask.isMaskingEnabled 
                     && _affectedByMask
@@ -183,17 +183,8 @@ namespace SoftMasking {
         void DestroySelf() {
             if (Application.isPlaying)
                 Destroy(this);
-            else {
-            #if UNITY_EDITOR
-                var componentToDestroy = this;
-                EditorApplication.delayCall += () => {
-                    if (componentToDestroy)
-                        DestroyImmediate(componentToDestroy);
-                };
-            #else
+            else
                 DestroyImmediate(this);
-            #endif
-            }
         }
 
         static List<ISoftMask> s_softMasks = new List<ISoftMask>();

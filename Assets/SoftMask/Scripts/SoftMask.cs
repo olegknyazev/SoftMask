@@ -570,11 +570,11 @@ namespace SoftMasking {
         }
 
         void NotifyChildrenThatMaskMightChanged() {
-            ForEachChildMaskable(x => x.MaskMightChanged());
+            ForEachChildMaskable(x => x.MaskMightChanged(), includeInactive: true);
         }
 
-        void ForEachChildMaskable(Action<SoftMaskable> action) {
-            transform.GetComponentsInChildren(s_maskables);
+        void ForEachChildMaskable(Action<SoftMaskable> action, bool includeInactive = false) {
+            transform.GetComponentsInChildren(includeInactive, s_maskables);
             using (new ClearListAtExit<SoftMaskable>(s_maskables))
                 for (int i = 0; i < s_maskables.Count; ++i) {
                     var maskable = s_maskables[i];
