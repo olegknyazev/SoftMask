@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace SoftMasking.Editor {
-    public class DestroyImmediateFromEventTest {
+    public class SoftMaskableTest {
         [UnityTest]
         public IEnumerator Simultaneous_deletion_of_SoftMaskable_and_OnCanvasHierarchyChanged_should_not_spam_errors() {
             var root = new GameObject("Canvas", typeof(Canvas));
