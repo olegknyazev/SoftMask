@@ -808,7 +808,7 @@ namespace SoftMasking {
 
             static string DefaultUIETC1ShaderReplacement {
                 get {
-                #if UNITY_2021_OR_NEWER
+                #if UNITY_2020_1_OR_NEWER
                     return "SoftMaskETC1PremultipliedAlpha";
                 #else
                     return "SoftMaskETC1";
@@ -818,7 +818,7 @@ namespace SoftMasking {
 
             static string DefaultUIShaderReplacement {
                 get {
-                #if UNITY_2021_OR_NEWER
+                #if UNITY_2020_1_OR_NEWER
                     return "SoftMaskPremultipliedAlpha";
                 #else
                     return "SoftMask";
