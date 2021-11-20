@@ -23,6 +23,8 @@ namespace SoftMasking.Editor {
             yield return null;
 
             Object.DestroyImmediate(canvasObject);
+
+            yield return null;
         }
     }
 }

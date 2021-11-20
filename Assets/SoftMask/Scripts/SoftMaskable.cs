@@ -2,6 +2,9 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using SoftMasking.Extensions;
 
 namespace SoftMasking {
@@ -180,8 +183,17 @@ namespace SoftMasking {
         void DestroySelf() {
             if (Application.isPlaying)
                 Destroy(this);
-            else
+            else {
+            #if UNITY_EDITOR
+                var componentToDestroy = this;
+                EditorApplication.delayCall += () => {
+                    if (componentToDestroy)
+                        DestroyImmediate(componentToDestroy);
+                };
+            #else
                 DestroyImmediate(this);
+            #endif
+            }
         }
 
         static List<ISoftMask> s_softMasks = new List<ISoftMask>();
