@@ -16,6 +16,7 @@ namespace SoftMasking.Tests {
             renderTextureCamera.targetTexture = renderTexture;
             display.texture = renderTexture;
             yield return null;
+            yield return null;
             yield return automatedTest.Proceed(1f);
             yield return automatedTest.Finish();
         }
