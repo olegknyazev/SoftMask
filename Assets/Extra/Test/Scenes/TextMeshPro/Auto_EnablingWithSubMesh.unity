@@ -348,126 +348,6 @@ MonoBehaviour:
   _raycastThreshold: 0
   _invertMask: 0
   _invertOutsides: 0
---- !u!1 &1212701152
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1212701153}
-  m_Layer: 5
-  m_Name: MaskRect
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!224 &1212701153
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1212701152}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1288580654}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 200, y: -60}
-  m_SizeDelta: {x: 372, y: 196}
-  m_Pivot: {x: 0, y: 1}
---- !u!1 &1242509459
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1242509460}
-  - component: {fileID: 1242509463}
-  - component: {fileID: 1242509462}
-  - component: {fileID: 1242509461}
-  m_Layer: 5
-  m_Name: TMP SubMeshUI [TextMeshPro/Sprite]
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1242509460
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1242509459}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1813911280}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1242509461
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1242509459}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eddc1fbd4bd796345832996a9560b9bd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1242509462
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1242509459}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 058cba836c1846c3aa1c5fd2e28aea77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 2103686, guid: c41005c129ba4d66911b75229fd70b45, type: 2}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_spriteAsset: {fileID: 11400000, guid: c41005c129ba4d66911b75229fd70b45, type: 2}
-  m_material: {fileID: 0}
-  m_sharedMaterial: {fileID: 2103686, guid: c41005c129ba4d66911b75229fd70b45, type: 2}
-  m_isDefaultMaterial: 1
-  m_padding: 0
-  m_canvasRenderer: {fileID: 1242509463}
-  m_TextComponent: {fileID: 1813911281}
-  m_materialReferenceIndex: 1
---- !u!222 &1242509463
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1242509459}
-  m_CullTransparentMesh: 0
 --- !u!1 &1288580650
 GameObject:
   m_ObjectHideFlags: 0
@@ -559,7 +439,6 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 1196068145}
-  - {fileID: 1212701153}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -594,11 +473,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1491385817}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf7b5744f2f56da4a95bdc5efba8c53f, type: 3}
+  m_Script: {fileID: 11500000, guid: 47d52a37bd7664ad389bd295935d0af6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  softMask: {fileID: 1196068146}
-  element: {fileID: 1813911279}
+  textMesh: {fileID: 1813911281}
+  textToSet: Use <font="Anton SDF" material="Anton SDF - Drop Shadow"><#ffff80>multiple
+    fonts</color></font> and <#ffff80>Sprites</color> <sprite=1> per text object.
   automatedTest: {fileID: 1762358640}
 --- !u!4 &1491385819
 Transform:
@@ -658,7 +538,11 @@ MonoBehaviour:
       tolerance: 0.01
   _lastExecutionSteps: []
   _referenceSteps:
-    _steps: []
+    _steps:
+    - _texture: {fileID: 2800000, guid: 816290492d95b46ec8520a9d9099c69f, type: 3}
+      _logRecords: []
+    - _texture: {fileID: 2800000, guid: 4be29a54c56414ae086c4925513fe364, type: 3}
+      _logRecords: []
     _sceneRelativeReadPath: TextMeshPro/Auto_EnablingWithSubMesh
     _sceneRelativeWritePath: TextMeshPro/Auto_EnablingWithSubMesh
 --- !u!4 &1762358641
@@ -704,8 +588,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1242509460}
+  m_Children: []
   m_Father: {fileID: 1196068145}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -732,8 +615,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Use <font="Anton SDF" material="Anton SDF - Drop Shadow"><#ffff80>multiple
-    fonts</color></font> and <#ffff80>Sprites</color> <sprite=1> per text object.
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -816,7 +698,7 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_subTextObjects:
   - {fileID: 0}
-  - {fileID: 1242509462}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
