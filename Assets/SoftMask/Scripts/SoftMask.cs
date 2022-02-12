@@ -473,6 +473,9 @@ namespace SoftMasking {
         }
 
         void OnWillRenderCanvases() {
+            // Last-second chance to spawn maskables. It helps with TextMesh Pro's
+            // SubMeshes that are spawned late.
+            SpawnMaskables();
             // To be sure that mask will match the state of another drawn UI elements,
             // we update material parameters when layout and graphic update is done,
             // just before actual rendering.
