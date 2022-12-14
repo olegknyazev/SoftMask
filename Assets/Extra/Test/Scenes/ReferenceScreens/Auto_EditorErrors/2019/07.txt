@@ -1,1 +1,0 @@
-TightPackedPanel :: Error :: SoftMask doesn't support tight packed sprites
