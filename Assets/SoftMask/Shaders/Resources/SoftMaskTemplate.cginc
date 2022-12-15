@@ -38,7 +38,7 @@
     sampler2D _AlphaTex;
 #endif
     float4 _MainTex_ST;
-#if UNITY_VERSION >= 202100
+#if UNITY_VERSION >= 202022
     float _UIMaskSoftnessX;
     float _UIMaskSoftnessY;
 #elif UNITY_VERSION >= 202000
@@ -64,7 +64,7 @@
         float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
         float2 maskUV = (IN.vertex.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
         OUT.texcoord = float4(IN.texcoord.x, IN.texcoord.y, maskUV.x, maskUV.y);
-    #if UNITY_VERSION >= 202100
+    #if UNITY_VERSION >= 202022
         half2 maskSoftness = half2(_UIMaskSoftnessX, _UIMaskSoftnessY);
     #else
         half2 maskSoftness = half2(_MaskSoftnessX, _MaskSoftnessY);
