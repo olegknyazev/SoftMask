@@ -13,9 +13,7 @@ namespace SoftMasking.Tests {
 
         public int optionIndex { get; private set; }
 
-        public object option {
-            get { return options.Length > 0 ? options[optionIndex] : null; }
-        }
+        public object option => options.Length > 0 ? options[optionIndex] : null;
 
         public bool ToggleNext() {
             var overflow = false;

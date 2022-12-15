@@ -38,11 +38,11 @@ namespace SoftMasking.Tests {
         string FormatStatus() {
             return isFail
                 ? "FAIL"
-                : string.Format("PASS ({0} tests runned)", testResults.testCount);
+                : $"PASS ({testResults.testCount} tests ran)";
         }
 
-        bool isFail { get { return testResults.isFail; } }
-        AutomatedTestResults testResults { get { return testsRunner.testResults; } }
+        bool isFail => testResults.isFail;
+        AutomatedTestResults testResults => testsRunner.testResults;
 
         string FormatErrors() {
             var output = new StringBuilder();

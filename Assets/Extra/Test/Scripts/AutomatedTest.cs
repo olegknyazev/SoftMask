@@ -24,27 +24,21 @@ namespace SoftMasking.Tests {
         AutomatedTestError _explicitFail;
         LogHandler _logHandler;
 
-        public int referenceStepsCount {
-            get { return _referenceSteps.count; }
-        }
+        public int referenceStepsCount => _referenceSteps.count;
+
         public IEnumerable<ScreenValidationRule> validationRules {
             get { return _validationRulePairs.Select(x => x.rule); }
         }
-        public bool isReferenceEmpty {
-            get { return referenceStepsCount == 0; }
-        }
-        public int lastExecutionStepsCount {
-            get { return _lastExecutionSteps.Count; }
-        }
-        public bool isLastExecutionEmpty {
-            get { return _lastExecutionSteps.Count == 0; }
-        }
-        public bool isFinished {
-            get { return _result != null; }
-        }
-        public AutomatedTestResult result {
-            get { return _result; }
-        }
+        
+        public bool isReferenceEmpty => referenceStepsCount == 0;
+
+        public int lastExecutionStepsCount => _lastExecutionSteps.Count;
+
+        public bool isLastExecutionEmpty => _lastExecutionSteps.Count == 0;
+
+        public bool isFinished => _result != null;
+
+        public AutomatedTestResult result => _result;
 
         public event Action<AutomatedTest> changed;
 
@@ -110,7 +104,6 @@ namespace SoftMasking.Tests {
                 _explicitFail = new AutomatedTestError(reason, lastExecutionStepsCount - 1);
                 yield return Finish();
             }
-            yield break;
         }
 
         public YieldInstruction Finish() {
@@ -171,10 +164,7 @@ namespace SoftMasking.Tests {
                 File.WriteAllBytes("actual.png", actual.texture.EncodeToPNG());
                 File.WriteAllBytes("ref.png", expected.texture.EncodeToPNG());
                 File.WriteAllBytes("diff.png", diff.EncodeToPNG());
-                return new AutomatedTestError(
-                    string.Format("Screenshots differ at step {0}.", step), 
-                    step,
-                    diff);
+                return new AutomatedTestError( $"Screenshots differ at step {step}.", step, diff);
             }
             return null;
         }

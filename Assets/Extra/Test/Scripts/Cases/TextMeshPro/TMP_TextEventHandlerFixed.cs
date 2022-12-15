@@ -23,8 +23,8 @@ namespace TMPro
         /// </summary>
         public CharacterSelectionEvent onCharacterSelection
         {
-            get { return m_OnCharacterSelection; }
-            set { m_OnCharacterSelection = value; }
+            get => m_OnCharacterSelection;
+            set => m_OnCharacterSelection = value;
         }
         [SerializeField]
         private CharacterSelectionEvent m_OnCharacterSelection = new CharacterSelectionEvent();
@@ -34,8 +34,8 @@ namespace TMPro
         /// </summary>
         public WordSelectionEvent onWordSelection
         {
-            get { return m_OnWordSelection; }
-            set { m_OnWordSelection = value; }
+            get => m_OnWordSelection;
+            set => m_OnWordSelection = value;
         }
         [SerializeField]
         private WordSelectionEvent m_OnWordSelection = new WordSelectionEvent();
@@ -45,8 +45,8 @@ namespace TMPro
         /// </summary>
         public LinkSelectionEvent onLinkSelection
         {
-            get { return m_OnLinkSelection; }
-            set { m_OnLinkSelection = value; }
+            get => m_OnLinkSelection;
+            set => m_OnLinkSelection = value;
         }
         [SerializeField]
         private LinkSelectionEvent m_OnLinkSelection = new LinkSelectionEvent();

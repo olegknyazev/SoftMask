@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using SoftMasking.Tests;
@@ -11,9 +10,7 @@ namespace SoftMasking.Editor {
         SerializedProperty _speedUp;
         Vector2 _errorDiffScrollPos;
 
-        AutomatedTest targetTest {
-            get { return target as AutomatedTest; }
-        }
+        AutomatedTest targetTest => target as AutomatedTest;
 
         public void OnEnable() {
             _validationRulePairs = serializedObject.FindProperty("_validationRulePairs");
@@ -32,12 +29,8 @@ namespace SoftMasking.Editor {
             serializedObject.Update();
             EditorGUILayout.PropertyField(_validationRulePairs, true);
             EditorGUILayout.PropertyField(_speedUp);
-            EditorGUILayout.LabelField(
-                "Reference:", 
-                string.Format("{0} steps", targetTest.referenceStepsCount));
-            EditorGUILayout.LabelField(
-                "Last Execution:", 
-                string.Format("{0} steps", targetTest.lastExecutionStepsCount));
+            EditorGUILayout.LabelField("Reference:", $"{targetTest.referenceStepsCount} steps");
+            EditorGUILayout.LabelField("Last Execution:", $"{targetTest.lastExecutionStepsCount} steps");
             StateGUI();
             using (new EditorGUI.DisabledGroupScope(targetTest.isLastExecutionEmpty))
                 if (GUILayout.Button("Accept Last Execution as Reference"))

@@ -20,9 +20,9 @@ namespace SoftMasking.Tests {
             _context = context;
         }
 
-        public string message { get { return _message; } }
-        public LogType logType { get { return _logType; } }
-        public string context { get { return _context; } }
+        public string message => _message;
+        public LogType logType => _logType;
+        public string context => _context;
 
         public override string ToString() {
             return string.Format("{1} {0} {2} {0} {3}", separator, context, logType, message);

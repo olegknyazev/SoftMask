@@ -188,8 +188,8 @@ namespace SoftMasking.Editor {
                 }
             }
 
-            static GUIStyle KnownChannelStyle { get { return EditorStyles.popup; } }
-            static GUIStyle CustomWeightsStyle { get { return EditorStyles.textField; } }
+            static GUIStyle KnownChannelStyle => EditorStyles.popup;
+            static GUIStyle CustomWeightsStyle => EditorStyles.textField;
 
             static bool ChannelWeights(Rect rect, GUIContent label, SerializedProperty weightsProp, bool customWeightsExpanded) {
                 var knownChannel =

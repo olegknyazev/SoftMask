@@ -8,9 +8,7 @@ namespace SoftMasking.Editor {
     public class AutomatedTestsRunnerEditor : UnityEditor.Editor {
         Vector2 _errorDiffScrollPos;
 
-        AutomatedTestsRunner targetRunner {
-            get { return target as AutomatedTestsRunner; }
-        }
+        AutomatedTestsRunner targetRunner => target as AutomatedTestsRunner;
 
         public void OnEnable() {
             targetRunner.changed += OnRunnerChanged;
@@ -65,7 +63,7 @@ namespace SoftMasking.Editor {
                     if (isFail) {
                         var errorCount = results.failures.Count();
                         GUILayout.Label(
-                            string.Format("Failed ({0} errors)", errorCount),
+                            $"Failed ({errorCount} errors)",
                             AutomatedTestStyles.failed);
                         using (var scrollScope = new GUILayout.ScrollViewScope(_errorDiffScrollPos)) {
                             GUILayout.Box(results.failures.First().error.diff);

@@ -111,8 +111,8 @@ namespace SoftMasking.Tests {
             if (!expectationMatched)
                 yield return automatedTest.Fail(
                     clickExpected
-                        ? string.Format("At step {0} expected click {1} but actual is {2}", stepNumber, expectedPosition, lastClick)
-                        : string.Format("At step {0} no click expected but actual is {1}", stepNumber, lastClick));
+                        ? $"At step {stepNumber} expected click {expectedPosition} but actual is {lastClick}"
+                        : $"At step {stepNumber} no click expected but actual is {lastClick}");
         }
     }
 }

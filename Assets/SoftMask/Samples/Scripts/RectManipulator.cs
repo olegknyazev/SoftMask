@@ -99,9 +99,7 @@ namespace SoftMasking.Samples {
             return localPosition;
         }
         
-        RectTransform parentTransform {
-            get { return targetTransform.parent as RectTransform; }
-        }
+        RectTransform parentTransform => targetTransform.parent as RectTransform;
 
         void DoMove(Vector2 parentSpaceMovement) {
             if (Is(ManipulationType.Move))

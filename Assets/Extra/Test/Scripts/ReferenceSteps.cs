@@ -14,65 +14,20 @@ namespace SoftMasking.Tests {
         static readonly string LogExt = ".txt";
 
         [SerializeField] List<CapturedStep> _steps = new List<CapturedStep>();
-        [SerializeField] string _sceneRelativeReadPath;
-        [SerializeField] string _sceneRelativeWritePath;
+        [SerializeField] string _sceneRelativePath;
 
-        public int count { get { return _steps.Count; } }
-        public CapturedStep this[int index] { get { return _steps[index]; } }
+        public int count => _steps.Count;
+        public CapturedStep this[int index] => _steps[index];
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         public void Load(string sceneRelativePath) {
-            _sceneRelativeReadPath = AppendVersionSpecificFolderIfPresent(sceneRelativePath);
-            _sceneRelativeWritePath = AppendVersionSpecificFolder(sceneRelativePath);
+            _sceneRelativePath = sceneRelativePath;
             // Despite _referenceScreens are serialized, we still need to re-load them
             // each start. Otherwise we will be not able to transfer a new reference screen
             // sequence from play mode to edit mode.
             LoadSteps();
         }
 
-        string AppendVersionSpecificFolderIfPresent(string sceneRelativePath) {
-#if UNITY_2019_1_OR_NEWER
-    #if UNITY_2020_1_OR_NEWER
-        #if UNITY_2021_1_OR_NEWER
-            var sceneRelativePath2021 = VersionSpecificScenePathIfPresent(sceneRelativePath, "2021");
-            if (sceneRelativePath2021 != null)
-                return sceneRelativePath2021;
-        #endif
-            var sceneRelativePath2020 = VersionSpecificScenePathIfPresent(sceneRelativePath, "2020");
-            if (sceneRelativePath2020 != null)
-                return sceneRelativePath2020;
-    #endif
-            var sceneRelativePath2019 = VersionSpecificScenePathIfPresent(sceneRelativePath, "2019");
-            if (sceneRelativePath2019 != null)
-                return sceneRelativePath2019;
-#endif
-            return sceneRelativePath;
-        }
-
-        static string VersionSpecificScenePathIfPresent(string sceneRelativePath, string unityVersion) {
-            var versionSceneRelativePath = VersionSpecificScenePath(sceneRelativePath, unityVersion);
-            var versionScenePath = Path.Combine(ReferenceScreensFolder, versionSceneRelativePath);
-            if (!string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(versionScenePath)))
-                return versionSceneRelativePath;
-            return null;
-        }
-
-        string AppendVersionSpecificFolder(string sceneRelativePath) {
-        #if UNITY_2021_1_OR_NEWER
-            return VersionSpecificScenePath(sceneRelativePath, "2021");
-        #elif UNITY_2020_1_OR_NEWER
-            return VersionSpecificScenePath(sceneRelativePath, "2020");
-        #elif UNITY_2019_1_OR_NEWER
-            return VersionSpecificScenePath(sceneRelativePath, "2019");
-        #else
-            return sceneRelativePath;
-        #endif
-        }
-
-        static string VersionSpecificScenePath(string sceneRelativePath, string unityVersion) {
-            return Path.Combine(sceneRelativePath, unityVersion);
-        }
-        
         void LoadSteps() {
             _steps.Clear();
             for (int i = 0;; ++i) {
@@ -86,14 +41,14 @@ namespace SoftMasking.Tests {
         }
 
         T TryLoadAssetForStep<T>(int step, string assetExtension) where T : UnityEngine.Object {
-            var potentialPath = GetAssetReadPath(step, assetExtension);
+            var potentialPath = GetAssetPath(step, assetExtension);
             return AssetDatabase.LoadAssetAtPath<T>(potentialPath);
         }
 
         public void ReplaceBy(List<CapturedStep> newSteps) {
             DeleteReference();
-            if (!Directory.Exists(currentSceneReferenceWriteDir))
-                Directory.CreateDirectory(currentSceneReferenceWriteDir);
+            if (!Directory.Exists(currentSceneReferenceDir))
+                Directory.CreateDirectory(currentSceneReferenceDir);
             for (int i = 0; i < newSteps.Count; ++i) {
                 var newStep = newSteps[i];
                 SaveScreenshot(newStep, GetScreenshotWritePath(i));
@@ -138,36 +93,17 @@ namespace SoftMasking.Tests {
             DeleteReference();
         }
 
-        string GetScreenshotWritePath(int stepIndex) {
-            return GetAssetWritePath(stepIndex, ScreenshotExt);
-        }
+        string GetScreenshotWritePath(int stepIndex) => GetAssetPath(stepIndex, ScreenshotExt);
 
-        string GetLogWritePath(int stepIndex) {
-            return GetAssetWritePath(stepIndex, LogExt);
-        }
+        string GetLogWritePath(int stepIndex) => GetAssetPath(stepIndex, LogExt);
 
-        string GetAssetReadPath(int stepIndex, string assetExtension) {
-            return Path.ChangeExtension(
-                Path.Combine(currentSceneReferenceReadDir, string.Format("{0:D2}", stepIndex)),
+        string GetAssetPath(int stepIndex, string assetExtension) =>
+            Path.ChangeExtension(
+                Path.Combine(currentSceneReferenceDir, $"{stepIndex:D2}"),
                 assetExtension);
-        }
-        
-        string GetAssetWritePath(int stepIndex, string assetExtension) {
-            return Path.ChangeExtension(
-                Path.Combine(currentSceneReferenceWriteDir, string.Format("{0:D2}", stepIndex)),
-                assetExtension);
-        }
 
-        // TODO extract a concept of "read & write path pair"?
-        
-        string currentSceneReferenceReadDir {
-            get { return Path.Combine(ReferenceScreensFolder, _sceneRelativeReadPath); }
-        }
-        
-        string currentSceneReferenceWriteDir {
-            get { return Path.Combine(ReferenceScreensFolder, _sceneRelativeWritePath); }
-        }
-    #endif
+        string currentSceneReferenceDir => Path.Combine(ReferenceScreensFolder, _sceneRelativePath);
+#endif
         
         public void RemoveObsoletes() {
             _steps.RemoveAll(x => !x.texture);

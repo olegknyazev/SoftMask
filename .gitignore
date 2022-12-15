@@ -11,6 +11,8 @@
 /Build/
 /Automation/
 /obj/
+/Logs/
+/UserSettings/
 
 /Assets/TextMesh Pro*
 

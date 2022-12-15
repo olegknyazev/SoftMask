@@ -35,7 +35,7 @@ namespace SoftMasking.Tests {
             return Path.Combine(projectPath, Path.Combine(AutomationProjectsRoot, unityVersion));
         }
 
-        static string projectPath { get { return Directory.GetCurrentDirectory(); } }
+        static string projectPath => Directory.GetCurrentDirectory();
 
         static void CloneProjectTo(string destinationDir) {
             MakeCreanDirectory(destinationDir);

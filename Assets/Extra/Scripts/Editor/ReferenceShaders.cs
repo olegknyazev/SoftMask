@@ -47,9 +47,9 @@ namespace SoftMasking.TextMeshPro.Editor {
                         .Replace(".txt", ".reference.txt");
             }
 
-            public string examplePath { get; private set; }
-            public string referencePath { get; private set; }
-            public bool referenceExists { get { return File.Exists(referencePath); } }
+            public string examplePath { get; }
+            public string referencePath { get; }
+            public bool referenceExists => File.Exists(referencePath);
 
             public void WriteReference(string text) { File.WriteAllText(referencePath, text); }
             public string ReadReference() { return File.ReadAllText(referencePath); }

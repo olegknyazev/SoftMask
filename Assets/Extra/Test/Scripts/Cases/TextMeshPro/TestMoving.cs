@@ -19,10 +19,6 @@ namespace SoftMasking.TextMeshPro.Tests {
             }
         }
 
-        public void OnGUI() {
-            GUILayout.Label("MOVING: " + _active);
-        }
-
         IEnumerator Move(RectTransform element) {
             _active = element;
             var offset = 100f;

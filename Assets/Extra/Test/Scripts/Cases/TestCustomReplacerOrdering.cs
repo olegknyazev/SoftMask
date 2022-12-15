@@ -33,7 +33,7 @@ namespace SoftMasking.Tests {
                 return null;
             }
 
-            public static IEnumerable<int> lastCalls { get { return s_lastCalls; } }
+            public static IEnumerable<int> lastCalls => s_lastCalls;
         }
 
         [GlobalMaterialReplacer]

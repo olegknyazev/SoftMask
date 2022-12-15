@@ -20,17 +20,11 @@ namespace SoftMasking.Tests {
             return button == 0 ? _buttonState != KeyState.Normal : false;
         }
 
-        public override Vector2 mousePosition {
-            get { return _mousePosition; }
-        }
+        public override Vector2 mousePosition => _mousePosition;
 
-        public override bool mousePresent {
-            get { return true; }
-        }
+        public override bool mousePresent => true;
 
-        public override bool touchSupported {
-            get { return false; }
-        }
+        public override bool touchSupported => false;
 
         public void Set(Vector2 mousePosition, KeyState buttonState) {
             _mousePosition = mousePosition;
