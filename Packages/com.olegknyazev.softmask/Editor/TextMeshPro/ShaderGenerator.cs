@@ -10,6 +10,8 @@ using UnityEngine.Assertions;
 
 namespace SoftMasking.TextMeshPro.Editor {
     public static class ShaderGenerator {
+        static readonly string generatedShadersPath = "Assets/Resources/Shaders/Generated/SoftMask/";
+        
         public class ShaderResource {
             public readonly Shader shader;
             public readonly string text;
@@ -36,7 +38,6 @@ namespace SoftMasking.TextMeshPro.Editor {
                 try {
                     var newText = ShaderPatcher.Patch(shader.text);
                     var replacementFileName = shader.name + " - SoftMask.shader";
-                    var generatedShadersPath = PackageResources.generatedShaderResourcesPath;
                     if (!Directory.Exists(generatedShadersPath))
                         Directory.CreateDirectory(generatedShadersPath);
                     var outputFile = Path.Combine(generatedShadersPath, replacementFileName);
@@ -50,7 +51,7 @@ namespace SoftMasking.TextMeshPro.Editor {
             }
             InvalidateSoftMasks();
         }
-
+        
         static IEnumerable<ShaderResource> CollectTMProShaders() {
             return
                 TMProShaderGUIDs.Concat(TMProShaderPackageGUIDs)
