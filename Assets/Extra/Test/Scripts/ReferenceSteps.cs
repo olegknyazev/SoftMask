@@ -14,16 +14,14 @@ namespace SoftMasking.Tests {
         static readonly string LogExt = ".txt";
 
         [SerializeField] List<CapturedStep> _steps = new List<CapturedStep>();
-        [SerializeField] string _sceneRelativeReadPath;
-        [SerializeField] string _sceneRelativeWritePath;
+        [SerializeField] string _sceneRelativePath;
 
         public int count => _steps.Count;
         public CapturedStep this[int index] => _steps[index];
 
 #if UNITY_EDITOR
         public void Load(string sceneRelativePath) {
-            _sceneRelativeReadPath = sceneRelativePath;
-            _sceneRelativeWritePath = sceneRelativePath;
+            _sceneRelativePath = sceneRelativePath;
             // Despite _referenceScreens are serialized, we still need to re-load them
             // each start. Otherwise we will be not able to transfer a new reference screen
             // sequence from play mode to edit mode.
@@ -43,14 +41,14 @@ namespace SoftMasking.Tests {
         }
 
         T TryLoadAssetForStep<T>(int step, string assetExtension) where T : UnityEngine.Object {
-            var potentialPath = GetAssetReadPath(step, assetExtension);
+            var potentialPath = GetAssetPath(step, assetExtension);
             return AssetDatabase.LoadAssetAtPath<T>(potentialPath);
         }
 
         public void ReplaceBy(List<CapturedStep> newSteps) {
             DeleteReference();
-            if (!Directory.Exists(currentSceneReferenceWriteDir))
-                Directory.CreateDirectory(currentSceneReferenceWriteDir);
+            if (!Directory.Exists(currentSceneReferenceDir))
+                Directory.CreateDirectory(currentSceneReferenceDir);
             for (int i = 0; i < newSteps.Count; ++i) {
                 var newStep = newSteps[i];
                 SaveScreenshot(newStep, GetScreenshotWritePath(i));
@@ -95,31 +93,16 @@ namespace SoftMasking.Tests {
             DeleteReference();
         }
 
-        string GetScreenshotWritePath(int stepIndex) {
-            return GetAssetWritePath(stepIndex, ScreenshotExt);
-        }
+        string GetScreenshotWritePath(int stepIndex) => GetAssetPath(stepIndex, ScreenshotExt);
 
-        string GetLogWritePath(int stepIndex) {
-            return GetAssetWritePath(stepIndex, LogExt);
-        }
+        string GetLogWritePath(int stepIndex) => GetAssetPath(stepIndex, LogExt);
 
-        string GetAssetReadPath(int stepIndex, string assetExtension) {
-            return Path.ChangeExtension(
-                Path.Combine(currentSceneReferenceReadDir, $"{stepIndex:D2}"),
+        string GetAssetPath(int stepIndex, string assetExtension) =>
+            Path.ChangeExtension(
+                Path.Combine(currentSceneReferenceDir, $"{stepIndex:D2}"),
                 assetExtension);
-        }
-        
-        string GetAssetWritePath(int stepIndex, string assetExtension) {
-            return Path.ChangeExtension(
-                Path.Combine(currentSceneReferenceWriteDir, $"{stepIndex:D2}"),
-                assetExtension);
-        }
 
-        // TODO extract a concept of "read & write path pair"?
-        
-        string currentSceneReferenceReadDir => Path.Combine(ReferenceScreensFolder, _sceneRelativeReadPath);
-
-        string currentSceneReferenceWriteDir => Path.Combine(ReferenceScreensFolder, _sceneRelativeWritePath);
+        string currentSceneReferenceDir => Path.Combine(ReferenceScreensFolder, _sceneRelativePath);
 #endif
         
         public void RemoveObsoletes() {

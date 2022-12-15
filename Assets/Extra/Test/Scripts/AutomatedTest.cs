@@ -104,7 +104,6 @@ namespace SoftMasking.Tests {
                 _explicitFail = new AutomatedTestError(reason, lastExecutionStepsCount - 1);
                 yield return Finish();
             }
-            yield break;
         }
 
         public YieldInstruction Finish() {
