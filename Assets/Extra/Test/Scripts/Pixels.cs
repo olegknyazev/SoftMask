@@ -18,11 +18,11 @@ namespace SoftMasking.Tests {
                 (int)r.width);
         }
 
-        public int width { get { return _width; } }
-        public int height { get { return _colors.Length / width; } }
+        public int width => _width;
+        public int height => _colors.Length / width;
 
-        public Color this[int idx] { get { return _colors[idx]; } }
-        public Color this[int x, int y] { get { return _colors[y * _width + x]; } }
+        public Color this[int idx] => _colors[idx];
+        public Color this[int x, int y] => _colors[y * _width + x];
 
         public override bool Equals(object obj) {
             var other = obj as Pixels;

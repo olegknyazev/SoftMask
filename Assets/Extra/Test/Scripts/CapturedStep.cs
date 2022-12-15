@@ -14,8 +14,8 @@ namespace SoftMasking.Tests {
             _logRecords = log != null ? log.ToList() : new List<LogRecord>();
         }
 
-        public Texture2D texture { get { return _texture; } }
-        public IEnumerable<LogRecord> logRecords { get { return _logRecords; } }
-        public bool hasLog { get { return _logRecords.Count > 0; } }
+        public Texture2D texture => _texture;
+        public IEnumerable<LogRecord> logRecords => _logRecords;
+        public bool hasLog => _logRecords.Count > 0;
     }
 }

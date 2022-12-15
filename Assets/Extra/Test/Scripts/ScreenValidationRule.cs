@@ -44,12 +44,11 @@ namespace SoftMasking.Tests {
         }
 
         bool PerceptuallyCompare(string firstPath, string secondPath, string outputPath) {
-            using (var process = Process.Start(
-                       "perceptualdiff",
-                       $@"-output ""{outputPath}"" ""{firstPath}"" ""{secondPath}""")) {
-                process.WaitForExit();
-                return process.ExitCode == 0;
-            }
+            using var process = Process.Start(
+                "perceptualdiff",
+                $@"-output ""{outputPath}"" ""{firstPath}"" ""{secondPath}""");
+            process.WaitForExit();
+            return process.ExitCode == 0;
         }
 
         public Texture2D Diff(Texture2D expected, Texture2D actual) {

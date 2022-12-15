@@ -16,9 +16,7 @@ namespace SoftMasking.TextMeshPro.Editor {
         [MenuItem("Tools/Soft Mask/Replace Selected Texts by TextMesh Pro", isValidateFunction: true)]
         public static bool ReplaceAvailable() { return selectedTexts.Any(); }
 
-        static IEnumerable<Text> selectedTexts {
-            get { return Selection.GetFiltered(typeof(Text), SelectionMode.Editable).Cast<Text>(); }
-        }
+        static IEnumerable<Text> selectedTexts => Selection.GetFiltered(typeof(Text), SelectionMode.Editable).Cast<Text>();
 
         static void Replace(Text text) {
             var obj = text.gameObject;

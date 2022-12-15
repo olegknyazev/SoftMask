@@ -6,7 +6,7 @@ namespace SoftMasking.TextMeshPro {
     [GlobalMaterialReplacer]
     public class MaterialReplacer : IMaterialReplacer {
         // SoftMask's TMPro replacer is called after the standard one.
-        public int order { get { return 10; } }
+        public int order => 10;
 
         public Material Replace(Material material) {
             if (material && material.shader && material.shader.name.StartsWith("TextMeshPro/")) {

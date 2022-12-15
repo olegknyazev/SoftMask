@@ -7,7 +7,7 @@ namespace SoftMasking.Samples {
         public CanvasGroup targetGroup;
 
         public bool forcedVisible {
-            get { return _forcedVisible; }
+            get => _forcedVisible;
             set {
                 if (_forcedVisible != value) {
                     _forcedVisible = value;

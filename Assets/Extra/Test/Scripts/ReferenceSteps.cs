@@ -17,10 +17,10 @@ namespace SoftMasking.Tests {
         [SerializeField] string _sceneRelativeReadPath;
         [SerializeField] string _sceneRelativeWritePath;
 
-        public int count { get { return _steps.Count; } }
-        public CapturedStep this[int index] { get { return _steps[index]; } }
+        public int count => _steps.Count;
+        public CapturedStep this[int index] => _steps[index];
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         public void Load(string sceneRelativePath) {
             _sceneRelativeReadPath = sceneRelativePath;
             _sceneRelativeWritePath = sceneRelativePath;
@@ -105,26 +105,22 @@ namespace SoftMasking.Tests {
 
         string GetAssetReadPath(int stepIndex, string assetExtension) {
             return Path.ChangeExtension(
-                Path.Combine(currentSceneReferenceReadDir, string.Format("{0:D2}", stepIndex)),
+                Path.Combine(currentSceneReferenceReadDir, $"{stepIndex:D2}"),
                 assetExtension);
         }
         
         string GetAssetWritePath(int stepIndex, string assetExtension) {
             return Path.ChangeExtension(
-                Path.Combine(currentSceneReferenceWriteDir, string.Format("{0:D2}", stepIndex)),
+                Path.Combine(currentSceneReferenceWriteDir, $"{stepIndex:D2}"),
                 assetExtension);
         }
 
         // TODO extract a concept of "read & write path pair"?
         
-        string currentSceneReferenceReadDir {
-            get { return Path.Combine(ReferenceScreensFolder, _sceneRelativeReadPath); }
-        }
-        
-        string currentSceneReferenceWriteDir {
-            get { return Path.Combine(ReferenceScreensFolder, _sceneRelativeWritePath); }
-        }
-    #endif
+        string currentSceneReferenceReadDir => Path.Combine(ReferenceScreensFolder, _sceneRelativeReadPath);
+
+        string currentSceneReferenceWriteDir => Path.Combine(ReferenceScreensFolder, _sceneRelativeWritePath);
+#endif
         
         public void RemoveObsoletes() {
             _steps.RemoveAll(x => !x.texture);

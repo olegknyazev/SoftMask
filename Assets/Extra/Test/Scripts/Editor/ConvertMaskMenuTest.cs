@@ -133,13 +133,10 @@ namespace SoftMasking.Editor {
         }
 
         static Sprite _standardUISprite;
-        static Sprite standardUISprite {
-            get {
-                return _standardUISprite
-                    ? _standardUISprite
-                    : (_standardUISprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd"));
-            }
-        }
+        static Sprite standardUISprite =>
+            _standardUISprite
+                ? _standardUISprite
+                : (_standardUISprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd"));
 
         GameObject CreateObjectWithRawImageMask(bool renderable) {
             var go = CreateGameObject();

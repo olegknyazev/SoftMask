@@ -167,7 +167,7 @@ namespace SoftMasking {
         /// Determines from where the mask image should be taken.
         /// </summary>
         public MaskSource source {
-            get { return _source; }
+            get => _source;
             set { if (_source != value) Set(ref _source, value); }
         }
 
@@ -178,7 +178,7 @@ namespace SoftMasking {
         /// Default value is null.
         /// </summary>
         public RectTransform separateMask {
-            get { return _separateMask; }
+            get => _separateMask;
             set {
                 if (_separateMask != value) {
                     Set(ref _separateMask, value);
@@ -195,7 +195,7 @@ namespace SoftMasking {
         /// </summary>
         /// <seealso cref="source"/>
         public Sprite sprite {
-            get { return _sprite; }
+            get => _sprite;
             set { if (_sprite != value) Set(ref _sprite, value); }
         }
 
@@ -206,7 +206,7 @@ namespace SoftMasking {
         /// <seealso cref="source"/>
         /// <seealso cref="sprite"/>
         public BorderMode spriteBorderMode {
-            get { return _spriteBorderMode; }
+            get => _spriteBorderMode;
             set { if (_spriteBorderMode != value) Set(ref _spriteBorderMode, value); }
         }
 
@@ -217,7 +217,7 @@ namespace SoftMasking {
         /// <seealso cref="source"/>
         /// <seealso cref="sprite"/>
         public float spritePixelsPerUnitMultiplier {
-            get { return _spritePixelsPerUnitMultiplier; }
+            get => _spritePixelsPerUnitMultiplier;
             set { 
                 if (_spritePixelsPerUnitMultiplier != value)
                     Set(ref _spritePixelsPerUnitMultiplier, ClampPixelsPerUnitMultiplier(value));
@@ -231,7 +231,7 @@ namespace SoftMasking {
         /// </summary>
         /// <seealso cref="renderTexture"/>
         public Texture2D texture {
-            get { return _texture as Texture2D; }
+            get => _texture as Texture2D;
             set { if (_texture != value) Set(ref _texture, value); }
         }
         
@@ -242,7 +242,7 @@ namespace SoftMasking {
         /// </summary>
         /// <seealso cref="texture"/>
         public RenderTexture renderTexture {
-            get { return _texture as RenderTexture; }
+            get => _texture as RenderTexture;
             set { if (_texture != value) Set(ref _texture, value); }
         }
 
@@ -253,7 +253,7 @@ namespace SoftMasking {
         /// that the whole texture is used.
         /// </summary>
         public Rect textureUVRect {
-            get { return _textureUVRect; }
+            get => _textureUVRect;
             set { if (_textureUVRect != value) Set(ref _textureUVRect, value); }
         }
 
@@ -271,7 +271,7 @@ namespace SoftMasking {
         /// The default value is MaskChannel.alpha.
         /// </summary>
         public Color channelWeights {
-            get { return _channelWeights; }
+            get => _channelWeights;
             set { if (_channelWeights != value) Set(ref _channelWeights, value); }
         }
 
@@ -286,8 +286,8 @@ namespace SoftMasking {
         /// Accepts values in range [0..1].
         /// </summary>
         public float raycastThreshold {
-            get { return _raycastThreshold; }
-            set { _raycastThreshold = value; }
+            get => _raycastThreshold;
+            set => _raycastThreshold = value;
         }
 
         /// <summary>
@@ -299,7 +299,7 @@ namespace SoftMasking {
         /// </summary>
         /// <seealso cref="invertOutsides"/>
         public bool invertMask {
-            get { return _invertMask; }
+            get => _invertMask;
             set { if (_invertMask != value) Set(ref _invertMask, value); }
         }
         
@@ -313,7 +313,7 @@ namespace SoftMasking {
         /// </summary>
         /// <seealso cref="invertMask"/>
         public bool invertOutsides {
-            get { return _invertOutsides; }
+            get => _invertOutsides;
             set { if (_invertOutsides != value) Set(ref _invertOutsides, value); }
         }
 
@@ -321,16 +321,12 @@ namespace SoftMasking {
         /// Returns true if Soft Mask does raycast filtering, that is if the masked areas are
         /// transparent to input.
         /// </summary>
-        public bool isUsingRaycastFiltering {
-            get { return _raycastThreshold > 0f; }
-        }
+        public bool isUsingRaycastFiltering => _raycastThreshold > 0f;
 
         /// <summary>
         /// Returns true if masking is currently active.
         /// </summary>
-        public bool isMaskingEnabled {
-            get { return isActiveAndEnabled && canvas; }
-        }
+        public bool isMaskingEnabled => isActiveAndEnabled && canvas;
 
         /// <summary>
         /// Checks for errors and returns them as flags. It is used in the editor to determine
@@ -487,22 +483,16 @@ namespace SoftMasking {
 
         static readonly Rect DefaultUVRect = new Rect(0, 0, 1, 1);
 
-        RectTransform maskTransform {
-            get {
-                return
-                    _maskTransform
-                        ? _maskTransform
-                        : (_maskTransform = _separateMask ? _separateMask : GetComponent<RectTransform>());
-            }
-        }
+        RectTransform maskTransform =>
+            _maskTransform
+                ? _maskTransform
+                : (_maskTransform = _separateMask ? _separateMask : GetComponent<RectTransform>());
 
-        Canvas canvas {
-            get { return _canvas ? _canvas : (_canvas = NearestEnabledCanvas()); }
-        }
+        Canvas canvas => _canvas ? _canvas : (_canvas = NearestEnabledCanvas());
 
-        bool isBasedOnGraphic { get { return _source == MaskSource.Graphic; } }
+        bool isBasedOnGraphic => _source == MaskSource.Graphic;
 
-        bool ISoftMask.isAlive { get { return this && !_destroyed; } }
+        bool ISoftMask.isAlive => this && !_destroyed;
 
         Material ISoftMask.GetReplacement(Material original) {
             Assert.IsTrue(isActiveAndEnabled);
@@ -605,8 +595,7 @@ namespace SoftMasking {
             var result = new SourceParameters();
             switch (_source) {
                 case MaskSource.Graphic:
-                    if (_graphic is Image) {
-                        var image = (Image)_graphic;
+                    if (_graphic is Image image) {
                         var sprite = image.sprite;
                         result.image = image;
                         result.sprite = sprite;
@@ -620,8 +609,7 @@ namespace SoftMasking {
                             result.texture = sprite.texture;
                         } else
                             result.spritePixelsPerUnit = DefaultPixelsPerUnit;
-                    } else if (_graphic is RawImage) {
-                        var rawImage = (RawImage)_graphic;
+                    } else if (_graphic is RawImage rawImage) {
                         result.texture = rawImage.texture;
                         result.textureUVRect = rawImage.uvRect;
                     }
@@ -796,7 +784,7 @@ namespace SoftMasking {
         static readonly List<SoftMaskable> s_maskables = new List<SoftMaskable>();
 
         class MaterialReplacerImpl : IMaterialReplacer {
-            public int order { get { return 0; } }
+            public int order => 0;
 
             public Material Replace(Material original) {
                 if (original == null || original.HasDefaultUIShader())
@@ -878,7 +866,7 @@ namespace SoftMasking {
             public bool invertMask;
             public bool invertOutsides;
 
-            public Texture activeTexture { get { return texture ? texture : Texture2D.whiteTexture; } }
+            public Texture activeTexture => texture ? texture : Texture2D.whiteTexture;
 
             public enum SampleMaskResult { Success, NonReadable, NonTexture2D }
 
@@ -1014,9 +1002,9 @@ namespace SoftMasking {
                 return result;
             }
 
-            Image image { get { return _softMask.DeduceSourceParameters().image; } }
-            Sprite sprite { get { return _softMask.DeduceSourceParameters().sprite; } }
-            Texture texture { get { return _softMask.DeduceSourceParameters().texture; } }
+            Image image => _softMask.DeduceSourceParameters().image;
+            Sprite sprite => _softMask.DeduceSourceParameters().sprite;
+            Texture texture => _softMask.DeduceSourceParameters().texture;
 
             bool ThereAreNestedMasks() {
                 var softMask = _softMask; // for use in lambda

@@ -16,18 +16,15 @@ namespace SoftMasking {
 
         public bool shaderIsNotSupported { get; private set; }
 
-        public bool isMaskingEnabled {
-            get {
-                return mask != null 
-                    && mask.isAlive 
-                    && mask.isMaskingEnabled 
-                    && _affectedByMask
-                    && isGraphicMaskable;
-            }
-        }
-        
+        public bool isMaskingEnabled =>
+            mask != null 
+            && mask.isAlive 
+            && mask.isMaskingEnabled 
+            && _affectedByMask
+            && isGraphicMaskable;
+
         public ISoftMask mask {
-            get { return _mask; }
+            get => _mask;
             private set {
                 if (_mask != value) {
                     if (_mask != null)
@@ -38,9 +35,7 @@ namespace SoftMasking {
             }
         }
 
-        public bool isDestroyed {
-            get { return _destroyed; }
-        }
+        public bool isDestroyed => _destroyed;
 
         public Material GetModifiedMaterial(Material baseMaterial) {
             if (isMaskingEnabled) {
@@ -113,13 +108,10 @@ namespace SoftMasking {
         }
 
         void RequestChildTransformUpdate() {
-            if (mask != null)
-                mask.UpdateTransformChildren(transform);
+            mask?.UpdateTransformChildren(transform);
         }
 
-        Graphic graphic {
-            get { return _graphic ? _graphic : (_graphic = GetComponent<Graphic>()); }
-        }
+        Graphic graphic => _graphic ? _graphic : (_graphic = GetComponent<Graphic>());
 
         bool isGraphicMaskable {
             get {
@@ -137,7 +129,7 @@ namespace SoftMasking {
         }
 
         Material replacement {
-            get { return _replacement; }
+            get => _replacement;
             set {
                 if (_replacement != value) {
                     if (_replacement != null && mask != null)

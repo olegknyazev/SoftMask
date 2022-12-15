@@ -15,14 +15,14 @@ namespace SoftMasking.Tests {
     public class AutomatedTestsRunner : MonoBehaviour {
         public string testScenesPath = "Assets/Extra/Test/Scenes";
         public string testScenesNamePattern = "^Test.+$";
-        public string[] standaloneSkipScenes = new string[0];
+        public string[] standaloneSkipScenes = Array.Empty<string>();
         public bool speedRun = false;
         public bool stopOnFirstFail = true;
         public bool exitOnFinish = false;
         public bool replaceReferenceOnFail = false;
         
         public AutomatedTestResults testResults { get; private set; }
-        public bool isFinished { get { return testResults != null; } }
+        public bool isFinished => testResults != null;
 
         public event Action<AutomatedTestsRunner> changed;
 
@@ -103,9 +103,7 @@ namespace SoftMasking.Tests {
             return 0;
         }
 
-        static int unityMajorVersion {
-            get { return int.Parse(Application.unityVersion.Split('.').First()); }
-        }
+        static int unityMajorVersion => int.Parse(Application.unityVersion.Split('.').First());
 
         void LoadScene(string sceneKey) {
             EditorApplication.LoadLevelAdditiveInPlayMode(sceneKey);
@@ -167,11 +165,11 @@ namespace SoftMasking.Tests {
             }
 
             public bool speedUp {
-                get { return _automatedTest.speedUp; }
-                set { _automatedTest.speedUp = value; }
+                get => _automatedTest.speedUp;
+                set => _automatedTest.speedUp = value;
             }
 
-            public AutomatedTestResult result { get { return _automatedTest.result; } }
+            public AutomatedTestResult result => _automatedTest.result;
 
             public IEnumerator WaitFinish() {
                 while (!_automatedTest.isFinished)

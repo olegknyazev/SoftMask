@@ -25,7 +25,7 @@ namespace SoftMasking.Samples {
                 var item = Instantiate(itemPrefab);
                 item.transform.SetParent(target, false);
                 item.Set(
-                    string.Format("{0} {1:D2}", baseName, i + 1), 
+                    $"{baseName} {i + 1:D2}", 
                     image, 
                     colors[(startColor + i) % colors.Length], 
                     Random.Range(0.4f, 1), 
