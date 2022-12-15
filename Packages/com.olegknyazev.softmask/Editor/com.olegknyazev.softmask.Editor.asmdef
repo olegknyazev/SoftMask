@@ -1,0 +1,10 @@
+{
+    "name": "com.olegknyazev.softmask.Editor",
+    "references": [
+        "com.olegknyazev.softmask"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}
