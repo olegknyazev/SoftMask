@@ -22,57 +22,14 @@ namespace SoftMasking.Tests {
 
     #if UNITY_EDITOR
         public void Load(string sceneRelativePath) {
-            _sceneRelativeReadPath = AppendVersionSpecificFolderIfPresent(sceneRelativePath);
-            _sceneRelativeWritePath = AppendVersionSpecificFolder(sceneRelativePath);
+            _sceneRelativeReadPath = sceneRelativePath;
+            _sceneRelativeWritePath = sceneRelativePath;
             // Despite _referenceScreens are serialized, we still need to re-load them
             // each start. Otherwise we will be not able to transfer a new reference screen
             // sequence from play mode to edit mode.
             LoadSteps();
         }
 
-        string AppendVersionSpecificFolderIfPresent(string sceneRelativePath) {
-#if UNITY_2019_1_OR_NEWER
-    #if UNITY_2020_1_OR_NEWER
-        #if UNITY_2021_1_OR_NEWER
-            var sceneRelativePath2021 = VersionSpecificScenePathIfPresent(sceneRelativePath, "2021");
-            if (sceneRelativePath2021 != null)
-                return sceneRelativePath2021;
-        #endif
-            var sceneRelativePath2020 = VersionSpecificScenePathIfPresent(sceneRelativePath, "2020");
-            if (sceneRelativePath2020 != null)
-                return sceneRelativePath2020;
-    #endif
-            var sceneRelativePath2019 = VersionSpecificScenePathIfPresent(sceneRelativePath, "2019");
-            if (sceneRelativePath2019 != null)
-                return sceneRelativePath2019;
-#endif
-            return sceneRelativePath;
-        }
-
-        static string VersionSpecificScenePathIfPresent(string sceneRelativePath, string unityVersion) {
-            var versionSceneRelativePath = VersionSpecificScenePath(sceneRelativePath, unityVersion);
-            var versionScenePath = Path.Combine(ReferenceScreensFolder, versionSceneRelativePath);
-            if (!string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(versionScenePath)))
-                return versionSceneRelativePath;
-            return null;
-        }
-
-        string AppendVersionSpecificFolder(string sceneRelativePath) {
-        #if UNITY_2021_1_OR_NEWER
-            return VersionSpecificScenePath(sceneRelativePath, "2021");
-        #elif UNITY_2020_1_OR_NEWER
-            return VersionSpecificScenePath(sceneRelativePath, "2020");
-        #elif UNITY_2019_1_OR_NEWER
-            return VersionSpecificScenePath(sceneRelativePath, "2019");
-        #else
-            return sceneRelativePath;
-        #endif
-        }
-
-        static string VersionSpecificScenePath(string sceneRelativePath, string unityVersion) {
-            return Path.Combine(sceneRelativePath, unityVersion);
-        }
-        
         void LoadSteps() {
             _steps.Clear();
             for (int i = 0;; ++i) {
