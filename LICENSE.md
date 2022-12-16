@@ -1,3 +1,5 @@
+# “Commons Clause” License Condition v1.0
+
 The Software is provided to you by the Licensor under the License, as defined
 below, subject to the following condition.
 
@@ -15,13 +17,11 @@ include this Commons Clause License Condition notice.
 
 Software: Soft Mask
 
-License: MIT
+License: MIT License
 
 Licensor: Oleg Knyazev
 
-***
-
-MIT License
+# MIT License
 
 Copyright (c) 2017-2023 Oleg Knyazev
 
