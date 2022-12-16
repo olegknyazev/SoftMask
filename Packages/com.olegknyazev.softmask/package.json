@@ -1,0 +1,26 @@
+{
+  "name": "com.olegknyazev.softmask",
+  "version": "1.6.4-snapshot",
+  "displayName": "Soft Mask",
+  "description": "Analog of standard Unity UI's mask but with alpha support.",
+  "unity": "2020.1",
+  "documentationUrl": "https://docs.google.com/document/d/1xsRItl0KqmB2jGwnB2xSktwSRrXrYEwQNWIErLLjG6Q",
+  "changelogUrl": "TODO",
+  "licensesUrl": "TODO",
+  "dependencies": {
+    "com.unity.ugui": "1.0.0",
+    "com.unity.modules.ui": "1.0.0"
+  },
+  "author": {
+    "name": "Oleg Knyazev",
+    "email": "knyazev751@gmail.com",
+    "url": "https://oleg-knyazev.com"
+  },
+  "samples": [
+    {
+      "displayName": "Samples",
+      "description": "Several sample scenes and resources demonstrating various ways of using Soft Mask, including world-space canvases and Render Textures (dynamic masks).",
+      "path": "Samples~"
+    }
+  ]
+}
