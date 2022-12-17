@@ -102,8 +102,8 @@ namespace SoftMasking.Editor {
                 this.objectBeingConverted = objectBeingConverted;
                 this.unsupportedType = unsupportedType;
             }
-            public GameObject objectBeingConverted { get; private set; }
-            public Image.Type unsupportedType { get; private set; }
+            public GameObject objectBeingConverted { get; }
+            public Image.Type unsupportedType { get; }
         }
 
         public class UnsupportedRawImageTextureType : Exception {
@@ -111,8 +111,8 @@ namespace SoftMasking.Editor {
                 this.objectBeingConverted = objectBeingConverted;
                 this.unsupportedTexture = unsupportedTexture;
             }
-            public GameObject objectBeingConverted { get; private set; }
-            public Texture unsupportedTexture { get; private set; }
+            public GameObject objectBeingConverted { get; }
+            public Texture unsupportedTexture { get; }
         }
 
         static bool MayUseGraphicSource(Mask mask) {
@@ -122,15 +122,12 @@ namespace SoftMasking.Editor {
                 && !usesStandardUIMaskSprite;
         }
 
-        static bool IsStandardUIMaskSprite(Sprite sprite) {
-            return sprite == standardUIMaskSprite;
-        }
+        static bool IsStandardUIMaskSprite(Sprite sprite) => sprite == standardUIMaskSprite;
 
-        static Sprite SoftMaskCompatibleVersionOf(Sprite original) {
-            return IsStandardUIMaskSprite(original)
+        static Sprite SoftMaskCompatibleVersionOf(Sprite original) =>
+            IsStandardUIMaskSprite(original)
                 ? adaptedUIMaskSprite
                 : original;
-        }
 
         static void SetUpFromImage(SoftMask softMask, Image image) {
             Assert.IsTrue(SoftMask.IsImageTypeSupported(image.type));
@@ -170,7 +167,7 @@ namespace SoftMasking.Editor {
                 if (!_adaptedUIMaskSprite)
                     _adaptedUIMaskSprite =
                         AssetDatabase.LoadAssetAtPath<Sprite>(
-                            Path.Combine(PackageResources.packagePath, "Sprites/UIMask-FullAlpha.png"));
+                            Path.Combine(PackageResources.packageAssetsPath, "Sprites/UIMask-FullAlpha.png"));
                 return _adaptedUIMaskSprite;
             }
         }

@@ -157,7 +157,7 @@ namespace SoftMasking.Editor {
             }
         }
 
-        static readonly bool[] trueAndFalse = new[] { true, false };
+        static readonly bool[] trueAndFalse = { true, false };
 
         GameObject CreateAndConvertObjectWithImageMask(bool renderable, Sprite sprite = null) {
             var go = CreateObjectWithImageMask(renderable, sprite: sprite);
@@ -167,10 +167,11 @@ namespace SoftMasking.Editor {
         
         void AssertMaskHaveAdaptedSprite(GameObject go) {
             var softMask = go.GetComponent<SoftMask>();
+            Assert.IsNotNull(softMask.sprite);
             Assert.AreEqual(ConvertMaskMenu.adaptedUIMaskSprite, softMask.sprite);
         }
 
-        [Test] public void WhenRenderableImageWithStandardUIMaskSpriteConverted_ImageShouldSkillHaveStandardSprite() {
+        [Test] public void WhenRenderableImageWithStandardUIMaskSpriteConverted_ImageShouldStillHaveStandardSprite() {
             var go = CreateAndConvertObjectWithImageMask(renderable: true, sprite: ConvertMaskMenu.standardUIMaskSprite);
             var image = go.GetComponent<Image>();
             Assert.AreEqual(ConvertMaskMenu.standardUIMaskSprite, image.sprite);

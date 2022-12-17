@@ -4,18 +4,20 @@ using UnityEditor;
 
 namespace SoftMasking.Editor {
     public static class PackageResources {
-        static string _packagePath = string.Empty;
+        static string _packageAssetsPath = string.Empty;
 
-        public static string packagePath {
+        public static string packageAssetsPath {
             get {
-                if (string.IsNullOrEmpty(_packagePath)) {
-                    _packagePath = SearchForPackageRootPath();
-                    if (string.IsNullOrEmpty(_packagePath))
+                if (string.IsNullOrEmpty(_packageAssetsPath)) {
+                    _packageAssetsPath = SearchForPackageRootPath();
+                    if (!string.IsNullOrEmpty(_packageAssetsPath))
+                        _packageAssetsPath = Path.Combine(_packageAssetsPath, "Assets");
+                    else
                         Debug.LogError(
                             "Unable to locate Soft Mask root folder. " +
                             "Make sure the package has been installed correctly.");
                 }
-                return _packagePath;
+                return _packageAssetsPath;
             }
         }
 
