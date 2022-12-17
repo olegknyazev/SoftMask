@@ -19,14 +19,9 @@
         fixed4 color : COLOR;
         float2 texcoord : TEXCOORD0;
         float4 worldPosition : TEXCOORD1;
-    #if UNITY_VERSION >= 202000
         half4  mask : TEXCOORD2;
         SOFTMASK_COORDS(3)
-    #endif
         UNITY_VERTEX_OUTPUT_STEREO
-    #if UNITY_VERSION < 202000
-        SOFTMASK_COORDS(2)
-    #endif
     };
 
     fixed4 _Color;
@@ -41,7 +36,7 @@
 #if UNITY_VERSION >= 202022
     float _UIMaskSoftnessX;
     float _UIMaskSoftnessY;
-#elif UNITY_VERSION >= 202000
+#else
     float _MaskSoftnessX;
     float _MaskSoftnessY;
 #endif
@@ -54,7 +49,6 @@
         UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
         OUT.worldPosition = IN.vertex;
 
-#if UNITY_VERSION >= 202000
         float4 vPosition = UnityObjectToClipPos(IN.vertex);
         OUT.vertex = vPosition;
 
@@ -70,11 +64,6 @@
         half2 maskSoftness = half2(_MaskSoftnessX, _MaskSoftnessY);
     #endif
         OUT.mask = half4(IN.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * maskSoftness + abs(pixelSize.xy)));
-#else
-        OUT.vertex = UnityObjectToClipPos(IN.vertex);
-
-        OUT.texcoord = TRANSFORM_TEX(IN.texcoord, _MainTex);
-#endif
 
         OUT.color = IN.color * _Color;
         SOFTMASK_CALCULATE_COORDS(OUT, IN.vertex)
@@ -98,12 +87,8 @@
         color.a *= SOFTMASK_GET_MASK(IN);
 
 #if defined(UNITY_UI_CLIP_RECT)
-    #if UNITY_VERSION >= 202000
         half2 m = saturate((_ClipRect.zw - _ClipRect.xy - abs(IN.mask.xy)) * IN.mask.zw);
         color.a *= m.x * m.y;
-    #else
-        color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
-    #endif
 #endif
 
     #if defined(UNITY_UI_ALPHACLIP)

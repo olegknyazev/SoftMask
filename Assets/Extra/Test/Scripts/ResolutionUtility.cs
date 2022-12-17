@@ -79,15 +79,9 @@ namespace SoftMasking.Tests {
             var addCustomSize = getGroup.ReturnType.GetMethod("AddCustomSize");
             var getTotalCount = getGroup.ReturnType.GetMethod("GetTotalCount");
             var gvsType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameViewSize");
-        #if UNITY_2019_1_OR_NEWER
-            // Not sure in which exactly version they've changed signature, but I know that in 2019 it is
             var gvstType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameViewSizeType");
             var ctor = gvsType.GetConstructor(new Type[] { gvstType, typeof(int), typeof(int), typeof(string) });
             var newSize = ctor.Invoke(new object[] { (int)viewSizeType, width, height, text });
-        #else
-            var ctor = gvsType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(string) });
-            var newSize = ctor.Invoke(new object[] { (int)viewSizeType, width, height, text });
-        #endif
             addCustomSize.Invoke(group, new object[] { newSize });
             var totalCount = (int)getTotalCount.Invoke(group, new object[] { });
             return totalCount - 1;

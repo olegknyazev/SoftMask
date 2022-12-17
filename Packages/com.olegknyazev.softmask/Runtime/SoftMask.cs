@@ -597,11 +597,7 @@ namespace SoftMasking {
                         result.sprite = sprite;
                         result.spriteBorderMode = ImageTypeToBorderMode(image.type);
                         if (sprite) {
-                        #if UNITY_2019_2_OR_NEWER
                             result.spritePixelsPerUnit = sprite.pixelsPerUnit * image.pixelsPerUnitMultiplier;
-                        #else
-                            result.spritePixelsPerUnit = sprite.pixelsPerUnit;
-                        #endif
                             result.texture = sprite.texture;
                         } else
                             result.spritePixelsPerUnit = DefaultPixelsPerUnit;

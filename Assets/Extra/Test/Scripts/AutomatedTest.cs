@@ -246,7 +246,7 @@ namespace SoftMasking.Tests {
             _lastExecutionSteps.Clear();
             if (Application.isPlaying) {
                 ResolutionUtility.SetTestResolution();
-            #if UNITY_2019_1_OR_NEWER && UNITY_EDITOR
+            #if UNITY_EDITOR
                 EditorSettings.asyncShaderCompilation = false;
             #endif
             }

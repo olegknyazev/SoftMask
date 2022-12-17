@@ -134,9 +134,7 @@ namespace SoftMasking.Editor {
             softMask.source = SoftMask.MaskSource.Sprite;
             softMask.sprite = SoftMaskCompatibleVersionOf(image.sprite);
             softMask.spriteBorderMode = SoftMask.ImageTypeToBorderMode(image.type);
-        #if UNITY_2019_2_OR_NEWER
             softMask.spritePixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
-        #endif
         }
 
         static void SetUpFromRawImage(SoftMask softMask, RawImage rawImage) {

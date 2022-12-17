@@ -13,14 +13,12 @@ namespace SoftMasking.Tests {
         public IEnumerator Start() {
             Assert.IsTrue(image || mask);
             foreach (var multiplier in pixelsPerUnitMultiplierSteps) {
-            #if UNITY_2019_2_OR_NEWER
                 if (image) {
                     image.pixelsPerUnitMultiplier = multiplier;
                     // There is a bug in 2019.3: changing pixelsPerUnitMultiplier from script
                     // doesn't update anything.
                     image.SetVerticesDirty();
                 }
-            #endif
                 if (mask)
                     mask.spritePixelsPerUnitMultiplier = multiplier;
                 yield return automatedTest.Proceed(2f);
