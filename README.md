@@ -32,7 +32,8 @@ is not provided at the moment.
 
 - [Documentation](https://github.com/olegknyazev/SoftMask/blob/main/Packages/com.olegknyazev.softmask/Documentation%7E/Documentation.pdf)
 - [Changelog](https://github.com/olegknyazev/SoftMask/blob/main/Packages/com.olegknyazev.softmask/CHANGELOG.md)
-- [Support Thread](https://forum.unity.com/threads/soft-mask-a-replacement-of-unity-ui-mask-with-alpha-support.454707) — This thread was one of the primary support lines while the package was paid. You still can find some useful
+- [Support Thread](https://forum.unity.com/threads/soft-mask-a-replacement-of-unity-ui-mask-with-alpha-support.454707) —
+  This thread was one of the primary support lines while the package was paid. You still can find some useful
   information there or post a bug, but GitHub is a preferred place to reporting bugs.
 
 ## Development
@@ -69,3 +70,9 @@ To run a set of automated tests, perform the following:
 
 Besides of these screenshot-comparing tests we also have several classic editor-mode tests for the functionality that
 could be tested this way.
+
+### Documentation
+
+The documentation for Soft Mask is written in Google Documents and exported as PDF. The source document for 1.7.0
+is [available here](https://docs.google.com/document/d/1YBWxbaGjm2t1u6AVN0iMI-zLmpA4954hhL5S3BxZGH4/edit?usp=sharing).
+A migration to GutHub pages in planned for the nearest future.
