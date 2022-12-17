@@ -1,12 +1,12 @@
 {
   "name": "com.olegknyazev.softmask",
-  "version": "1.6.4-snapshot",
+  "version": "1.7.0-snapshot",
   "displayName": "Soft Mask",
   "description": "Analog of standard Unity UI's mask but with alpha support.",
   "unity": "2020.1",
-  "documentationUrl": "https://docs.google.com/document/d/1xsRItl0KqmB2jGwnB2xSktwSRrXrYEwQNWIErLLjG6Q",
-  "changelogUrl": "TODO",
-  "licensesUrl": "TODO",
+  "documentationUrl": "https://github.com/olegknyazev/SoftMask/blob/bf89dda09b9ac46f7baa6f2ec53448eeb319c605/Packages/com.olegknyazev.softmask/Documentation%7E/Documentation.pdf",
+  "changelogUrl": "https://github.com/olegknyazev/SoftMask/blob/main/Packages/com.olegknyazev.softmask/CHANGELOG.md",
+  "licensesUrl": "https://github.com/olegknyazev/SoftMask/blob/main/LICENSE.md",
   "dependencies": {
     "com.unity.ugui": "1.0.0",
     "com.unity.modules.ui": "1.0.0"
